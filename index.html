@@ -4,117 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ГЕО-ДЕТЕКТИВ // Сектор 8</title>
-    <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Fredoka+One&family=Rajdhani:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Rajdhani:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-        body { overflow: hidden; background: #060a14; font-family: 'Nunito', sans-serif; }
+        * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
+        body { overflow:hidden; background:#060a14; font-family:'Nunito',sans-serif; }
 
-        #video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transform: scaleX(-1); }
-        #canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        #video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; transform:scaleX(-1); }
+        #canvas { position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; }
 
-        .heart-float { position: absolute; z-index: 200; font-size: 2rem; animation: floatUp 1.5s ease-out forwards; pointer-events: none; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(1.5); } }
+        .heart-float { position:absolute; z-index:200; font-size:2rem; animation:floatUp 1.5s ease-out forwards; pointer-events:none; }
+        @keyframes floatUp { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-100px) scale(1.5)} }
 
-        /* === OVERLAY SCREENS === */
-        .screen {
-            position: fixed; inset: 0; z-index: 3000;
-            background: rgba(6,10,20,0.95); backdrop-filter: blur(12px);
-            display: none; flex-direction: column; align-items: center;
-            justify-content: center; gap: 16px; color: #e2eaff; text-align: center; padding: 20px;
-        }
-        .screen.active { display: flex; }
+        .screen { position:fixed; inset:0; z-index:3000; background:rgba(6,10,20,0.96); backdrop-filter:blur(12px); display:none; flex-direction:column; align-items:center; justify-content:center; gap:14px; color:#e2eaff; text-align:center; padding:20px; overflow-y:auto; }
+        .screen.active { display:flex; }
 
-        /* Auth */
-        .auth-card { background: #111d35; border: 1px solid #1e3a5f; border-radius: 24px; padding: 30px 20px; max-width: 400px; width: 100%; color: #e2eaff; text-align: center; }
-        .auth-title { font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700; color: #00d4ff; margin-bottom: 8px; }
-        .auth-sub { font-size: 13px; color: #5a7399; margin-bottom: 20px; }
-        .field-label { font-size: 11px; letter-spacing: 1.5px; color: #5a7399; text-transform: uppercase; margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; text-align: left; }
+        .auth-card { background:#111d35; border:2px solid #1e3a5f; border-radius:24px; padding:28px 20px; max-width:400px; width:100%; }
+        .auth-title { font-family:'Fredoka One',cursive; font-size:26px; color:#00d4ff; margin-bottom:6px; }
+        .auth-sub { font-size:13px; color:#5a7399; margin-bottom:18px; }
+        .field-label { font-size:11px; letter-spacing:1.5px; color:#5a7399; text-transform:uppercase; margin-bottom:6px; font-family:'IBM Plex Mono',monospace; text-align:left; }
+        select { width:100%; padding:12px 14px; background:rgba(255,255,255,.04); border:1px solid #1e3a5f; border-radius:10px; color:#e2eaff; font-size:15px; font-family:inherit; margin-bottom:14px; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7399' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; }
+        select:focus { outline:none; border-color:#00d4ff; }
+        select option { background:#111d35; color:#e2eaff; }
 
-        select {
-            width: 100%; padding: 12px 14px; background: rgba(255,255,255,.04);
-            border: 1px solid #1e3a5f; border-radius: 10px; color: #e2eaff;
-            font-size: 15px; font-family: inherit; margin-bottom: 16px;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7399' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: right 14px center;
-        }
-        select:focus { outline: none; border-color: #00d4ff; }
-        select option { background-color: #111d35; color: #e2eaff; }
+        .btn { width:100%; padding:15px; background:#00d4ff; color:#060a14; border:none; border-radius:14px; font-family:'Fredoka One',cursive; font-size:18px; letter-spacing:1px; cursor:pointer; transition:transform .15s, opacity .15s; }
+        .btn:active { transform:scale(0.97); }
+        .btn:disabled { opacity:.4; pointer-events:none; }
+        .btn-outline { background:transparent; border:2px solid #00d4ff; color:#00d4ff; }
 
-        .btn-primary { width: 100%; padding: 16px; background: #00d4ff; color: #060a14; border: none; border-radius: 12px; font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: transform 0.15s, opacity 0.15s; }
-        .btn-primary:active { transform: scale(0.97); }
-        .btn-primary:disabled { opacity: 0.4; pointer-events: none; }
+        .hud { position:absolute; top:16px; left:16px; right:16px; z-index:150; display:flex; justify-content:space-between; align-items:center; pointer-events:none; }
+        .hud-logo { font-family:'Fredoka One',cursive; font-size:20px; color:#00d4ff; text-shadow:0 0 15px rgba(0,212,255,0.5); }
+        .hud-badge { background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.25); color:#00d4ff; padding:6px 14px; border-radius:20px; font-family:'IBM Plex Mono',monospace; font-size:12px; }
 
-        /* HUD */
-        .hud { position: absolute; top: 16px; left: 16px; right: 16px; z-index: 150; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
-        .hud-logo { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: #00d4ff; text-shadow: 0 0 15px rgba(0,212,255,0.5); }
-        .hud-badge { background: rgba(0,212,255,0.12); border: 1px solid rgba(0,212,255,0.25); color: #00d4ff; padding: 6px 14px; border-radius: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+        #status-box { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); z-index:100; width:90%; max-width:480px; background:rgba(6,10,20,0.92); border:1px solid #1e3a5f; border-radius:24px; padding:16px 18px 20px; text-align:center; backdrop-filter:blur(12px); }
+        #status-text { font-size:1.05rem; font-weight:700; color:#e2eaff; margin-bottom:8px; line-height:1.4; }
+        #instruction { font-size:0.85rem; color:#ffb800; font-weight:700; }
+        #timeout-bar { position:absolute; bottom:0; left:0; height:5px; background:#00d4ff; border-radius:0 0 24px 24px; transition:width .1s linear, background .3s; width:100%; }
 
-        /* Status box */
-        #status-box { position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); z-index: 100; width: 88%; max-width: 480px; background: rgba(6,10,20,0.9); border: 1px solid #1e3a5f; border-radius: 24px; padding: 18px; text-align: center; backdrop-filter: blur(12px); }
-        #status-text { font-size: 1.3rem; font-weight: 700; color: #e2eaff; margin-bottom: 8px; }
-        #instruction { font-size: 0.9rem; color: #ffb800; font-weight: 600; }
+        #feedback { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:5rem; z-index:200; display:none; animation:popIn .3s ease; }
+        @keyframes popIn { 0%{transform:translate(-50%,-50%) scale(0.5)} 60%{transform:translate(-50%,-50%) scale(1.2)} 100%{transform:translate(-50%,-50%) scale(1)} }
+        #answer-hint { position:absolute; top:calc(50% + 60px); left:50%; transform:translateX(-50%); z-index:200; background:rgba(6,10,20,0.9); border-radius:14px; padding:10px 20px; color:#e2eaff; font-size:0.9rem; font-weight:700; display:none; text-align:center; max-width:85vw; }
+        #expression-indicator { position:absolute; top:76px; right:18px; z-index:200; font-size:2.2rem; background:rgba(0,0,0,0.5); border-radius:14px; padding:8px 12px; display:none; }
+        #no-face-warning { position:absolute; top:130px; left:50%; transform:translateX(-50%); z-index:200; background:rgba(255,184,0,0.15); border:1px solid #ffb800; border-radius:12px; padding:9px 16px; color:#ffb800; font-size:0.82rem; display:none; white-space:nowrap; }
+        #progress-dots { position:absolute; top:66px; left:50%; transform:translateX(-50%); z-index:150; display:none; gap:6px; }
+        .pdot { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,0.18); transition:background .3s; }
+        .pdot.done-correct { background:#00ff88; }
+        .pdot.done-wrong { background:#ff3d5a; }
+        .pdot.current { background:#00d4ff; animation:pulse 1s infinite; }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.35)} }
 
-        /* Timeout bar */
-        #timeout-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: #00d4ff; border-radius: 0 0 24px 24px; transition: width 0.1s linear; width: 100%; }
+        #error-toast { position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9000; background:#ff3d5a; color:#fff; padding:13px 22px; border-radius:14px; font-weight:700; font-size:14px; display:none; max-width:88vw; text-align:center; border-radius:20px; }
+        #error-toast.show { display:block; animation:fadeIn .3s; }
+        @keyframes fadeIn { from{opacity:0;transform:translateX(-50%) translateY(-8px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 
-        /* Error toast */
-        #error-toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9000; background: #ff3d5a; color: #fff; padding: 14px 24px; border-radius: 14px; font-weight: 700; font-size: 15px; display: none; max-width: 90vw; text-align: center; }
-        #error-toast.show { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(-8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        /* START screen */
+        .rule-box { border-radius:16px; padding:13px 22px; width:100%; max-width:320px; }
+        .rule-yes { background:rgba(0,255,136,0.08); border:2px solid rgba(0,255,136,0.35); }
+        .rule-no { background:rgba(255,61,90,0.08); border:2px solid rgba(255,61,90,0.35); }
 
-        /* Feedback */
-        #feedback { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; z-index: 200; display: none; }
-        #expression-indicator { position: absolute; top: 80px; right: 20px; z-index: 200; font-size: 2.5rem; background: rgba(0,0,0,0.5); border-radius: 16px; padding: 8px 12px; display: none; }
+        /* EVAL screen */
+        .eval-option { background:rgba(255,255,255,0.05); border:2px solid #1e3a5f; border-radius:16px; padding:14px 20px; width:88%; max-width:320px; cursor:pointer; font-size:1rem; font-weight:700; transition:border-color .2s, background .2s; }
+        .eval-option:hover { border-color:rgba(0,212,255,0.4); }
+        .eval-option.selected { border-color:#00d4ff; background:rgba(0,212,255,0.1); }
 
-        /* Eval */
-        .eval-option { background: rgba(255,255,255,0.05); border: 2px solid #1e3a5f; border-radius: 12px; padding: 14px 20px; width: 80%; max-width: 320px; cursor: pointer; text-align: left; font-size: 1rem; transition: border-color 0.2s, background 0.2s; }
-        .eval-option:hover { border-color: rgba(0,212,255,0.4); }
-        .eval-option.selected { border-color: #00d4ff; background: rgba(0,212,255,0.1); }
+        /* RESULT screen */
+        .result-stat { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:85%; max-width:340px; }
+        .stat-box { background:rgba(17,29,53,0.8); border:1px solid #1e3a5f; border-radius:14px; padding:12px 8px; text-align:center; }
+        .stat-box .value { font-size:1.8rem; font-weight:900; }
+        .stat-box .label { font-size:0.72rem; color:#5a7399; }
+        .gaps-box { background:rgba(255,61,90,0.1); border:1px solid rgba(255,61,90,0.3); border-radius:14px; padding:14px 16px; text-align:left; width:88%; max-width:400px; }
+        .gap-item { padding:5px 0; border-bottom:1px solid #1e3a5f; color:#d0a0a8; font-size:0.88rem; }
+        .gap-item:last-child { border-bottom:none; }
 
-        /* Result */
-        .result-stat { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; width: 80%; }
-        .stat-box { background: rgba(17,29,53,0.8); border: 1px solid #1e3a5f; border-radius: 12px; padding: 12px; text-align: center; }
-        .stat-box .value { font-size: 2rem; font-weight: 700; }
-        .stat-box .label { font-size: 0.75rem; color: #5a7399; }
-        .gaps-box { background: rgba(255,61,90,0.1); border: 1px solid rgba(255,61,90,0.3); border-radius: 14px; padding: 16px; text-align: left; width: 90%; max-width: 400px; }
-        .gap-item { padding: 6px 0; border-bottom: 1px solid #1e3a5f; color: #d0a0a8; font-size: 0.9rem; }
-        .gap-item:last-child { border-bottom: none; }
+        /* CERTIFICATE */
+        #cert-canvas { border-radius:20px; max-width:340px; width:100%; box-shadow:0 8px 40px rgba(0,0,0,0.6); }
+        #screen-lock { z-index:5000; background:#060a14; }
 
-        /* Lock */
-        #screen-lock { z-index: 5000; background: #060a14; }
-        .lock-icon { font-size: 4rem; margin-bottom: 20px; }
-
-        /* No-face warning */
-        #no-face-warning { position: absolute; top: 140px; left: 50%; transform: translateX(-50%); z-index: 200; background: rgba(255,184,0,0.15); border: 1px solid #ffb800; border-radius: 12px; padding: 10px 18px; color: #ffb800; font-size: 0.85rem; display: none; }
-
-        /* Progress dots */
-        #progress-dots { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); z-index: 150; display: none; gap: 6px; }
-        .pdot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.3s; }
-        .pdot.done-correct { background: #00ff88; }
-        .pdot.done-wrong { background: #ff3d5a; }
-        .pdot.current { background: #00d4ff; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
+        /* LOADING overlay */
+        #loading-overlay { position:fixed; inset:0; z-index:8000; background:rgba(6,10,20,0.97); display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; color:#e2eaff; }
+        #loading-overlay.show { display:flex; }
+        .spinner { width:48px; height:48px; border:4px solid rgba(0,212,255,0.2); border-top-color:#00d4ff; border-radius:50%; animation:spin 0.8s linear infinite; }
+        @keyframes spin { to{transform:rotate(360deg)} }
     </style>
 </head>
 <body>
 
 <div id="error-toast"></div>
 
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <p id="loading-text" style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#00d4ff;">Завантажую ШІ...</p>
+</div>
+
 <!-- LOCK -->
 <div id="screen-lock" class="screen">
-    <div class="lock-icon">🔐</div>
-    <h2>ДОСТУП ОБМЕЖЕНО</h2>
-    <p style="color:#5a7399; margin-top:8px;">Твій звіт вже надіслано у штаб.</p>
-    <button class="btn-primary" style="max-width:280px; margin-top:16px;" onclick="resetAndReload()">Пройти ще раз</button>
+    <div style="font-size:4rem">🔐</div>
+    <h2 style="font-family:'Fredoka One',cursive;font-size:1.8rem;">Звіт вже надіслано!</h2>
+    <p style="color:#5a7399;margin-top:4px;">Твої результати вже у вчителя.</p>
+    <button class="btn" style="max-width:260px;margin-top:12px;" onclick="localStorage.removeItem('geo_obolonka_submitted');location.reload()">Пройти ще раз</button>
 </div>
 
 <!-- AUTH -->
 <div id="screen-auth" class="screen active">
     <div class="auth-card">
-        <div class="auth-title">🔍 АВТОРИЗАЦІЯ</div>
-        <div class="auth-sub">Введи дані агента для доступу до оперативної справи</div>
+        <div class="auth-title">🔍 Авторизація агента</div>
+        <div class="auth-sub">Введи дані для доступу до оперативної справи</div>
         <div class="field-label">Підрозділ (клас)</div>
         <select id="sel-class">
             <option value="">— Оберіть клас —</option>
@@ -122,70 +116,74 @@
         </select>
         <div class="field-label">Позивний (прізвище)</div>
         <select id="sel-name"><option value="">— Спочатку оберіть клас —</option></select>
-        <button class="btn-primary" id="btn-auth" disabled>ПРОДОВЖИТИ</button>
+        <button class="btn" id="btn-auth" disabled>ПРОДОВЖИТИ →</button>
     </div>
 </div>
 
 <!-- START -->
 <div id="screen-start" class="screen">
-    <div style="font-size:4rem">😊😮</div>
-    <h1 style="font-family:'Rajdhani'; font-size:2rem;">Операція «ГЕО-ОБОЛОНКА»</h1>
-    <p style="color:#aac4e8;">Відповідай на 12 завдань мімікою:</p>
-    <div style="background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.3); border-radius:14px; padding:14px 24px;">
-        <p style="color:#00ff88; font-weight:700;">Кивок головою 👍 = ТАК</p>
+    <div style="font-size:3.5rem">🌍</div>
+    <h1 style="font-family:'Fredoka One',cursive;font-size:2rem;">Операція «Гео-Оболонка»</h1>
+    <p style="color:#aac4e8;font-size:0.95rem;">Відповідай на 12 коротких тверджень мімікою обличчя:</p>
+    <div class="rule-box rule-yes">
+        <p style="color:#00ff88;font-size:1.1rem;font-weight:900;">👍 Кивок головою = ТАК</p>
     </div>
-    <div style="background:rgba(255,61,90,0.08); border:1px solid rgba(255,61,90,0.3); border-radius:14px; padding:14px 24px;">
-        <p style="color:#ff3d5a; font-weight:700;">Відкрий рот 😮 = НІ</p>
+    <div class="rule-box rule-no">
+        <p style="color:#ff3d5a;font-size:1.1rem;font-weight:900;">😮 Відкрий рот = НІ</p>
     </div>
-    <p style="font-size:0.85rem; color:#5a7399;">Утримуй вираз ~1 секунду • Є 15 секунд на кожне питання</p>
-    <button class="btn-primary" id="btn-start" style="max-width:280px;">ПОЇХАЛИ!</button>
+    <p style="font-size:0.8rem;color:#5a7399;">Утримуй вираз ~1 секунду • 15 секунд на питання</p>
+    <button class="btn" id="btn-start" style="max-width:280px;">🚀 ПОЇХАЛИ!</button>
 </div>
 
 <!-- GAME -->
 <video id="video" autoplay playsinline muted></video>
 <canvas id="canvas"></canvas>
-
 <div class="hud" id="game-hud" style="display:none;">
     <div class="hud-logo">ГЕО-ДЕТЕКТИВ</div>
     <div class="hud-badge" id="hud-gr">СЕКТОР 8</div>
 </div>
-
 <div id="progress-dots"></div>
-
 <div id="status-box" style="display:none;">
     <div id="status-text">Завантаження...</div>
-    <div id="instruction">Кивок 👍 = Так &nbsp;•&nbsp; Рот 😮 = Ні</div>
+    <div id="instruction">👍 Кивок = Так &nbsp;•&nbsp; 😮 Рот = Ні</div>
     <div id="timeout-bar"></div>
 </div>
 <div id="feedback"></div>
+<div id="answer-hint"></div>
 <div id="expression-indicator">😐</div>
 <div id="no-face-warning">⚠️ Покажи обличчя в камеру</div>
 
 <!-- EVAL -->
 <div id="screen-eval" class="screen">
-    <h2 style="font-family:'Rajdhani'; font-size:1.8rem;">ЗВІТ АГЕНТА</h2>
-    <p style="color:#aac4e8;">12 завдань виконано! Оціни свій рівень:</p>
-    <div class="eval-option" id="eval-1">Впевнено 💪</div>
-    <div class="eval-option" id="eval-2">Частково 🤔</div>
-    <div class="eval-option" id="eval-3">Потребую підтримки 🆘</div>
-    <button class="btn-primary" id="btn-submit" style="max-width:280px;" disabled>НАДІСЛАТИ ЗВІТ</button>
+    <div style="font-size:3rem">📋</div>
+    <h2 style="font-family:'Fredoka One',cursive;font-size:1.8rem;">Звіт агента</h2>
+    <p style="color:#aac4e8;font-size:0.95rem;">12 завдань виконано! Оціни себе чесно:</p>
+    <div class="eval-option" id="eval-1">💪 Впевнено — все зрозуміло!</div>
+    <div class="eval-option" id="eval-2">🤔 Частково — щось незрозуміло</div>
+    <div class="eval-option" id="eval-3">🆘 Потребую підтримки</div>
+    <button class="btn" id="btn-submit" style="max-width:280px;" disabled>НАДІСЛАТИ ЗВІТ 📤</button>
 </div>
 
 <!-- RESULT -->
 <div id="screen-result" class="screen">
-    <h2 style="font-family:'Rajdhani'; font-size:1.8rem;">МІСІЯ ВИКОНАНА! 🎉</h2>
+    <div style="font-size:2.5rem" id="result-emoji">🎉</div>
+    <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;" id="rank-title">Місія виконана!</h2>
+    <p style="color:#ffb800;font-weight:700;font-size:1rem;" id="rank-label"></p>
     <div class="result-stat" id="result-stats"></div>
     <div class="gaps-box" id="gaps-container"></div>
-    <p style="font-size:0.8rem; color:#5a7399;" id="save-status">Зберігаємо результати...</p>
-    <button class="btn-primary" style="max-width:280px;" onclick="location.reload()">ЗАВЕРШИТИ</button>
+    <p style="font-size:0.78rem;color:#5a7399;" id="save-status">Зберігаємо результати...</p>
+    <p style="font-size:0.82rem;color:#aac4e8;margin-top:4px;">Збережи свій сертифікат:</p>
+    <canvas id="cert-canvas" width="680" height="960"></canvas>
+    <button class="btn" id="btn-save-cert" style="max-width:280px;">💾 ЗБЕРЕГТИ СЕРТИФІКАТ</button>
+    <button class="btn btn-outline" style="max-width:280px;margin-top:4px;" onclick="location.reload()">ЗАВЕРШИТИ</button>
 </div>
 
 <script type="module">
 import { FaceLandmarker, FilesetResolver } from "https://cdn.skypack.dev/@mediapipe/tasks-vision@0.10.3";
 
-// ── База учнів ──────────────────────────────────────────────────────────────
+// ── Дані ─────────────────────────────────────────────────────────────────────
 const DB = {
-    "7-А":["Ашихмін Ярослав","Внуков Веніамін","Волков Давид","Вулєр Іван","Дабіжа Марія","Димитров Дмитро","Кирилюк Артем","Косар Нікіта","Кравчук Мілана","Кривенок Ілля","Лазаревич Георгій","Лазаревич Ніколь","Лісіцина Дар'я","Нестерова Varvara","Перванчук Марк","Полуянов Семен","Попков Андрій","Савченко Наталія","Скопенко Ніка","Усольцева Аріна","Халабура Вікторія","Химич Артем","Якутенко Володимир","Ященко Анастасія","Бохонок Олеся"],
+    "7-А":["Ашихмін Ярослав","Внуков Веніамін","Волков Давид","Вулєр Іван","Дабіжа Марія","Димитров Дмитро","Кирилюк Артем","Косар Нікіта","Кравчук Мілана","Кривенок Ілля","Лазаревич Георгій","Лазаревич Ніколь","Лісіцина Дар'я","Нестерова Варвара","Перванчук Марк","Полуянов Семен","Попков Андрій","Савченко Наталія","Скопенко Ніка","Усольцева Аріна","Халабура Вікторія","Химич Артем","Якутенко Володимир","Ященко Анастасія","Бохонок Олеся"],
     "7-Б":["Алєксєюк Ірина","Андрусік Ул'яна","Болясна Аріна","Войтех Богдан","Голімбовська Єлизавета","Гуляєва Марія","Зєнов Геннадій","Кожухар Злата","Колесниченко Артем","Коростельова Анфіса","Кузьмін Дмитро","Левченко Тимур","Литовченко Кіра","Михайлова Ксенія","Ніколаєв Ілля","Ніща Дар'я","Переберін Артем","Сич Кіріл","Сташко Кароліна","Стерпул Олександр","Харченко Гліб","Хомутова Анна","Чернюк Андрій","Шаріпова Анастасія","Штурхаль Марія","Яремчук Єгор","Бохонок Олеся"],
     "7-В":["Бєгу Євгеній","Білоус Катерина","Бодьо Арина","Величко Данило","Гаврилова Кира","Гаврилова Маргарита","Гєчева Вероніка","Гордієнко Дмитро","Іваньоха Мирослав","Ісхаков Кирило","Кушнір Віталіна","Левченко Олександр","Мацієвич Дмитро","Мельниченко Анастасія","Муравйов Андрій","Ніколайчук Іван","Остапчук Ангеліна","Охват Софія","Пєшкова Поліна","Піроженко Анна","Саванчук Крістіна","Чермних Єгор","Бохонок Олеся"],
     "7-Г":["Баличев Давід","Білоножкіна Вікторія","Бохонок Олеся","Григор'єв Максим","Єленич Софія","Жемчужникова Дар'я","Карп Христина","Карташов Михайло","Клименко Назар","Ковальов Володимир","Маслій Руслан","Мельников Тимур","Потребенко Меланія","Раєнко Таїсія","Саранін Олександр","Солодухіна Жанна","Сопель Максим","Стоянов Владислав","Чеховський Кирило","Чорний Акім","Шеремет Ернест"],
@@ -194,125 +192,113 @@ const DB = {
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUCjrOlZuUGPrGzauifB6v-qoVT9arKkCKlXZxiQSgYvDlFJyO7jg0BEe_OtHrKfEDXg/exec";
 const TASK_TIMEOUT_MS = 15000;
+const TEACHER = "Олесі Олександрівни";
 
+// Скорочені твердження (макс ~10 слів)
 const TASKS = [
-    { statement: "Природний комплекс – це ділянка земної поверхні, що вирізняється поєднанням певних природних компонентів, які нероздільно пов'язані між собою.", isTrue: true, gr: "GR1", gap: "Поняття_ПК" },
-    { statement: "Географічна оболонка є найбільшим природним комплексом на Землі.", isTrue: true, gr: "GR1", gap: "ГО_найбільший_ПК" },
-    { statement: "Цілісність географічної оболонки полягає у взаємозв'язках та взаємозалежностях її компонентів.", isTrue: true, gr: "GR1", gap: "Цілісність_ГО" },
-    { statement: "Ритмічність – це періодичність і повторюваність природних процесів у часі, прикладом є зміна дня і ночі.", isTrue: true, gr: "GR1", gap: "Ритмічність" },
-    { statement: "Широтна зональність – це закономірна зміна природних комплексів від екватора до полюсів.", isTrue: true, gr: "GR2", gap: "Широтна_зональність" },
-    { statement: "Природна секторність – це зміна природних зон від узбережжя вглиб материка.", isTrue: true, gr: "GR2", gap: "Секторність" },
-    { statement: "Азональні природні комплекси формуються через відмінності будови земної кори та рельєфу.", isTrue: true, gr: "GR2", gap: "Азональні_ПК" },
-    { statement: "Природні зони – це великі зональні природні комплекси, що вирізняються подібністю клімату, ґрунтів, рослинності, тваринного світу.", isTrue: true, gr: "GR2", gap: "Природні_зони" },
-    { statement: "Висотна поясність – це зміна природних комплексів у горах з висотою.", isTrue: true, gr: "GR3", gap: "Висотна_поясність" },
-    { statement: "Кількість висотних поясів залежить від висоти гір і близькості до екватора.", isTrue: true, gr: "GR3", gap: "Кількість_поясів" },
-    { statement: "Осушення боліт і вирубка лісів не впливають на інші компоненти природного комплексу.", isTrue: false, gr: "GR3", gap: "Вплив_людини" },
-    { statement: "Антропогенні комплекси займають близько 85% території України.", isTrue: true, gr: "GR3", gap: "Антропогенні_ПК" }
+    { statement: "Природний комплекс — це поєднання природних компонентів, нерозривно пов'язаних між собою.", isTrue: true, gr:"GR1", gap:"Поняття ПК", explain:"Так! ПК = компоненти + їх нерозривний зв'язок." },
+    { statement: "Географічна оболонка — найбільший природний комплекс на Землі.", isTrue: true, gr:"GR1", gap:"ГО — найбільший ПК", explain:"Так! ГО охоплює всю Землю — це максимальний ПК." },
+    { statement: "Цілісність ГО — це взаємозв'язки між усіма її компонентами.", isTrue: true, gr:"GR1", gap:"Цілісність ГО", explain:"Так! Змінюється один компонент — змінюються всі." },
+    { statement: "Ритмічність — це повторюваність природних процесів. Приклад: зміна дня і ночі.", isTrue: true, gr:"GR1", gap:"Ритмічність", explain:"Так! День/ніч, пори року — приклади ритмічності." },
+    { statement: "Широтна зональність — зміна ПК від екватора до полюсів.", isTrue: true, gr:"GR2", gap:"Широтна зональність", explain:"Так! Тропіки → помірний пояс → полюси." },
+    { statement: "Секторність — зміна природних зон від узбережжя вглиб материка.", isTrue: true, gr:"GR2", gap:"Секторність", explain:"Так! Від моря до центру материка клімат змінюється." },
+    { statement: "Азональні ПК формуються через особливості рельєфу та земної кори.", isTrue: true, gr:"GR2", gap:"Азональні ПК", explain:"Так! Гори, западини — азональні утворення." },
+    { statement: "Природні зони — великі ПК з подібним кліматом, ґрунтами, рослинністю.", isTrue: true, gr:"GR2", gap:"Природні зони", explain:"Так! Тундра, степ, тайга — все це природні зони." },
+    { statement: "Висотна поясність — зміна ПК у горах із зростанням висоти.", isTrue: true, gr:"GR3", gap:"Висотна поясність", explain:"Так! Вгору в гори — інший клімат, інша рослинність." },
+    { statement: "Кількість висотних поясів залежить від висоти гір і близькості до екватора.", isTrue: true, gr:"GR3", gap:"Кількість поясів", explain:"Так! Вищі гори + ближче до екватора = більше поясів." },
+    { statement: "Вирубка лісів і осушення боліт НЕ впливають на інші компоненти ПК.", isTrue: false, gr:"GR3", gap:"Вплив людини на ПК", explain:"НІ! Усе пов'язано: знищив ліс — порушив весь ПК." },
+    { statement: "Антропогенні комплекси займають близько 85% території України.", isTrue: true, gr:"GR3", gap:"Антропогенні ПК", explain:"Так! Поля, міста, дороги — все це антропогенні ПК." }
 ];
 
-// ── Стан ────────────────────────────────────────────────────────────────────
+const RANKS = [
+    { min:90, emoji:"🏆", title:"Агент-Геній", color:"#FFD700" },
+    { min:75, emoji:"🥇", title:"Польовий агент", color:"#00ff88" },
+    { min:55, emoji:"🥈", title:"Агент-дослідник", color:"#00d4ff" },
+    { min:0,  emoji:"🎖️", title:"Агент-стажер", color:"#ffb800" }
+];
+
+// ── Стан ─────────────────────────────────────────────────────────────────────
 let studentName = "", studentClass = "";
 let currentTaskIdx = 0;
-let scores = { GR1: [], GR2: [], GR3: [] };
+let scores = { GR1:[], GR2:[], GR3:[] };
 let selfEval = "";
 let mediaStream = null;
 let faceLandmarker = null;
 let rafId = null;
+let mouthOpenBuffer = [], nodPitchBuffer = [];
+let nodCooldown = 0, isWaitingForResponse = false;
+let noFaceFrames = 0, lastFaceLandmarks = null;
+let taskTimeoutId = null, taskStartTime = 0;
+let finalRank = null, finalScore = 0;
 
-// Буфери детекції
-let mouthOpenBuffer = [];
-let nodPitchBuffer = [];
-let nodCooldown = 0;
-let isWaitingForResponse = false;
-let noFaceFrames = 0;
-let lastFaceLandmarks = null;
+const MOUTH_BUFFER=20, MOUTH_CONFIRM=15, NOD_BUFFER=30, NOD_THRESHOLD=0.15;
 
-// Таймаут завдання
-let taskTimeoutId = null;
-let taskStartTime = 0;
-
-const MOUTH_BUFFER = 20;
-const MOUTH_CONFIRM = 15;
-const NOD_BUFFER = 30;
-const NOD_THRESHOLD = 0.15;
-
-// ── DOM ──────────────────────────────────────────────────────────────────────
+// ── DOM ───────────────────────────────────────────────────────────────────────
 const video = document.getElementById('video');
 const statusText = document.getElementById('status-text');
 const feedbackEl = document.getElementById('feedback');
+const answerHint = document.getElementById('answer-hint');
 const exprIndicator = document.getElementById('expression-indicator');
 const hudGr = document.getElementById('hud-gr');
 const noFaceWarn = document.getElementById('no-face-warning');
 const timeoutBar = document.getElementById('timeout-bar');
 const progressDots = document.getElementById('progress-dots');
 
-// ── Утиліти ──────────────────────────────────────────────────────────────────
-function showError(msg, durationMs = 3000) {
+// ── Утиліти ───────────────────────────────────────────────────────────────────
+function showError(msg, ms=3500) {
     const t = document.getElementById('error-toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), durationMs);
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), ms);
 }
-
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    const el = document.getElementById(id);
-    if (el) el.classList.add('active');
+    if (id) { const el = document.getElementById(id); if (el) el.classList.add('active'); }
 }
-
-// Скидання локального блокування (для повторного проходження)
-window.resetAndReload = function() {
-    localStorage.removeItem('geo_obolonka_submitted');
-    location.reload();
-};
+function setLoading(show, text='Завантажую ШІ...') {
+    const o = document.getElementById('loading-overlay');
+    document.getElementById('loading-text').textContent = text;
+    o.classList.toggle('show', show);
+}
+function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
 
 // ── Звук ──────────────────────────────────────────────────────────────────────
 let audioCtx = null;
-function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 function playSound(type) {
     try {
-        initAudio();
+        if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
         const now = audioCtx.currentTime;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination);
-        if (type === 'correct') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, now); osc.frequency.setValueAtTime(1100, now + 0.1);
-            gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-            osc.start(now); osc.stop(now + 0.3);
+        if (type==='correct') {
+            osc.type='sine'; osc.frequency.setValueAtTime(880,now); osc.frequency.setValueAtTime(1100,now+0.1);
+            gain.gain.setValueAtTime(0.3,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.3);
+            osc.start(now); osc.stop(now+0.3);
         } else {
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(220, now);
-            gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-            osc.start(now); osc.stop(now + 0.4);
+            osc.type='square'; osc.frequency.setValueAtTime(220,now);
+            gain.gain.setValueAtTime(0.2,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.4);
+            osc.start(now); osc.stop(now+0.4);
         }
-    } catch(e) { /* silent fail */ }
+    } catch(e) {}
 }
 
 // ── Сердечка ──────────────────────────────────────────────────────────────────
-function spawnHeartsOnCheeks(landmarks) {
-    const leftCheek = landmarks[118];
-    const rightCheek = landmarks[347];
+function spawnHearts(landmarks) {
     const rect = video.getBoundingClientRect();
-    const vW = video.videoWidth || 640;
-    const vH = video.videoHeight || 480;
-    const scale = Math.max(rect.width / vW, rect.height / vH);
-    const offsetX = (rect.width - vW * scale) / 2;
-    const offsetY = (rect.height - vH * scale) / 2;
-
-    [leftCheek, rightCheek].forEach(pos => {
-        let x = pos.x * vW * scale + offsetX;
-        let y = pos.y * vH * scale + offsetY;
-        x = rect.width - x; // дзеркало
-        for (let i = 0; i < 3; i++) {
-            const heart = document.createElement('div');
-            heart.className = 'heart-float';
-            heart.textContent = ['❤️','💖','💕'][Math.floor(Math.random()*3)];
-            heart.style.left = (rect.left + x + (Math.random()-0.5)*40) + 'px';
-            heart.style.top  = (rect.top  + y + (Math.random()-0.5)*20) + 'px';
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 1500);
+    const vW = video.videoWidth||640, vH = video.videoHeight||480;
+    const scale = Math.max(rect.width/vW, rect.height/vH);
+    const ox = (rect.width-vW*scale)/2, oy = (rect.height-vH*scale)/2;
+    [landmarks[118], landmarks[347]].forEach(pos => {
+        let x = rect.width - (pos.x*vW*scale+ox);
+        let y = pos.y*vH*scale+oy;
+        for (let i=0;i<3;i++) {
+            const h = document.createElement('div');
+            h.className='heart-float';
+            h.textContent=['❤️','💖','💕'][Math.floor(Math.random()*3)];
+            h.style.left=(rect.left+x+(Math.random()-.5)*40)+'px';
+            h.style.top=(rect.top+y+(Math.random()-.5)*20)+'px';
+            document.body.appendChild(h);
+            setTimeout(()=>h.remove(),1500);
         }
     });
 }
@@ -321,344 +307,455 @@ function spawnHeartsOnCheeks(landmarks) {
 document.getElementById('sel-class').addEventListener('change', function() {
     const c = this.value;
     const s = document.getElementById('sel-name');
-    s.innerHTML = '<option value="">— Знайди себе —</option>';
-    if (c && DB[c]) {
-        DB[c].forEach(n => {
-            const o = document.createElement('option');
-            o.value = o.text = n;
-            s.appendChild(o);
-        });
-    }
+    s.innerHTML='<option value="">— Знайди себе —</option>';
+    if (c && DB[c]) DB[c].forEach(n => { const o=document.createElement('option'); o.value=o.text=n; s.appendChild(o); });
     document.getElementById('btn-auth').disabled = !c;
 });
-
 document.getElementById('sel-name').addEventListener('change', function() {
     document.getElementById('btn-auth').disabled = !this.value;
 });
-
-document.getElementById('btn-auth').addEventListener('click', function() {
-    const c = document.getElementById('sel-class').value;
-    const n = document.getElementById('sel-name').value;
-    if (!c || !n) { showError('Оберіть клас і прізвище!'); return; }
-    studentClass = c; studentName = n;
+document.getElementById('btn-auth').addEventListener('click', () => {
+    const c=document.getElementById('sel-class').value, n=document.getElementById('sel-name').value;
+    if (!c||!n) { showError('Оберіть клас і прізвище!'); return; }
+    studentClass=c; studentName=n;
     showScreen('screen-start');
 });
 
-// ── Старт гри ─────────────────────────────────────────────────────────────────
+// ── Старт ─────────────────────────────────────────────────────────────────────
 document.getElementById('btn-start').addEventListener('click', startGame);
 
 async function startGame() {
-    document.getElementById('btn-start').disabled = true;
-    document.getElementById('btn-start').textContent = 'Завантаження...';
-
+    const btn = document.getElementById('btn-start');
+    btn.disabled = true;
+    setLoading(true, 'Підключаю камеру...');
     try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video:{facingMode:"user"} });
         video.srcObject = mediaStream;
-        await new Promise(resolve => video.onloadedmetadata = resolve);
+        await new Promise(r => video.onloadedmetadata = r);
     } catch(e) {
-        showError('Потрібен доступ до камери! Перевір налаштування браузера.', 5000);
-        document.getElementById('btn-start').disabled = false;
-        document.getElementById('btn-start').textContent = 'ПОЇХАЛИ!';
-        return;
+        setLoading(false);
+        showError('Потрібен доступ до камери! Перевір налаштування.', 5000);
+        btn.disabled = false; return;
     }
-
+    setLoading(true, 'Завантажую ШІ-модель...');
     try {
         await initFaceAI();
     } catch(e) {
-        showError('Не вдалося завантажити ШІ. Перевір інтернет-з\'єднання.', 5000);
-        stopCamera();
-        document.getElementById('btn-start').disabled = false;
-        document.getElementById('btn-start').textContent = 'ПОЇХАЛИ!';
-        return;
+        setLoading(false);
+        showError("Не вдалося завантажити ШІ. Перевір інтернет.", 5000);
+        stopCamera(); btn.disabled=false; return;
     }
-
-    // Ховаємо стартовий екран, показуємо гру
+    setLoading(false);
     showScreen(null);
-    document.getElementById('game-hud').style.display = 'flex';
-    document.getElementById('status-box').style.display = 'block';
-    exprIndicator.style.display = 'block';
-    progressDots.style.display = 'flex';
-    buildProgressDots();
+    document.getElementById('game-hud').style.display='flex';
+    document.getElementById('status-box').style.display='block';
+    exprIndicator.style.display='block';
+    progressDots.style.display='flex';
+    buildDots();
     startTask(0);
 }
 
 function stopCamera() {
-    if (mediaStream) {
-        mediaStream.getTracks().forEach(t => t.stop());
-        mediaStream = null;
-    }
-    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    if (mediaStream) { mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
+    if (rafId) { cancelAnimationFrame(rafId); rafId=null; }
 }
 
 // ── MediaPipe ─────────────────────────────────────────────────────────────────
 async function initFaceAI() {
-    const vision = await FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
-    );
+    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
     faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
-        baseOptions: {
-            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-            delegate: "GPU"
-        },
-        runningMode: "VIDEO",
-        numFaces: 1,
-        outputFaceBlendshapes: false,
-        outputFacialTransformationMatrixes: true
+        baseOptions: { modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task", delegate:"GPU" },
+        runningMode:"VIDEO", numFaces:1, outputFaceBlendshapes:false, outputFacialTransformationMatrixes:true
     });
     rafId = requestAnimationFrame(analyzeFrame);
 }
 
-function getPitch(matrix) {
-    if (!matrix) return 0;
-    return Math.asin(Math.max(-1, Math.min(1, -matrix[8])));
-}
+function getPitch(m) { return Math.asin(Math.max(-1,Math.min(1,-m[8]))); }
 
 function analyzeFrame() {
-    if (!faceLandmarker || video.readyState < 2) {
-        rafId = requestAnimationFrame(analyzeFrame);
-        return;
-    }
-
+    if (!faceLandmarker || video.readyState<2) { rafId=requestAnimationFrame(analyzeFrame); return; }
     const results = faceLandmarker.detectForVideo(video, performance.now());
 
     if (results.faceLandmarks?.length) {
         const face = results.faceLandmarks[0];
-        lastFaceLandmarks = face;
-        noFaceFrames = 0;
-        noFaceWarn.style.display = 'none';
-
-        // Рот
-        const mouthHeight = Math.hypot(face[14].x - face[13].x, face[14].y - face[13].y);
-        const isMouthOpen = mouthHeight > 0.07;
-        exprIndicator.textContent = isMouthOpen ? '😮' : '😐';
-
-        mouthOpenBuffer.push(isMouthOpen);
-        if (mouthOpenBuffer.length > MOUTH_BUFFER) mouthOpenBuffer.shift();
-
-        if (mouthOpenBuffer.filter(v=>v).length >= MOUTH_CONFIRM && isWaitingForResponse) {
-            triggerAnswer(false);
-            rafId = requestAnimationFrame(analyzeFrame);  // BUG FIX: продовжуємо цикл
-            return;
+        lastFaceLandmarks = face; noFaceFrames=0; noFaceWarn.style.display='none';
+        const mH = Math.hypot(face[14].x-face[13].x, face[14].y-face[13].y);
+        const mouthOpen = mH > 0.07;
+        exprIndicator.textContent = mouthOpen ? '😮' : '😐';
+        mouthOpenBuffer.push(mouthOpen);
+        if (mouthOpenBuffer.length>MOUTH_BUFFER) mouthOpenBuffer.shift();
+        if (mouthOpenBuffer.filter(v=>v).length>=MOUTH_CONFIRM && isWaitingForResponse) {
+            triggerAnswer(false); rafId=requestAnimationFrame(analyzeFrame); return;
         }
-
-        // Кивок (pitch)
         if (results.facialTransformationMatrixes?.length) {
-            const matrix = results.facialTransformationMatrixes[0].data;
-            const pitch = getPitch(matrix);
+            const pitch = getPitch(results.facialTransformationMatrixes[0].data);
             nodPitchBuffer.push(pitch);
-            if (nodPitchBuffer.length > NOD_BUFFER) nodPitchBuffer.shift();
-
-            // BUG FIX: >= замість ===
-            if (nodPitchBuffer.length >= NOD_BUFFER) {
-                const range = Math.max(...nodPitchBuffer) - Math.min(...nodPitchBuffer);
-                const current = pitch;
-                const base = nodPitchBuffer[0];
-                if (range > NOD_THRESHOLD && Math.abs(current - base) < 0.05
-                    && nodCooldown <= 0 && isWaitingForResponse) {
-                    triggerAnswer(true);
-                    nodPitchBuffer = [];
-                    nodCooldown = 30;
-                    rafId = requestAnimationFrame(analyzeFrame);  // BUG FIX
-                    return;
+            if (nodPitchBuffer.length>NOD_BUFFER) nodPitchBuffer.shift();
+            if (nodPitchBuffer.length>=NOD_BUFFER) {
+                const range = Math.max(...nodPitchBuffer)-Math.min(...nodPitchBuffer);
+                if (range>NOD_THRESHOLD && Math.abs(pitch-nodPitchBuffer[0])<0.05 && nodCooldown<=0 && isWaitingForResponse) {
+                    triggerAnswer(true); nodPitchBuffer=[]; nodCooldown=30;
+                    rafId=requestAnimationFrame(analyzeFrame); return;
                 }
             }
         }
-        if (nodCooldown > 0) nodCooldown--;
+        if (nodCooldown>0) nodCooldown--;
     } else {
-        // Обличчя не знайдено
-        mouthOpenBuffer = [];
-        nodPitchBuffer = [];
-        exprIndicator.textContent = '❓';
-        noFaceFrames++;
-        if (noFaceFrames > 30) noFaceWarn.style.display = 'block';
+        mouthOpenBuffer=[]; nodPitchBuffer=[];
+        exprIndicator.textContent='❓'; noFaceFrames++;
+        if (noFaceFrames>30) noFaceWarn.style.display='block';
     }
-
-    rafId = requestAnimationFrame(analyzeFrame);
+    rafId=requestAnimationFrame(analyzeFrame);
 }
 
 // ── Завдання ──────────────────────────────────────────────────────────────────
-function buildProgressDots() {
-    progressDots.innerHTML = '';
-    TASKS.forEach((_, i) => {
-        const d = document.createElement('div');
-        d.className = 'pdot';
-        d.id = `dot-${i}`;
-        progressDots.appendChild(d);
+function buildDots() {
+    progressDots.innerHTML='';
+    TASKS.forEach((_,i) => {
+        const d=document.createElement('div'); d.className='pdot'; d.id=`dot-${i}`; progressDots.appendChild(d);
     });
 }
-
-function updateDot(idx, result) {
-    const dot = document.getElementById(`dot-${idx}`);
-    if (dot) dot.className = `pdot ${result}`;
-}
+function setDot(i, cls) { const d=document.getElementById(`dot-${i}`); if(d) d.className=`pdot ${cls}`; }
 
 function startTask(index) {
-    if (index >= TASKS.length) {
-        clearTaskTimeout();
-        stopCamera();
-        showEvalScreen();
-        return;
-    }
-
-    currentTaskIdx = index;
-    const task = TASKS[index];
-    statusText.textContent = `${index+1}/12 · ${task.statement}`;
-    hudGr.textContent = task.gr.replace('GR', 'ГР ');
-    isWaitingForResponse = true;
-    mouthOpenBuffer = [];
-    nodPitchBuffer = [];
-    nodCooldown = 0;
-
-    // Оновлення dot
-    updateDot(index, 'current');
-
-    // Таймаут
-    clearTaskTimeout();
-    taskStartTime = Date.now();
-    taskTimeoutId = setInterval(updateTimeoutBar, 100);
+    if (index>=TASKS.length) { clearTT(); stopCamera(); showEvalScreen(); return; }
+    currentTaskIdx=index;
+    const t=TASKS[index];
+    statusText.textContent=`${index+1}/12 · ${t.statement}`;
+    hudGr.textContent=t.gr.replace('GR','ГР ');
+    isWaitingForResponse=true; mouthOpenBuffer=[]; nodPitchBuffer=[]; nodCooldown=0;
+    setDot(index,'current');
+    clearTT();
+    taskStartTime=Date.now();
+    taskTimeoutId=setInterval(updateBar, 100);
     setTimeout(() => {
-        if (isWaitingForResponse) {
-            clearTaskTimeout();
-            isWaitingForResponse = false;
-            scores[task.gr].push(0); // вважаємо пропуск як неправильно
-            updateDot(index, 'done-wrong');
-            showFeedback('⏱️', '#ffb800');
-            setTimeout(() => startTask(index + 1), 1000);
-        }
+        if (!isWaitingForResponse) return;
+        clearTT(); isWaitingForResponse=false;
+        scores[t.gr].push(0); setDot(index,'done-wrong');
+        showFeedback('⏱️','#ffb800', '');
+        setTimeout(()=>startTask(index+1), 1000);
     }, TASK_TIMEOUT_MS);
 }
 
-function clearTaskTimeout() {
-    if (taskTimeoutId) { clearInterval(taskTimeoutId); taskTimeoutId = null; }
-    timeoutBar.style.width = '100%';
+function clearTT() {
+    if (taskTimeoutId) { clearInterval(taskTimeoutId); taskTimeoutId=null; }
+    timeoutBar.style.width='100%';
 }
-
-function updateTimeoutBar() {
-    const elapsed = Date.now() - taskStartTime;
-    const pct = Math.max(0, 100 - (elapsed / TASK_TIMEOUT_MS) * 100);
-    timeoutBar.style.width = pct + '%';
-    timeoutBar.style.background = pct > 40 ? '#00d4ff' : pct > 15 ? '#ffb800' : '#ff3d5a';
+function updateBar() {
+    const pct = Math.max(0, 100-(Date.now()-taskStartTime)/TASK_TIMEOUT_MS*100);
+    timeoutBar.style.width=pct+'%';
+    timeoutBar.style.background = pct>40?'#00d4ff':pct>15?'#ffb800':'#ff3d5a';
 }
 
 function triggerAnswer(userSaysTrue) {
     if (!isWaitingForResponse) return;
-    isWaitingForResponse = false;
-    clearTaskTimeout();
-
-    const task = TASKS[currentTaskIdx];
-    const correct = (userSaysTrue === task.isTrue);
-    scores[task.gr].push(correct ? 1 : 0);
-    updateDot(currentTaskIdx, correct ? 'done-correct' : 'done-wrong');
-
-    playSound(correct ? 'correct' : 'wrong');
-    showFeedback(correct ? '✅' : '❌', correct ? '#00ff88' : '#ff3d5a');
-
-    if (correct && lastFaceLandmarks) spawnHeartsOnCheeks(lastFaceLandmarks);
-
-    setTimeout(() => {
-        feedbackEl.style.display = 'none';
-        startTask(currentTaskIdx + 1);
-    }, 1200);
+    isWaitingForResponse=false; clearTT();
+    const task=TASKS[currentTaskIdx];
+    const correct=(userSaysTrue===task.isTrue);
+    scores[task.gr].push(correct?1:0);
+    setDot(currentTaskIdx, correct?'done-correct':'done-wrong');
+    playSound(correct?'correct':'wrong');
+    showFeedback(correct?'✅':'❌', correct?'#00ff88':'#ff3d5a', task.explain);
+    if (correct && lastFaceLandmarks) spawnHearts(lastFaceLandmarks);
+    setTimeout(()=>{ feedbackEl.style.display='none'; answerHint.style.display='none'; startTask(currentTaskIdx+1); }, 1800);
 }
 
-function showFeedback(emoji, color) {
-    feedbackEl.textContent = emoji;
-    feedbackEl.style.color = color;
-    feedbackEl.style.display = 'block';
+function showFeedback(emoji, color, hint) {
+    feedbackEl.textContent=emoji; feedbackEl.style.color=color; feedbackEl.style.display='block';
+    if (hint) { answerHint.textContent=hint; answerHint.style.display='block'; }
+    else { answerHint.style.display='none'; }
 }
 
-// ── Оцінка ────────────────────────────────────────────────────────────────────
+// ── Eval ──────────────────────────────────────────────────────────────────────
 function showEvalScreen() {
-    document.getElementById('game-hud').style.display = 'none';
-    document.getElementById('status-box').style.display = 'none';
-    exprIndicator.style.display = 'none';
-    progressDots.style.display = 'none';
+    document.getElementById('game-hud').style.display='none';
+    document.getElementById('status-box').style.display='none';
+    exprIndicator.style.display='none';
+    progressDots.style.display='none';
     showScreen('screen-eval');
 }
-
-// BUG FIX: визначаємо обробники поза showEvalScreen, один раз
 document.querySelectorAll('.eval-option').forEach(el => {
     el.addEventListener('click', function() {
-        document.querySelectorAll('.eval-option').forEach(o => o.classList.remove('selected'));
+        document.querySelectorAll('.eval-option').forEach(o=>o.classList.remove('selected'));
         this.classList.add('selected');
-        selfEval = this.textContent.replace(/[💪🤔🆘]/g, '').trim();
-        document.getElementById('btn-submit').disabled = false;
+        selfEval=this.textContent.replace(/[💪🤔🆘]/g,'').trim();
+        document.getElementById('btn-submit').disabled=false;
     });
 });
-
 document.getElementById('btn-submit').addEventListener('click', submitData);
 
-// ── Відправка ─────────────────────────────────────────────────────────────────
+// ── Відправка + Результат ─────────────────────────────────────────────────────
 async function submitData() {
     if (!selfEval) return;
-    document.getElementById('btn-submit').disabled = true;
+    document.getElementById('btn-submit').disabled=true;
+    const gr1=Math.round(avg(scores.GR1)*100);
+    const gr2=Math.round(avg(scores.GR2)*100);
+    const gr3=Math.round(avg(scores.GR3)*100);
+    finalScore=Math.round((gr1+gr2+gr3)/3);
+    finalRank=RANKS.find(r=>finalScore>=r.min);
 
-    const gr1pct = Math.round(avg(scores.GR1) * 100);
-    const gr2pct = Math.round(avg(scores.GR2) * 100);
-    const gr3pct = Math.round(avg(scores.GR3) * 100);
-
-    const gaps = [];
-    ['GR1','GR2','GR3'].forEach(gr => {
-        const tasks = TASKS.filter(t => t.gr === gr);
-        scores[gr].forEach((s, i) => { if (!s && tasks[i]) gaps.push(tasks[i].gap); });
+    const gaps=[];
+    ['GR1','GR2','GR3'].forEach(gr=>{
+        const tasks=TASKS.filter(t=>t.gr===gr);
+        scores[gr].forEach((s,i)=>{ if(!s&&tasks[i]) gaps.push(tasks[i].gap); });
     });
 
-    const payload = {
-        studentName, studentClass,
-        totalScore: Math.round((gr1pct+gr2pct+gr3pct)/3),
-        scoreGR1: gr1pct, scoreGR2: gr2pct, scoreGR3: gr3pct,
-        gaps, selfEvaluation: selfEval, topic: 'obolonka',
-        timestamp: new Date().toISOString()
-    };
+    const payload={ studentName, studentClass, totalScore:finalScore, scoreGR1:gr1, scoreGR2:gr2, scoreGR3:gr3, gaps, selfEvaluation:selfEval, topic:'obolonka', rank:finalRank.title, timestamp:new Date().toISOString() };
 
-    // Показуємо результат одразу
     showScreen('screen-result');
-    const color = v => v >= 75 ? '#00ff88' : v >= 50 ? '#ffb800' : '#ff3d5a';
-    document.getElementById('result-stats').innerHTML = `
-        <div class="stat-box"><div class="value" style="color:${color(gr1pct)}">${gr1pct}%</div><div class="label">ГР 1</div></div>
-        <div class="stat-box"><div class="value" style="color:${color(gr2pct)}">${gr2pct}%</div><div class="label">ГР 2</div></div>
-        <div class="stat-box"><div class="value" style="color:${color(gr3pct)}">${gr3pct}%</div><div class="label">ГР 3</div></div>
-    `;
-    const gapsHtml = gaps.length
-        ? gaps.map(g => `<div class="gap-item">⚠ ${g.replace(/_/g,' ')}</div>`).join('')
-        : '<div class="gap-item">✅ Всі теми засвоєно!</div>';
-    document.getElementById('gaps-container').innerHTML =
-        `<h3 style="color:#ff3d5a; margin-bottom:8px; font-size:0.95rem;">Теми для повторення:</h3>${gapsHtml}`;
+    const re=document.getElementById('result-emoji');
+    const rt=document.getElementById('rank-title');
+    const rl=document.getElementById('rank-label');
+    re.textContent=finalRank.emoji;
+    rt.textContent=finalRank.title;
+    rt.style.color=finalRank.color;
+    rl.textContent=`Загальний результат: ${finalScore}%`;
 
-    // BUG FIX: retry-логіка та feedback для дитини
-    const saveStatus = document.getElementById('save-status');
-    let saved = false;
-    for (let attempt = 1; attempt <= 3 && !saved; attempt++) {
+    const color=v=>v>=75?'#00ff88':v>=50?'#ffb800':'#ff3d5a';
+    document.getElementById('result-stats').innerHTML=`
+        <div class="stat-box"><div class="value" style="color:${color(gr1)}">${gr1}%</div><div class="label">ГР 1</div></div>
+        <div class="stat-box"><div class="value" style="color:${color(gr2)}">${gr2}%</div><div class="label">ГР 2</div></div>
+        <div class="stat-box"><div class="value" style="color:${color(gr3)}">${gr3}%</div><div class="label">ГР 3</div></div>`;
+
+    const gapsHtml=gaps.length
+        ? gaps.map(g=>`<div class="gap-item">⚠ ${g}</div>`).join('')
+        : '<div class="gap-item">✅ Всі теми засвоєно — чудово!</div>';
+    document.getElementById('gaps-container').innerHTML=`<h3 style="color:#ff3d5a;margin-bottom:8px;font-size:0.9rem;">Повторити:</h3>${gapsHtml}`;
+
+    // Малюємо сертифікат
+    await drawCertificate({ name:studentName, cls:studentClass, score:finalScore, gr1, gr2, gr3, rank:finalRank, date:new Date(), gaps });
+
+    // Зберегти сертифікат
+    document.getElementById('btn-save-cert').addEventListener('click', saveCert);
+
+    // Відправка
+    const saveStatus=document.getElementById('save-status');
+    let saved=false;
+    for (let i=1;i<=3&&!saved;i++) {
         try {
-            const res = await fetch(SCRIPT_URL, {
-                method: 'POST', mode: 'cors',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-            saved = true;
-            if (data.result === 'already_exists') {
-                saveStatus.textContent = '✅ Результати вже збережено раніше.';
-            } else {
-                saveStatus.textContent = '✅ Звіт надіслано вчителю!';
-                localStorage.setItem('geo_obolonka_submitted', 'true');
-            }
+            const res=await fetch(SCRIPT_URL,{method:'POST',mode:'cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+            const data=await res.json();
+            saved=true;
+            saveStatus.textContent = data.result==='already_exists' ? '✅ Результати вже збережено.' : '✅ Звіт надіслано вчителю!';
+            if (data.result!=='already_exists') localStorage.setItem('geo_obolonka_submitted','true');
         } catch(e) {
-            if (attempt === 3) {
-                saveStatus.textContent = '⚠️ Не вдалося надіслати. Скажи вчителю.';
-            } else {
-                await new Promise(r => setTimeout(r, 1500));
-            }
+            if (i===3) saveStatus.textContent='⚠️ Не вдалося надіслати. Скажи вчителю.';
+            else await new Promise(r=>setTimeout(r,1500));
         }
     }
 }
 
-function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+// ── Сертифікат ────────────────────────────────────────────────────────────────
+async function drawCertificate({ name, cls, score, gr1, gr2, gr3, rank, date, gaps }) {
+    const cvs=document.getElementById('cert-canvas');
+    const ctx=cvs.getContext('2d');
+    const W=680, H=960;
+    cvs.width=W; cvs.height=H;
 
-// ── Перевірка блокування (але з кнопкою скидання) ──────────────────────────
-if (localStorage.getItem('geo_obolonka_submitted') === 'true') {
-    showScreen('screen-lock');
+    // Фон — яскравий градієнт
+    const bg=ctx.createLinearGradient(0,0,W,H);
+    bg.addColorStop(0,'#0d1b3e');
+    bg.addColorStop(0.5,'#112244');
+    bg.addColorStop(1,'#0a1628');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+    // Зоряний фон
+    ctx.fillStyle='rgba(255,255,255,0.7)';
+    for (let i=0;i<120;i++) {
+        const x=Math.random()*W, y=Math.random()*H;
+        const r=Math.random()*1.5+0.3;
+        ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    }
+
+    // Зовнішня рамка
+    const grad=ctx.createLinearGradient(0,0,W,H);
+    grad.addColorStop(0,'#FFD700'); grad.addColorStop(0.5,'#00d4ff'); grad.addColorStop(1,'#ff88cc');
+    ctx.strokeStyle=grad; ctx.lineWidth=8;
+    roundRect(ctx,12,12,W-24,H-24,24,false,true);
+
+    // Внутрішня рамка
+    ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=2;
+    roundRect(ctx,22,22,W-44,H-44,18,false,true);
+
+    // Верхній блок — кольоровий банер
+    const topGrad=ctx.createLinearGradient(0,0,W,0);
+    topGrad.addColorStop(0,'rgba(0,212,255,0.25)');
+    topGrad.addColorStop(1,'rgba(255,136,204,0.15)');
+    ctx.fillStyle=topGrad;
+    roundRect(ctx,30,30,W-60,160,16,true,false);
+
+    // Заголовок
+    ctx.textAlign='center';
+    ctx.fillStyle='#00d4ff';
+    ctx.font='bold 18px "IBM Plex Mono", monospace';
+    ctx.fillText('ГЕО-ДЕТЕКТИВ • СЕКТОР 8', W/2, 78);
+
+    ctx.fillStyle='#ffffff';
+    ctx.font='bold 38px "Fredoka One", "Nunito", sans-serif';
+    ctx.fillText('СЕРТИФІКАТ АГЕНТА', W/2, 130);
+
+    ctx.fillStyle='rgba(255,255,255,0.5)';
+    ctx.font='15px "IBM Plex Mono", monospace';
+    ctx.fillText('ОПЕРАЦІЯ «ГЕО-ОБОЛОНКА»', W/2, 168);
+
+    // Великий emoji звання
+    ctx.font='96px serif';
+    ctx.fillText(rank.emoji, W/2, 300);
+
+    // Звання
+    ctx.fillStyle=rank.color;
+    ctx.font='bold 46px "Fredoka One", "Nunito", sans-serif';
+    ctx.fillText(rank.title, W/2, 370);
+
+    // Ім'я
+    ctx.fillStyle='#ffffff';
+    ctx.font='bold 32px "Nunito", sans-serif';
+    ctx.fillText(name, W/2, 430);
+
+    ctx.fillStyle='rgba(255,255,255,0.55)';
+    ctx.font='18px "Nunito", sans-serif';
+    ctx.fillText(`Клас: ${cls}`, W/2, 462);
+
+    // Розділова лінія
+    ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(60,486); ctx.lineTo(W-60,486); ctx.stroke();
+
+    // Результати по групах
+    const barY=510, barH=52, barsX=60, barsW=W-120;
+    const grData=[{label:'ГР 1',v:gr1},{label:'ГР 2',v:gr2},{label:'ГР 3',v:gr3}];
+    const barW=Math.floor(barsW/3)-16;
+    grData.forEach((g,i)=>{
+        const bx=barsX+i*(barW+24);
+        // Фон бару
+        ctx.fillStyle='rgba(255,255,255,0.08)';
+        roundRect(ctx,bx,barY,barW,barH,10,true,false);
+        // Заповнення
+        const fillW=Math.round(barW*(g.v/100));
+        const fc=g.v>=75?'#00ff88':g.v>=50?'#ffb800':'#ff3d5a';
+        ctx.fillStyle=fc;
+        roundRect(ctx,bx,barY,fillW,barH,10,true,false);
+        // Текст
+        ctx.fillStyle='#ffffff';
+        ctx.font='bold 20px "Nunito", sans-serif';
+        ctx.fillText(`${g.label}: ${g.v}%`,bx+barW/2,barY+barH/2+7);
+    });
+
+    // Загальний бал — велика плашка
+    const totalY=590;
+    const totalGrad=ctx.createLinearGradient(100,totalY,W-100,totalY);
+    totalGrad.addColorStop(0,'rgba(0,212,255,0.2)');
+    totalGrad.addColorStop(1,'rgba(255,136,204,0.2)');
+    ctx.fillStyle=totalGrad;
+    roundRect(ctx,100,totalY,W-200,72,16,true,false);
+    ctx.strokeStyle='rgba(0,212,255,0.4)'; ctx.lineWidth=1.5;
+    roundRect(ctx,100,totalY,W-200,72,16,false,true);
+    ctx.fillStyle='#ffffff'; ctx.font='bold 17px "IBM Plex Mono",monospace';
+    ctx.fillText('ЗАГАЛЬНИЙ РЕЗУЛЬТАТ', W/2, totalY+26);
+    ctx.fillStyle=rank.color; ctx.font='bold 36px "Fredoka One","Nunito",sans-serif';
+    ctx.fillText(`${score}%`, W/2, totalY+60);
+
+    // Теми для повторення
+    const gapY=690;
+    ctx.fillStyle='rgba(255,61,90,0.12)';
+    roundRect(ctx,50,gapY,W-100,gaps.length?gaps.length*30+48:60,14,true,false);
+    ctx.strokeStyle='rgba(255,61,90,0.35)'; ctx.lineWidth=1;
+    roundRect(ctx,50,gapY,W-100,gaps.length?gaps.length*30+48:60,14,false,true);
+    ctx.fillStyle='#ff3d5a'; ctx.font='bold 15px "Nunito",sans-serif';
+    ctx.textAlign='left'; ctx.fillText('Теми для повторення:', 70, gapY+26);
+    if (gaps.length) {
+        gaps.forEach((g,i)=>{
+            ctx.fillStyle='rgba(255,255,255,0.65)'; ctx.font='13px "Nunito",sans-serif';
+            ctx.fillText(`⚠ ${g}`, 80, gapY+52+i*28);
+        });
+    } else {
+        ctx.fillStyle='#00ff88'; ctx.font='bold 14px "Nunito",sans-serif';
+        ctx.fillText('✅ Всі теми засвоєно! Відмінна робота!', 70, gapY+46);
+    }
+
+    // ── Печатка вчителя ───────────────────────────────────────────────────────
+    const stampX=W/2, stampY=H-170, stampR=80;
+    ctx.save();
+    ctx.globalAlpha=0.88;
+    // Зовнішнє кільце
+    ctx.strokeStyle='#00d4ff'; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.arc(stampX,stampY,stampR,0,Math.PI*2); ctx.stroke();
+    // Пунктирне внутрішнє кільце
+    ctx.strokeStyle='rgba(0,212,255,0.5)'; ctx.lineWidth=1.5;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.arc(stampX,stampY,stampR-10,0,Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+    // Текст по колу — верх
+    ctx.fillStyle='#00d4ff'; ctx.font='bold 13px "IBM Plex Mono",monospace'; ctx.textAlign='center';
+    const topText='ВЧИТЕЛЬ ГЕОГРАФІЇ •';
+    const topR=stampR-22, topStart=-Math.PI*0.85;
+    drawArcText(ctx,topText,stampX,stampY,topR,topStart,true);
+    // Текст по колу — низ
+    const botText='ПЕРЕВІРЕНО ✓';
+    drawArcText(ctx,botText,stampX,stampY,topR,Math.PI*0.1,true);
+    // Зірка посередині
+    drawStar(ctx,stampX,stampY-6,5,22,10,'#00d4ff');
+    // Ім'я вчителя
+    ctx.fillStyle='#ffffff'; ctx.font='bold 13px "Nunito",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Олесі Олександрівни', stampX, stampY+26);
+    ctx.restore();
+
+    // Дата
+    ctx.textAlign='center';
+    const d=date;
+    const dateStr=`${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+    ctx.fillStyle='rgba(255,255,255,0.45)'; ctx.font='14px "IBM Plex Mono",monospace';
+    ctx.fillText(dateStr, W/2, H-54);
+    ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.font='11px "IBM Plex Mono",monospace';
+    ctx.fillText('гра.освіта.ua • ГЕО-ДЕТЕКТИВ 2025', W/2, H-34);
 }
+
+// Допоміжні функції canvas
+function roundRect(ctx,x,y,w,h,r,fill,stroke) {
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+}
+
+function drawArcText(ctx,text,cx,cy,r,startAngle,clockwise) {
+    const total=text.length;
+    const step=(clockwise?1:-1)*Math.PI*1.35/Math.max(total,1);
+    for (let i=0;i<total;i++) {
+        const angle=startAngle+i*step;
+        ctx.save();
+        ctx.translate(cx+r*Math.cos(angle), cy+r*Math.sin(angle));
+        ctx.rotate(angle+Math.PI/2);
+        ctx.fillText(text[i],0,0);
+        ctx.restore();
+    }
+}
+
+function drawStar(ctx,cx,cy,spikes,outerR,innerR,color) {
+    ctx.beginPath(); ctx.fillStyle=color;
+    let rot=Math.PI/2*3;
+    const step=Math.PI/spikes;
+    ctx.moveTo(cx, cy-outerR);
+    for (let i=0;i<spikes;i++) {
+        ctx.lineTo(cx+Math.cos(rot)*outerR, cy+Math.sin(rot)*outerR); rot+=step;
+        ctx.lineTo(cx+Math.cos(rot)*innerR, cy+Math.sin(rot)*innerR); rot+=step;
+    }
+    ctx.lineTo(cx, cy-outerR); ctx.closePath(); ctx.fill();
+}
+
+function saveCert() {
+    const cvs=document.getElementById('cert-canvas');
+    const link=document.createElement('a');
+    link.download=`geo-agent-${studentName.replace(/\s+/g,'-')}.png`;
+    link.href=cvs.toDataURL('image/png');
+    link.click();
+}
+
+// ── Блокування ────────────────────────────────────────────────────────────────
+if (localStorage.getItem('geo_obolonka_submitted')==='true') showScreen('screen-lock');
 
 </script>
 </body>
