@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ГЕО-ДЕТЕКТИВ // Сектор 8: Міміка</title>
+    <title>ГЕО-ДЕТЕКТИВ // Сектор 8: Міміка (з авторизацією)</title>
     <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Rajdhani:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
@@ -20,6 +20,57 @@
             z-index: 1; pointer-events: none;
         }
 
+        /* Екран авторизації */
+        #screen-auth {
+            position: fixed; inset: 0; z-index: 4000;
+            background: rgba(6,10,20,0.95); backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .auth-card {
+            background: #111d35; border: 1px solid #1e3a5f; border-radius: 24px;
+            padding: 30px 20px; max-width: 400px; width: 100%;
+            color: #e2eaff; text-align: center;
+        }
+        .auth-title {
+            font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700;
+            color: #00d4ff; margin-bottom: 8px;
+        }
+        .auth-sub { font-size: 13px; color: #5a7399; margin-bottom: 20px; }
+        .field-label {
+            font-size: 11px; letter-spacing: 1.5px; color: #5a7399;
+            text-transform: uppercase; margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace;
+            text-align: left;
+        }
+        select {
+            width: 100%; padding: 12px 14px; background: rgba(255,255,255,.04);
+            border: 1px solid #1e3a5f; border-radius: 10px; color: #e2eaff;
+            font-size: 15px; font-family: inherit; margin-bottom: 16px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7399' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 14px center;
+        }
+        select:focus { outline: none; border-color: #00d4ff; }
+        select option { background-color: #111d35; color: #e2eaff; }
+        .btn-primary {
+            width: 100%; padding: 16px; background: #00d4ff; color: #060a14;
+            border: none; border-radius: 12px; font-family: 'Rajdhani', sans-serif;
+            font-size: 17px; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; cursor: pointer; transition: transform 0.15s;
+        }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+
+        /* Стартовий екран (правила міміки) */
+        #screen-start {
+            position: fixed; inset: 0; z-index: 3000;
+            background: rgba(6,10,20,0.95); backdrop-filter: blur(10px);
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; gap: 16px; color: #e2eaff; text-align: center; padding: 20px;
+        }
+        #screen-start .btn { margin-top: 20px; }
+
+        /* HUD в грі */
         .hud {
             position: absolute; top: 16px; left: 16px; right: 16px; z-index: 150;
             display: flex; justify-content: space-between; align-items: center;
@@ -53,25 +104,20 @@
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-size: 4rem; z-index: 200; display: none; text-shadow: 0 0 20px currentColor;
         }
+        /* Індикатор виразу */
+        #expression-indicator {
+            position: absolute; top: 80px; right: 20px; z-index: 200;
+            font-size: 2.5rem; background: rgba(0,0,0,0.5); border-radius: 16px;
+            padding: 8px 12px; display: none;
+        }
 
-        #start-screen, #eval-screen, #result-screen {
+        /* Екрани оцінки та результату */
+        #screen-eval, #screen-result {
             position: fixed; inset: 0; z-index: 3000;
             background: rgba(6,10,20,0.95); backdrop-filter: blur(10px);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
-            color: #e2eaff; text-align: center; padding: 20px;
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; gap: 16px; color: #e2eaff; text-align: center; padding: 20px;
         }
-        #start-screen { display: flex; }
-        #eval-screen, #result-screen { display: none; }
-
-        .btn {
-            background: #00d4ff; color: #060a14; border: none;
-            padding: 16px 40px; border-radius: 14px;
-            font-size: 1.4rem; font-weight: 700; cursor: pointer;
-            font-family: 'Rajdhani', sans-serif; text-transform: uppercase;
-            transition: transform 0.15s;
-        }
-        .btn:active { transform: scale(0.95); }
-
         .eval-option {
             background: rgba(255,255,255,0.05); border: 1px solid #1e3a5f;
             border-radius: 12px; padding: 14px 20px; width: 80%; max-width: 320px;
@@ -95,53 +141,97 @@
         }
         .gap-item { padding: 6px 0; border-bottom: 1px solid #1e3a5f; color: #d0a0a8; font-size: 0.9rem; }
         .gap-item:last-child { border-bottom: none; }
+
+        #screen-lock {
+            position: fixed; inset: 0; z-index: 5000;
+            background: #060a14; display: none; align-items: center;
+            justify-content: center; flex-direction: column; color: #e2eaff; text-align: center;
+        }
+        .lock-icon { font-size: 4rem; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="hud">
+    <!-- Екран блокування (якщо вже пройдено) -->
+    <div id="screen-lock">
+        <div class="lock-icon">🔐</div>
+        <h2>ДОСТУП ОБМЕЖЕНО</h2>
+        <p>Твій пристрій вже надіслав звіт у штаб.</p>
+    </div>
+
+    <!-- Екран авторизації -->
+    <div id="screen-auth">
+        <div class="auth-card">
+            <div class="auth-title">🔍 АВТОРИЗАЦІЯ</div>
+            <div class="auth-sub">Введи дані агента для доступу до оперативної справи</div>
+            <div class="field-label">Підрозділ (клас)</div>
+            <select id="sel-class" onchange="loadNames()">
+                <option value="">— Оберіть клас —</option>
+                <option>7-А</option><option>7-Б</option><option>7-В</option><option>7-Г</option><option>7-Д</option>
+            </select>
+            <div class="field-label">Позивний (прізвище)</div>
+            <select id="sel-name">
+                <option value="">— Спочатку оберіть клас —</option>
+            </select>
+            <button class="btn-primary" id="btn-auth" onclick="authenticate()" disabled>ПРОДОВЖИТИ</button>
+        </div>
+    </div>
+
+    <!-- Стартовий екран (правила) -->
+    <div id="screen-start">
+        <div style="font-size:4rem">😊😮</div>
+        <h1 style="font-family:'Rajdhani';">Операція «ГЕО-ОБОЛОНКА»</h1>
+        <p>Відповідай на 12 завдань мімікою:</p>
+        <p style="color:#00ff88;">Посміхнись 😊 = Так (правильно)</p>
+        <p style="color:#ff3d5a;">Відкрий рот 😮 = Ні (неправильно)</p>
+        <p style="font-size:0.9rem; color:#5a7399;">Утримуй вираз ~1 секунду</p>
+        <button class="btn-primary" id="btn-start" onclick="startGame()">ПОЇХАЛИ!</button>
+    </div>
+
+    <!-- Ігровий екран -->
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+
+    <div class="hud" id="game-hud" style="display:none;">
         <div class="hud-logo">ГЕО-ДЕТЕКТИВ</div>
         <div class="hud-badge" id="hud-gr">СЕКТОР 8</div>
     </div>
 
-    <video id="video" autoplay playsinline muted></video>
-    <canvas id="canvas"></canvas>
-
-    <div id="status-box">
+    <div id="status-box" style="display:none;">
         <div id="status-text">Завантаження...</div>
         <div id="instruction">Посміхнись 😊 = Так, Відкрий рот 😮 = Ні</div>
     </div>
     <div id="feedback"></div>
+    <div id="expression-indicator">😐</div>
 
-    <!-- Стартовий екран -->
-    <div id="start-screen">
-        <div style="font-size: 4rem">😊😮</div>
-        <h1 style="font-family:'Rajdhani';">Операція «ГЕО-ОБОЛОНКА»</h1>
-        <p>Відповідай на 12 завдань мімікою:</p>
-        <p style="color:#00ff88;">Посміхнись = Правильно (Так)</p>
-        <p style="color:#ff3d5a;">Відкрий рот = Неправильно (Ні)</p>
-        <button class="btn" id="btn-start">РОЗПОЧАТИ МІСІЮ</button>
-    </div>
-
-    <!-- Екран самооцінки (після всіх завдань) -->
-    <div id="eval-screen">
+    <!-- Екран самооцінки -->
+    <div id="screen-eval">
         <h2 style="font-family:'Rajdhani';">ЗВІТ АГЕНТА</h2>
         <p>12 завдань виконано. Оціни свій рівень:</p>
         <div class="eval-option" onclick="selectEval(this, 'Впевнено')">Впевнено</div>
         <div class="eval-option" onclick="selectEval(this, 'Частково')">Частково</div>
         <div class="eval-option" onclick="selectEval(this, 'Потребую підтримки')">Потребую підтримки</div>
-        <button class="btn" id="btn-submit" disabled>НАДІСЛАТИ ЗВІТ</button>
+        <button class="btn-primary" id="btn-submit" disabled onclick="submitData()">НАДІСЛАТИ ЗВІТ</button>
     </div>
 
     <!-- Екран результатів -->
-    <div id="result-screen">
-        <div class="result-stat" id="result-stats">...</div>
+    <div id="screen-result">
+        <div class="result-stat" id="result-stats"></div>
         <div class="gaps-box" id="gaps-container"></div>
-        <button class="btn" onclick="location.reload()">ЗАВЕРШИТИ</button>
+        <button class="btn-primary" onclick="location.reload()">ЗАВЕРШИТИ</button>
     </div>
 
 <script type="module">
 import { FaceLandmarker, FilesetResolver } from "https://cdn.skypack.dev/@mediapipe/tasks-vision@0.10.3";
+
+// ========== БАЗА УЧНІВ ==========
+const DB = {
+    "7-А":["Ашихмін Ярослав","Внуков Веніамін","Волков Давид","Вулєр Іван","Дабіжа Марія","Димитров Дмитро","Кирилюк Артем","Косар Нікіта","Кравчук Мілана","Кривенок Ілля","Лазаревич Георгій","Лазаревич Ніколь","Лісіцина Дар'я","Нестерова Varvara","Перванчук Марк","Полуянов Семен","Попков Андрій","Савченко Наталія","Скопенко Ніка","Усольцева Аріна","Халабура Вікторія","Химич Артем","Якутенко Володимир","Ященко Анастасія","Бохонок Олеся"],
+    "7-Б":["Алєксєюк Ірина","Андрусік Ул'яна","Болясна Аріна","Войтех Богдан","Голімбовська Єлизавета","Гуляєва Марія","Зєнов Геннадій","Кожухар Злата","Колесниченко Артем","Коростельова Анфіса","Кузьмін Дмитро","Левченко Тимур","Литовченко Кіра","Михайлова Ксенія","Ніколаєв Ілля","Ніща Дар'я","Переберін Артем","Сич Кіріл","Сташко Кароліна","Стерпул Олександр","Харченко Гліб","Хомутова Анна","Чернюк Андрій","Шаріпова Анастасія","Штурхаль Марія","Яремчук Єгор","Бохонок Олеся"],
+    "7-В":["Бєгу Євгеній","Білоус Катерина","Бодьо Арина","Величко Данило","Гаврилова Кира","Гаврилова Маргарита","Гєчева Вероніка","Гордієнко Дмитро","Іваньоха Мирослав","Ісхаков Кирило","Кушнір Віталіна","Левченко Олександр","Мацієвич Дмитро","Мельниченко Анастасія","Муравйов Андрій","Ніколайчук Іван","Остапчук Ангеліна","Охват Софія","Пєшкова Поліна","Піроженко Анна","Саванчук Крістіна","Чермних Єгор","Бохонок Олеся"],
+    "7-Г":["Баличев Давід","Білоножкіна Вікторія","Бохонок Олеся","Григор'єв Максим","Єленич Софія","Жемчужникова Дар'я","Карп Христина","Карташов Михайло","Клименко Назар","Ковальов Володимир","Маслій Руслан","Мельников Тимур","Потребенко Меланія","Раєнко Таїсія","Саранін Олександр","Солодухіна Жанна","Сопель Максим","Стоянов Владислав","Чеховський Кирило","Чорний Акім","Шеремет Ернест"],
+    "7-Д":["Балинський Вячеслав","Бохонок Олеся","Бурлак Аміна","Ганошенко Маттіа","Грозивчак Олександр","Дойчева Ангеліна","Касьянова Аріна","Кербенко Артем","Ковальчук Глєб","Лебін Ярослав","Маслаков Артем","Масленніков Іван","Михайловська Катерина","Перепьолка Таїсія","Петрова Аріна","Прокопенко Ярослав","Семенов Семен","Ткаченко Демір"]
+};
 
 // ========== КОНСТАНТИ ==========
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUCjrOlZuUGPrGzauifB6v-qoVT9arKkCKlXZxiQSgYvDlFJyO7jg0BEe_OtHrKfEDXg/exec";
@@ -164,35 +254,65 @@ const TASKS = [
     { statement: "Осушення боліт на Поліссі призведе до зниження ґрунтових вод, зникнення птахів і посух.", isTrue: true, gr: "GR3", gap: "ГР3_Трансформація_комплексів" }
 ];
 
-// ========== СТАН ==========
-let faceLandmarker;
-let video, statusText, instructionEl, feedbackEl, hudGr;
+// ========== СТАН ГРИ ==========
+let studentName = "";
+let studentClass = "";
 let currentTaskIdx = 0;
 let scores = { GR1: [], GR2: [], GR3: [] };
 let selfEval = "";
 let deviceToken = localStorage.getItem('geo_dev_token') || 'dev_' + Math.random().toString(36).substr(2,9);
 localStorage.setItem('geo_dev_token', deviceToken);
 
-// Мімічний буфер
+let faceLandmarker;
 let expressionBuffer = [];
 let confirmCounter = 0;
 let isWaitingForResponse = false;
-const EXPRESSION_NEUTRAL = 'neutral';
-const EXPRESSION_SMILE = 'smile';
-const EXPRESSION_OPEN_MOUTH = 'open_mouth';
 const BUFFER_SIZE = 20;
-const CONFIRM_THRESHOLD = 15; // кадрів утримання
+const CONFIRM_THRESHOLD = 15;
 
-// ========== DOM ==========
-video = document.getElementById('video');
-statusText = document.getElementById('status-text');
-instructionEl = document.getElementById('instruction');
-feedbackEl = document.getElementById('feedback');
-hudGr = document.getElementById('hud-gr');
+// ========== ЕЛЕМЕНТИ DOM ==========
+const video = document.getElementById('video');
+const statusText = document.getElementById('status-text');
+const instructionEl = document.getElementById('instruction');
+const feedbackEl = document.getElementById('feedback');
+const exprIndicator = document.getElementById('expression-indicator');
+const hudGr = document.getElementById('hud-gr');
 
-// ========== ІНІЦІАЛІЗАЦІЯ ==========
-document.getElementById('btn-start').addEventListener('click', async () => {
-    document.getElementById('start-screen').style.display = 'none';
+// ========== АВТОРИЗАЦІЯ ==========
+window.loadNames = function() {
+    const c = document.getElementById('sel-class').value;
+    const s = document.getElementById('sel-name');
+    s.innerHTML = '<option value="">— Знайди себе —</option>';
+    if (c && DB[c]) {
+        DB[c].forEach(n => {
+            const o = document.createElement('option');
+            o.value = o.text = n;
+            s.appendChild(o);
+        });
+        document.getElementById('btn-auth').disabled = false;
+    } else {
+        document.getElementById('btn-auth').disabled = true;
+    }
+};
+
+window.authenticate = function() {
+    const c = document.getElementById('sel-class').value;
+    const n = document.getElementById('sel-name').value;
+    if (!c || !n) return alert('Оберіть клас і прізвище!');
+    studentClass = c;
+    studentName = n;
+    // Показуємо стартовий екран
+    document.getElementById('screen-auth').style.display = 'none';
+    document.getElementById('screen-start').style.display = 'flex';
+};
+
+// ========== СТАРТ ГРИ ==========
+window.startGame = async function() {
+    document.getElementById('screen-start').style.display = 'none';
+    // Показуємо ігровий HUD
+    document.getElementById('game-hud').style.display = 'flex';
+    document.getElementById('status-box').style.display = 'block';
+    exprIndicator.style.display = 'block';
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
         video.srcObject = stream;
@@ -201,7 +321,7 @@ document.getElementById('btn-start').addEventListener('click', async () => {
     } catch (e) {
         alert("Потрібен доступ до камери! " + e.message);
     }
-});
+};
 
 async function initFaceAI() {
     const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
@@ -213,65 +333,57 @@ async function initFaceAI() {
         runningMode: "VIDEO",
         numFaces: 1
     });
-    // Запускаємо цикл аналізу
     requestAnimationFrame(analyzeFrame);
 }
 
-function analyzeFrame() {
-    if (!faceLandmarker || !video.readyState) {
-        requestAnimationFrame(analyzeFrame);
-        return;
-    }
-    const results = faceLandmarker.detectForVideo(video, performance.now());
-    if (results.faceLandmarks && results.faceLandmarks.length > 0) {
-        const face = results.faceLandmarks[0];
-        const expr = detectExpression(face);
-        updateExpressionBuffer(expr);
-    } else {
-        // Немає обличчя – скидаємо буфер
-        expressionBuffer = [];
-        confirmCounter = 0;
-    }
-    requestAnimationFrame(analyzeFrame);
-}
-
-// ========== РОЗПІЗНАВАННЯ МІМІКИ ==========
+// ========== АНАЛІЗ МІМІКИ ==========
 function detectExpression(landmarks) {
-    // Точки губ (індекси з MediaPipe Face Landmarker)
-    const upperLip = landmarks[13];   // верхня губа (центр)
-    const lowerLip = landmarks[14];   // нижня губа (центр)
-    const leftCorner = landmarks[61]; // лівий кут рота
-    const rightCorner = landmarks[291]; // правий кут рота
+    const upperLip = landmarks[13];
+    const lowerLip = landmarks[14];
+    const leftCorner = landmarks[61];
+    const rightCorner = landmarks[291];
 
     const mouthWidth = Math.hypot(rightCorner.x - leftCorner.x, rightCorner.y - leftCorner.y);
     const mouthHeight = Math.hypot(lowerLip.x - upperLip.x, lowerLip.y - upperLip.y);
 
-    // Відношення ширини до висоти
-    const ratio = mouthWidth / (mouthHeight + 0.001); // уникаємо ділення на нуль
+    // Відкритий рот: висота рота значна (понад 0.07)
+    if (mouthHeight > 0.07) return 'open_mouth';
+    // Посмішка: рот широкий, але не високий (ширина > 0.35 і висота < 0.06)
+    if (mouthWidth > 0.35 && mouthHeight < 0.06) return 'smile';
+    return 'neutral';
+}
 
-    // Пороги (підібрані емпірично)
-    if (mouthHeight > 0.08 && ratio < 2.5) {
-        return EXPRESSION_OPEN_MOUTH; // широко відкритий рот
-    } else if (ratio > 3.5 && mouthWidth > 0.25) {
-        return EXPRESSION_SMILE; // широка посмішка
+function analyzeFrame() {
+    if (!faceLandmarker || video.readyState < 2) {
+        requestAnimationFrame(analyzeFrame);
+        return;
     }
-    return EXPRESSION_NEUTRAL;
+    const results = faceLandmarker.detectForVideo(video, performance.now());
+    if (results.faceLandmarks?.length) {
+        const expr = detectExpression(results.faceLandmarks[0]);
+        // Оновлюємо індикатор
+        exprIndicator.textContent = expr === 'smile' ? '😊' : expr === 'open_mouth' ? '😮' : '😐';
+        updateExpressionBuffer(expr);
+    } else {
+        expressionBuffer = [];
+        confirmCounter = 0;
+        exprIndicator.textContent = '😐';
+    }
+    requestAnimationFrame(analyzeFrame);
 }
 
 function updateExpressionBuffer(expr) {
     expressionBuffer.push(expr);
     if (expressionBuffer.length > BUFFER_SIZE) expressionBuffer.shift();
-
-    // Визначаємо домінуючий вираз
     const counts = { neutral: 0, smile: 0, open_mouth: 0 };
     expressionBuffer.forEach(e => counts[e]++);
-    const dominant = counts.smile > counts.open_mouth ? EXPRESSION_SMILE : 
-                     counts.open_mouth > counts.neutral ? EXPRESSION_OPEN_MOUTH : EXPRESSION_NEUTRAL;
+    const dominant = counts.smile > counts.open_mouth ? 'smile' : 
+                     counts.open_mouth > counts.neutral ? 'open_mouth' : 'neutral';
 
-    if (dominant === EXPRESSION_SMILE || dominant === EXPRESSION_OPEN_MOUTH) {
+    if (dominant === 'smile' || dominant === 'open_mouth') {
         confirmCounter++;
         if (confirmCounter >= CONFIRM_THRESHOLD && isWaitingForResponse) {
-            handleAnswer(dominant === EXPRESSION_SMILE); // true = Так (посмішка)
+            handleAnswer(dominant === 'smile');
             isWaitingForResponse = false;
             confirmCounter = 0;
         }
@@ -299,35 +411,33 @@ function startTask(index) {
 function handleAnswer(userSaysTrue) {
     const task = TASKS[currentTaskIdx];
     const correct = (userSaysTrue === task.isTrue);
-    // Зберігаємо бал
     scores[task.gr].push(correct ? 1 : 0);
-
-    // Показуємо зворотний зв'язок
     feedbackEl.style.display = 'block';
     feedbackEl.textContent = correct ? '✅' : '❌';
     feedbackEl.style.color = correct ? '#00ff88' : '#ff3d5a';
     setTimeout(() => {
         feedbackEl.style.display = 'none';
         startTask(currentTaskIdx + 1);
-    }, 1000);
+    }, 1200);
 }
 
 // ========== ЕКРАН САМООЦІНКИ ==========
 function showEvalScreen() {
     video.pause();
     document.getElementById('status-box').style.display = 'none';
-    document.getElementById('eval-screen').style.display = 'flex';
+    exprIndicator.style.display = 'none';
+    document.getElementById('game-hud').style.display = 'none';
+    document.getElementById('screen-eval').style.display = 'flex';
     window.selectEval = function(el, val) {
         document.querySelectorAll('.eval-option').forEach(o => o.classList.remove('selected'));
         el.classList.add('selected');
         selfEval = val;
         document.getElementById('btn-submit').disabled = false;
-        document.getElementById('btn-submit').onclick = submitData;
     };
 }
 
 // ========== ВІДПРАВКА В GOOGLE ТАБЛИЦЮ ==========
-async function submitData() {
+window.submitData = async function() {
     if (!selfEval) return;
     const gr1pct = Math.round(avg(scores.GR1) * 100);
     const gr2pct = Math.round(avg(scores.GR2) * 100);
@@ -343,8 +453,8 @@ async function submitData() {
     [...gapMap.GR1, ...gapMap.GR2, ...gapMap.GR3].forEach(e => { if (!e.s) gaps.push(e.g); });
 
     const payload = {
-        studentName: localStorage.getItem('student_name') || 'Анонім',
-        studentClass: localStorage.getItem('student_class') || '7-?',
+        studentName,
+        studentClass,
         totalScore: totalPct,
         scoreGR1: gr1pct,
         scoreGR2: gr2pct,
@@ -356,18 +466,18 @@ async function submitData() {
     };
 
     // Показуємо результат
-    document.getElementById('eval-screen').style.display = 'none';
-    document.getElementById('result-screen').style.display = 'flex';
-    const statsHtml = `
+    document.getElementById('screen-eval').style.display = 'none';
+    document.getElementById('screen-result').style.display = 'flex';
+    const color = v => v >= 75 ? '#00ff88' : v >= 50 ? '#ffb800' : '#ff3d5a';
+    document.getElementById('result-stats').innerHTML = `
         <div class="stat-box"><div class="value" style="color:${color(gr1pct)}">${gr1pct}%</div><div class="label">ГР 1</div></div>
         <div class="stat-box"><div class="value" style="color:${color(gr2pct)}">${gr2pct}%</div><div class="label">ГР 2</div></div>
         <div class="stat-box"><div class="value" style="color:${color(gr3pct)}">${gr3pct}%</div><div class="label">ГР 3</div></div>
     `;
-    document.getElementById('result-stats').innerHTML = statsHtml;
     const gapsHtml = gaps.length ? gaps.map(g => `<div class="gap-item">⚠ ${g}</div>`).join('') : '<div class="gap-item">Всі теми засвоєно!</div>';
     document.getElementById('gaps-container').innerHTML = `<h3 style="color:#ff3d5a; margin-bottom:8px;">Прогалини:</h3>${gapsHtml}`;
 
-    // Відправка на сервер
+    // Відправка
     try {
         const res = await fetch(SCRIPT_URL, {
             method: 'POST',
@@ -384,11 +494,17 @@ async function submitData() {
     } catch (e) {
         console.error(e);
     }
-}
+};
 
 function avg(arr) { return arr.length ? arr.reduce((a,b) => a + b, 0) / arr.length : 0; }
-function color(v) { return v >= 75 ? '#00ff88' : v >= 50 ? '#ffb800' : '#ff3d5a'; }
 
+// ========== ПЕРЕВІРКА БЛОКУВАННЯ ПРИ ЗАВАНТАЖЕННІ ==========
+(function() {
+    if (localStorage.getItem('geo_obolonka_submitted') === 'true') {
+        document.getElementById('screen-auth').style.display = 'none';
+        document.getElementById('screen-lock').style.display = 'flex';
+    }
+})();
 </script>
 </body>
 </html>
