@@ -105,7 +105,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
 <script>
-    // ---------- БАЗА ДАНИХ (класи) ----------
     const DB = {
         "7-А":["Ашихмін Ярослав","Внуков Веніамін","Волков Давид","Вулєр Іван","Дабіжа Марія","Димитров Дмитро","Кирилюк Артем","Косар Нікіта","Кравчук Мілана","Кривенок Ілля","Лазаревич Георгій","Лазаревич Ніколь","Лісіцина Дар'я","Нестерова Варвара","Перванчук Марк","Полуянов Семен","Попков Андрій","Савченко Наталія","Скопенко Ніка","Усольцева Аріна","Халабура Вікторія","Химич Артем","Якутенко Володимир","Ященко Анастасія","Бохонок Олеся"],
         "7-Б":["Алєксєюк Ірина","Андрусік Ул'яна","Болясна Аріна","Войтех Богдан","Голімбовська Єлизавета","Гуляєва Марія","Зєнов Геннадій","Кожухар Злата","Колесниченко Артем","Коростельова Анфіса","Кузьмін Дмитро","Левченко Тимур","Литовченко Кіра","Михайлова Ксенія","Ніколаєв Ілля","Ніща Дар'я","Переберін Артем","Сич Кіріл","Сташко Кароліна","Стерпул Олександр","Харченко Гліб","Хомутова Анна","Чернюк Андрій","Шаріпова Анастасія","Штурхаль Марія","Яремчук Єгор","Бохонок Олеся"],
@@ -115,7 +114,6 @@
     };
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUCjrOlZuUGPrGzauifB6v-qoVT9arKkCKlXZxiQSgYvDlFJyO7jg0BEe_OtHrKfEDXg/exec";
     const TASK_TIMEOUT_MS = 15000;
-    // Твердження (6 так / 6 ні)
     const TASKS = [
         { statement: "Природний комплекс — це поєднання природних компонентів, нерозривно пов'язаних між собою.", isTrue: true, gr:"GR1", gap:"Поняття ПК", explain:"Так! ПК = компоненти + зв'язок." },
         { statement: "Географічна оболонка — найбільший природний комплекс на Землі.", isTrue: true, gr:"GR1", gap:"ГО — найбільший ПК", explain:"Так! ГО охоплює всю Землю." },
@@ -137,7 +135,6 @@
         { min:0,  emoji:"🎖️", title:"Агент-стажер", color:"#ffb800" }
     ];
 
-    // ---------- ГЛОБАЛЬНІ ЗМІННІ ----------
     let studentName = "", studentClass = "";
     let currentTaskIdx = 0;
     let scores = { GR1:[], GR2:[], GR3:[] };
@@ -151,14 +148,13 @@
     let taskStartTime = 0;
     let finalRank = null, finalScore = 0;
     let lastAnswerTimestamp = 0;
+    let currentFaceLandmarks = null; // зберігаємо координати обличчя для сердечок
 
-    // Буфери для жестів
-    let tongueBuffer = [];      // язик видно?
-    let openMouthBuffer = [];   // рот відкритий (без язика)
+    let tongueBuffer = [];
+    let openMouthBuffer = [];
     const BUFFER_SIZE = 15;
-    const CONFIRM_COUNT = 10;   // скільки кадрів поспіль для спрацювання
+    const CONFIRM_COUNT = 10;
 
-    // DOM
     const video = document.getElementById('video');
     const statusText = document.getElementById('status-text');
     const feedbackEl = document.getElementById('feedback');
@@ -169,7 +165,6 @@
     const timeoutBar = document.getElementById('timeout-bar');
     const progressDots = document.getElementById('progress-dots');
 
-    // Допоміжні функції
     function showError(msg, ms=3500) {
         const t = document.getElementById('error-toast');
         t.textContent = msg; t.classList.add('show');
@@ -186,7 +181,6 @@
     }
     function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
 
-    // Звук
     let audioCtx = null;
     function playSound(type) {
         try {
@@ -207,27 +201,29 @@
         } catch(e) {}
     }
 
-    // Сердечка
-    function spawnHearts(landmarks) {
+    // Виправлена spawnHearts з перевіркою наявності точок
+    function spawnHearts(faceLandmarks) {
+        if (!faceLandmarks) return;
         const rect = video.getBoundingClientRect();
         const offsetX = rect.left, offsetY = rect.top;
         const w = rect.width, h = rect.height;
-        [landmarks[118], landmarks[347]].forEach(pos => {
+        const points = [faceLandmarks[118], faceLandmarks[347]];
+        points.forEach(pos => {
+            if (!pos) return;
             let x = (1 - pos.x) * w + offsetX;
             let y = pos.y * h + offsetY;
             for (let i=0;i<3;i++) {
                 const heart = document.createElement('div');
-                heart.className='heart-float';
-                heart.textContent=['❤️','💖','💕'][Math.floor(Math.random()*3)];
-                heart.style.left = (x + (Math.random()-.5)*40)+'px';
-                heart.style.top = (y + (Math.random()-.5)*20)+'px';
+                heart.className = 'heart-float';
+                heart.textContent = ['❤️','💖','💕'][Math.floor(Math.random()*3)];
+                heart.style.left = (x + (Math.random()-.5)*40) + 'px';
+                heart.style.top = (y + (Math.random()-.5)*20) + 'px';
                 document.body.appendChild(heart);
                 setTimeout(()=>heart.remove(),1500);
             }
         });
     }
 
-    // ---------- АВТОРИЗАЦІЯ ----------
     document.getElementById('sel-class').addEventListener('change', function() {
         const c = this.value;
         const s = document.getElementById('sel-name');
@@ -246,7 +242,6 @@
         showScreen('screen-start');
     });
 
-    // ---------- СТАРТ ----------
     document.getElementById('btn-start').addEventListener('click', startGame);
     async function startGame() {
         const btn = document.getElementById('btn-start');
@@ -285,7 +280,6 @@
         mediaStream = null;
     }
 
-    // ---------- FACE MESH (простий і стабільний) ----------
     async function initFaceMesh() {
         faceMesh = new FaceMesh({
             locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
@@ -317,46 +311,36 @@
         noFaceFrames = 0;
         noFaceWarn.style.display = 'none';
         const landmarks = results.multiFaceLandmarks[0];
+        currentFaceLandmarks = landmarks; // зберігаємо для сердечок
 
-        // Визначаємо відкриття рота (вертикальна відстань між губами)
         const lipTop = landmarks[13].y;
         const lipBottom = landmarks[14].y;
-        const mouthOpen = (lipBottom - lipTop) > 0.025; // поріг підібрано експериментально
-
-        // Язик: точка 20 (кінчик язика) має y менше ніж верхня губа (13) або нижче?
-        // За даними MediaPipe, точка 20 (кінчик язика) зазвичай знаходиться між губами, коли язик висунутий.
+        const mouthOpen = (lipBottom - lipTop) > 0.025;
         const tongueTip = landmarks[20].y;
-        const tongueVisible = mouthOpen && (tongueTip < lipTop - 0.01); // язик вище верхньої губи
+        const tongueVisible = mouthOpen && (tongueTip < lipTop - 0.01);
 
-        // Оновлюємо індикатор
         if (tongueVisible) exprIndicator.textContent = '😛';
         else if (mouthOpen) exprIndicator.textContent = '😮';
         else exprIndicator.textContent = '😐';
 
-        // Буферизація
         tongueBuffer.push(tongueVisible);
         if (tongueBuffer.length > BUFFER_SIZE) tongueBuffer.shift();
         openMouthBuffer.push(mouthOpen && !tongueVisible);
         if (openMouthBuffer.length > BUFFER_SIZE) openMouthBuffer.shift();
 
         if (!isWaitingForResponse) return;
-        if ((Date.now() - lastAnswerTimestamp) < 600) return; // debounce
+        if ((Date.now() - lastAnswerTimestamp) < 600) return;
 
-        // Спрацювання ТАК (язик)
-        const tongueCount = tongueBuffer.filter(v=>v).length;
-        if (tongueCount >= CONFIRM_COUNT) {
+        if (tongueBuffer.filter(v=>v).length >= CONFIRM_COUNT) {
             triggerAnswer(true);
             return;
         }
-        // Спрацювання НІ (відкритий рот без язика)
-        const mouthCount = openMouthBuffer.filter(v=>v).length;
-        if (mouthCount >= CONFIRM_COUNT) {
+        if (openMouthBuffer.filter(v=>v).length >= CONFIRM_COUNT) {
             triggerAnswer(false);
             return;
         }
     }
 
-    // ---------- ЗАВДАННЯ ----------
     function buildDots() {
         progressDots.innerHTML = '';
         TASKS.forEach((_,i) => {
@@ -424,7 +408,7 @@
         setDot(currentTaskIdx, correct ? 'done-correct' : 'done-wrong');
         playSound(correct ? 'correct' : 'wrong');
         showFeedback(correct ? '✅' : '❌', correct ? '#00ff88' : '#ff3d5a', task.explain);
-        if (correct && faceMesh) spawnHearts([{x:0.5,y:0.5},{x:0.5,y:0.5}]); // спрощено для сердечок
+        if (correct && currentFaceLandmarks) spawnHearts(currentFaceLandmarks);
         setTimeout(() => {
             feedbackEl.style.display = 'none';
             answerHint.style.display = 'none';
@@ -440,7 +424,6 @@
         answerHint.style.display = hint ? 'block' : 'none';
     }
 
-    // ---------- Eval та результат ----------
     function showEvalScreen() {
         document.getElementById('game-hud').style.display='none';
         document.getElementById('status-box').style.display='none';
@@ -508,7 +491,6 @@
         }
     }
 
-    // ---------- СЕРТИФІКАТ (спрощений, але працює) ----------
     async function drawCertificate({ name, cls, score, gr1, gr2, gr3, rank, date, gaps }) {
         const cvs = document.getElementById('cert-canvas');
         const ctx = cvs.getContext('2d');
