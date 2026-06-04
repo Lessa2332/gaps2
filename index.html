@@ -2,762 +2,393 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГЕО-ДЕТЕКТИВ // Сектор 8: Оболонка (Гейміфіковано)</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ГЕО-ДЕТЕКТИВ // Сектор 8: Міміка</title>
+    <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-        :root{
-            --bg:#060a14;--panel:#0d1526;--card:#111d35;--border:#1e3a5f;
-            --cyan:#00d4ff;--cyan-dim:rgba(0,212,255,.12);
-            --green:#00ff88;--green-dim:rgba(0,255,136,.1);
-            --red:#ff3d5a;--red-dim:rgba(255,61,90,.1);
-            --amber:#ffb800;--amber-dim:rgba(255,184,0,.1);
-            --purple:#a78bfa;--purple-dim:rgba(167,139,250,.1);
-            --text:#e2eaff;--muted:#5a7399;
-            --font-head:'Rajdhani',sans-serif;
-            --font-mono:'IBM Plex Mono',monospace;
-            --font-body:'Inter',sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Rajdhani:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body { overflow: hidden; background: #060a14; font-family: 'Nunito', sans-serif; }
+
+        #video {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 0; transform: scaleX(-1);
         }
-        html,body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100dvh;overflow-x:hidden}
-        body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
-        #app{position:relative;z-index:1;min-height:100dvh;display:flex;flex-direction:column}
+        #canvas {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
+        }
 
-        .hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border);background:rgba(13,21,38,.95);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
-        .hdr-logo{font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:2px;color:var(--cyan);text-shadow:0 0 20px rgba(0,212,255,.4)}
-        .hdr-logo span{color:var(--muted);font-weight:400}
-        .hdr-right{display:flex;align-items:center;gap:8px}
-        .hdr-badge{font-family:var(--font-mono);font-size:10px;background:var(--cyan-dim);border:1px solid rgba(0,212,255,.25);color:var(--cyan);padding:4px 10px;border-radius:20px}
+        .hud {
+            position: absolute; top: 16px; left: 16px; right: 16px; z-index: 150;
+            display: flex; justify-content: space-between; align-items: center;
+            pointer-events: none;
+        }
+        .hud-logo {
+            font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700;
+            color: #00d4ff; text-shadow: 0 0 15px rgba(0,212,255,0.5);
+        }
+        .hud-badge {
+            background: rgba(0,212,255,0.12); border: 1px solid rgba(0,212,255,0.25);
+            color: #00d4ff; padding: 6px 14px; border-radius: 20px;
+            font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+        }
 
-        .screen{display:none;flex-direction:column;flex:1;padding:16px;animation:fadeUp .3s ease}
-        .screen.active{display:flex}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        #status-box {
+            position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+            z-index: 100; width: 88%; max-width: 480px;
+            background: rgba(6,10,20,0.9); border: 1px solid #1e3a5f;
+            border-radius: 24px; padding: 18px; text-align: center;
+            backdrop-filter: blur(12px);
+        }
+        #status-text {
+            font-size: 1.3rem; font-weight: 700; color: #e2eaff; margin-bottom: 8px;
+        }
+        #instruction {
+            font-size: 0.9rem; color: #ffb800; font-weight: 600;
+        }
 
-        .login-wrap{display:flex;flex-direction:column;gap:16px;max-width:420px;width:100%;margin:auto;padding:24px 20px;background:var(--card);border:1px solid var(--border);border-radius:20px}
-        .login-title{font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--cyan);letter-spacing:1px}
-        .login-sub{font-size:13px;color:var(--muted);line-height:1.5}
-        .field-label{font-size:11px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;font-family:var(--font-mono)}
-        select{width:100%;padding:12px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:var(--font-body);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7399' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
-        select:focus{outline:none;border-color:var(--cyan)}
-        select option{background-color:var(--card);color:var(--text)}
-        .btn-start{width:100%;padding:16px;background:var(--cyan);color:#060a14;border:none;border-radius:12px;font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:transform .15s}
-        .btn-start:active{transform:scale(.97)}
+        #feedback {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 4rem; z-index: 200; display: none; text-shadow: 0 0 20px currentColor;
+        }
 
-        .brief-wrap{display:flex;flex-direction:column;gap:16px;max-width:460px;width:100%;margin:auto}
-        .brief-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px}
-        .brief-num{font-family:var(--font-mono);font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:8px}
-        .brief-title{font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:6px}
-        .brief-text{font-size:14px;color:var(--muted);line-height:1.65}
-        .btn-go{padding:15px 24px;background:var(--cyan);color:#060a14;border:none;border-radius:12px;font-family:var(--font-head);font-size:16px;font-weight:700;letter-spacing:1px;cursor:pointer;width:100%;text-transform:uppercase;transition:transform .15s}
-        .btn-go:active{transform:scale(.97)}
+        #start-screen, #eval-screen, #result-screen {
+            position: fixed; inset: 0; z-index: 3000;
+            background: rgba(6,10,20,0.95); backdrop-filter: blur(10px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+            color: #e2eaff; text-align: center; padding: 20px;
+        }
+        #start-screen { display: flex; }
+        #eval-screen, #result-screen { display: none; }
 
-        .prog-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:14px;overflow:hidden}
-        .prog-fill{height:100%;background:var(--cyan);transition:width .5s ease;box-shadow:0 0 8px var(--cyan)}
-        .game-hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-        .hud-left{display:flex;flex-direction:column;gap:2px}
-        .hud-case{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
-        .hud-case span{color:var(--text)}
-        .hud-gr{font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid}
-        .gr1{color:var(--purple);border-color:rgba(167,139,250,.3);background:var(--purple-dim)}
-        .gr2{color:var(--amber);border-color:rgba(255,184,0,.3);background:var(--amber-dim)}
-        .gr3{color:var(--cyan);border-color:rgba(0,212,255,.3);background:var(--cyan-dim)}
-        .hud-score{font-family:var(--font-mono);font-size:13px;background:var(--cyan-dim);border:1px solid rgba(0,212,255,.25);color:var(--cyan);padding:4px 12px;border-radius:20px}
+        .btn {
+            background: #00d4ff; color: #060a14; border: none;
+            padding: 16px 40px; border-radius: 14px;
+            font-size: 1.4rem; font-weight: 700; cursor: pointer;
+            font-family: 'Rajdhani', sans-serif; text-transform: uppercase;
+            transition: transform 0.15s;
+        }
+        .btn:active { transform: scale(0.95); }
 
-        .q-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;animation:cardDrop .35s cubic-bezier(.17,.84,.44,1)}
-        .q-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
-        @keyframes cardDrop{from{opacity:0;transform:translateY(-16px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-        .q-tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:10px;letter-spacing:1.5px;color:var(--amber);background:var(--amber-dim);border:1px solid rgba(255,184,0,.2);padding:3px 10px;border-radius:20px;margin-bottom:12px}
-        .q-text{font-family:var(--font-head);font-size:17px;font-weight:600;line-height:1.4;margin-bottom:4px}
-        .q-hint{font-size:13px;color:var(--muted);line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+        .eval-option {
+            background: rgba(255,255,255,0.05); border: 1px solid #1e3a5f;
+            border-radius: 12px; padding: 14px 20px; width: 80%; max-width: 320px;
+            cursor: pointer; text-align: left; font-size: 1rem;
+        }
+        .eval-option.selected { border-color: #00d4ff; background: rgba(0,212,255,0.1); }
 
-        .opts-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
-        .opt{padding:13px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;font-size:14px;line-height:1.5;transition:all .2s;user-select:none;text-align:left;color:var(--text);width:100%;font-family:var(--font-body)}
-        .opt:active{transform:scale(.98)}
-        .opt.selected{border-color:var(--cyan);background:var(--cyan-dim)}
-        .opt.correct{border-color:var(--green)!important;background:var(--green-dim)!important;color:var(--green)}
-        .opt.wrong{border-color:var(--red)!important;background:var(--red-dim)!important;color:var(--red)}
-        .opt.reveal{border-color:var(--green)!important;background:var(--green-dim)!important;color:var(--green)}
-        .opt:disabled{cursor:default;pointer-events:none}
+        .result-stat {
+            display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; width: 80%;
+        }
+        .stat-box {
+            background: rgba(17,29,53,0.8); border: 1px solid #1e3a5f;
+            border-radius: 12px; padding: 12px; text-align: center;
+        }
+        .stat-box .value { font-size: 2rem; font-weight: 700; }
+        .stat-box .label { font-size: 0.75rem; color: #5a7399; }
 
-        .btn-confirm{width:100%;padding:13px;background:var(--amber-dim);border:1.5px solid rgba(255,184,0,.35);border-radius:12px;font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--amber);cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .15s;margin-top:4px}
-        .btn-confirm:active{transform:scale(.97)}
-
-        .timer-container{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-        .timer-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
-        .timer-fill{height:100%;background:var(--amber);width:100%;transition:width 0.1s linear}
-        .timer-text{font-family:var(--font-mono);font-size:14px;color:var(--amber);min-width:40px;text-align:right}
-
-        .drone-scale{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 8px}
-        .drone-step{width:30px;height:30px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-family:var(--font-mono);color:var(--muted);background:#0a101f}
-        .drone-step.filled{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
-        .sort-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
-        .sort-item{padding:12px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;font-size:14px;cursor:pointer;transition:all .2s;user-select:none}
-        .sort-item.sort-selected{border-color:var(--cyan);background:var(--cyan-dim)}
-        .sort-item.sort-correct{border-color:var(--green);background:var(--green-dim);color:var(--green)}
-        .sort-item.sort-wrong{border-color:var(--red);background:var(--red-dim);color:var(--red)}
-
-        .eco-cards{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
-        .eco-card{flex:1 1 40%;min-width:120px;padding:20px 10px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;text-align:center;cursor:pointer;transition:all .2s;font-size:13px}
-        .eco-card.selected{border-color:var(--cyan);background:var(--cyan-dim)}
-        .eco-card.correct{border-color:var(--green);background:var(--green-dim)}
-        .eco-card.wrong{border-color:var(--red);background:var(--red-dim)}
-
-        .fb-overlay{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(6,10,20,.95);backdrop-filter:blur(10px);padding:24px;animation:fadeIn .2s ease}
-        .fb-icon{font-size:58px;animation:popIn .3s cubic-bezier(.17,.84,.44,1);margin-bottom:14px}
-        .fb-status{font-family:var(--font-head);font-size:26px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
-        .fb-msg{font-size:13px;color:var(--muted);text-align:center;max-width:320px;line-height:1.6;margin-bottom:18px}
-        .fb-fact{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;font-size:13px;color:#b0c4de;max-width:380px;width:100%;line-height:1.65;margin-bottom:20px}
-        .fb-fact strong{color:var(--cyan)}
-        .btn-next{padding:13px 34px;background:var(--cyan);color:#060a14;border:none;border-radius:12px;font-family:var(--font-head);font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:transform .15s}
-        .btn-next:active{transform:scale(.97)}
-
-        .eval-card{max-width:440px;width:100%;margin:auto;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px}
-        .eval-title{font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:6px}
-        .eval-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
-        .eval-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-        .eval-opt{padding:14px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:all .2s;font-size:14px;display:flex;align-items:flex-start;gap:12px}
-        .eval-opt.sel{border-color:var(--cyan);background:var(--cyan-dim)}
-        .eval-dot{width:18px;height:18px;min-width:18px;border-radius:50%;border:2px solid var(--muted);margin-top:2px;transition:all .2s;display:flex;align-items:center;justify-content:center}
-        .eval-opt.sel .eval-dot{border-color:var(--cyan);background:var(--cyan)}
-        .eval-opt.sel .eval-dot::after{content:'';display:block;width:6px;height:6px;border-radius:50%;background:#060a14}
-        .btn-submit{width:100%;padding:15px;background:var(--green);color:#060a14;border:none;border-radius:12px;font-family:var(--font-head);font-size:16px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:transform .15s}
-        .btn-submit:active{transform:scale(.97)}
-
-        .result-wrap{max-width:440px;width:100%;margin:auto;display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center}
-        .score-ring{width:140px;height:140px;position:relative;margin:6px auto}
-        .score-ring svg{transform:rotate(-90deg)}
-        .ring-bg{fill:none;stroke:var(--border);stroke-width:10}
-        .ring-fill{fill:none;stroke:var(--cyan);stroke-width:10;stroke-linecap:round;stroke-dasharray:326;stroke-dashoffset:326;transition:stroke-dashoffset 1.2s ease;filter:drop-shadow(0 0 6px var(--cyan))}
-        .ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-        .ring-pct{font-family:var(--font-head);font-size:30px;font-weight:700;color:var(--cyan)}
-        .ring-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:1px}
-        .res-title{font-family:var(--font-head);font-size:22px;font-weight:700}
-        .res-name{background:var(--cyan-dim);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:11px 18px;font-family:var(--font-mono);font-size:13px;color:var(--cyan);width:100%}
-        .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
-        .stat-c{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center}
-        .stat-v{font-family:var(--font-head);font-size:20px;font-weight:700}
-        .stat-l{font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-top:2px}
-        .res-sub{font-size:13px;color:var(--muted);line-height:1.6;max-width:340px}
-        .sent-ok{font-size:12px;color:var(--green);background:var(--green-dim);border:1px solid rgba(0,255,136,.2);border-radius:8px;padding:8px 14px;font-family:var(--font-mono)}
-        .gaps-box{width:100%;background:var(--card);border:1px solid rgba(255,61,90,.2);border-radius:14px;padding:16px;text-align:left}
-        .gaps-title{font-family:var(--font-mono);font-size:10px;color:var(--red);letter-spacing:1.5px;margin-bottom:8px}
-        .gap-item{font-size:13px;color:#d0a0a8;padding:5px 0;border-bottom:1px solid var(--border);line-height:1.5}
-        .gap-item:last-child{border-bottom:none}
-
-        .lock-wrap{max-width:360px;margin:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;padding:40px 20px}
-        .lock-icon{font-size:54px}
-        .lock-title{font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--red)}
-        .lock-text{font-size:14px;color:var(--muted);line-height:1.6}
-
-        .loader-sc{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
-        .loader-spin{width:38px;height:38px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--cyan);animation:spin .8s linear infinite}
-        .loader-txt{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:1px}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .pulse-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);animation:pring 1.5s infinite}
-        @keyframes pring{0%{box-shadow:0 0 0 0 rgba(0,255,136,.4)}70%{box-shadow:0 0 0 7px rgba(0,255,136,0)}100%{box-shadow:0 0 0 0 rgba(0,255,136,0)}}
-        .particle{position:fixed;pointer-events:none;z-index:300;border-radius:50%;animation:pfly .75s ease-out forwards}
-        @keyframes pfly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}}
-        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-        @keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+        .gaps-box {
+            background: rgba(255,61,90,0.1); border: 1px solid rgba(255,61,90,0.3);
+            border-radius: 14px; padding: 16px; text-align: left; width: 90%; max-width: 400px;
+        }
+        .gap-item { padding: 6px 0; border-bottom: 1px solid #1e3a5f; color: #d0a0a8; font-size: 0.9rem; }
+        .gap-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
-<div id="app">
-    <div class="hdr">
-        <div class="hdr-logo">ГЕО<span>—</span>ДЕТЕКТИВ</div>
-        <div class="hdr-right">
-            <div class="hdr-badge" id="hdr-status">СЕКТОР 8</div>
-        </div>
+
+    <div class="hud">
+        <div class="hud-logo">ГЕО-ДЕТЕКТИВ</div>
+        <div class="hud-badge" id="hud-gr">СЕКТОР 8</div>
     </div>
 
-    <div id="sc-lock" class="screen">
-        <div class="lock-wrap">
-            <div class="lock-icon">🔐</div>
-            <div class="lock-title">ДОСТУП ОБМЕЖЕНО</div>
-            <div class="lock-text">Твій пристрій вже надіслав звіт у штаб. Повторне проходження неможливе.</div>
-        </div>
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+
+    <div id="status-box">
+        <div id="status-text">Завантаження...</div>
+        <div id="instruction">Посміхнись 😊 = Так, Відкрий рот 😮 = Ні</div>
+    </div>
+    <div id="feedback"></div>
+
+    <!-- Стартовий екран -->
+    <div id="start-screen">
+        <div style="font-size: 4rem">😊😮</div>
+        <h1 style="font-family:'Rajdhani';">Операція «ГЕО-ОБОЛОНКА»</h1>
+        <p>Відповідай на 12 завдань мімікою:</p>
+        <p style="color:#00ff88;">Посміхнись = Правильно (Так)</p>
+        <p style="color:#ff3d5a;">Відкрий рот = Неправильно (Ні)</p>
+        <button class="btn" id="btn-start">РОЗПОЧАТИ МІСІЮ</button>
     </div>
 
-    <div id="sc-login" class="screen active">
-        <div class="login-wrap">
-            <div>
-                <div class="login-title">🔍 АВТОРИЗАЦІЯ</div>
-                <div class="login-sub">Введи дані агента для доступу до оперативної справи</div>
-            </div>
-            <div>
-                <div class="field-label">Підрозділ (клас)</div>
-                <select id="sel-class" onchange="loadNames()">
-                    <option value="">— Оберіть клас —</option>
-                    <option>7-А</option><option>7-Б</option><option>7-В</option><option>7-Г</option><option>7-Д</option>
-                </select>
-            </div>
-            <div>
-                <div class="field-label">Позивний (прізвище)</div>
-                <select id="sel-name"><option value="">— Спочатку оберіть клас —</option></select>
-            </div>
-            <button class="btn-start" onclick="startGame()">РОЗПОЧАТИ МІСІЮ ▶</button>
-        </div>
+    <!-- Екран самооцінки (після всіх завдань) -->
+    <div id="eval-screen">
+        <h2 style="font-family:'Rajdhani';">ЗВІТ АГЕНТА</h2>
+        <p>12 завдань виконано. Оціни свій рівень:</p>
+        <div class="eval-option" onclick="selectEval(this, 'Впевнено')">Впевнено</div>
+        <div class="eval-option" onclick="selectEval(this, 'Частково')">Частково</div>
+        <div class="eval-option" onclick="selectEval(this, 'Потребую підтримки')">Потребую підтримки</div>
+        <button class="btn" id="btn-submit" disabled>НАДІСЛАТИ ЗВІТ</button>
     </div>
 
-    <div id="sc-brief" class="screen">
-        <div class="brief-wrap">
-            <div class="brief-card">
-                <div class="brief-num">// БРИФІНГ МІСІЇ</div>
-                <div class="brief-title">Операція «ГЕО-ОБОЛОНКА»</div>
-                <div class="brief-text">Ти — спеціальний агент Географічного Відомства. Попереду <strong style="color:var(--cyan)">12 оперативних завдань</strong> з трьох секцій:<br><br>
-                <span style="color:var(--purple)">◆ ГР 1</span> — закономірності оболонки<br>
-                <span style="color:var(--amber)">◆ ГР 2</span> — природні зони та карти<br>
-                <span style="color:var(--cyan)">◆ ГР 3</span> — висотна поясність, екологія
-                </div>
-            </div>
-            <button class="btn-go" onclick="startMission()">ПРИЙНЯТИ МІСІЮ →</button>
-        </div>
+    <!-- Екран результатів -->
+    <div id="result-screen">
+        <div class="result-stat" id="result-stats">...</div>
+        <div class="gaps-box" id="gaps-container"></div>
+        <button class="btn" onclick="location.reload()">ЗАВЕРШИТИ</button>
     </div>
 
-    <div id="sc-game" class="screen">
-        <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
-        <div class="game-hud">
-            <div class="hud-left">
-                <div class="hud-case">ЗАВДАННЯ <span id="case-num">1</span>/12</div>
-                <div id="hud-gr" class="hud-gr gr1">ГР 1</div>
-            </div>
-            <div class="hud-score" id="hud-score">0 ОЧОК</div>
-        </div>
-        <div id="q-area"></div>
-    </div>
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from "https://cdn.skypack.dev/@mediapipe/tasks-vision@0.10.3";
 
-    <div id="sc-eval" class="screen">
-        <div class="eval-card">
-            <div class="eval-title">🗂 ЗВІТ АГЕНТА</div>
-            <div class="eval-sub">12 завдань виконано. Оціни чесно свій рівень впевненості у темі «Географічна оболонка»:</div>
-            <div class="eval-opts">
-                <div class="eval-opt" onclick="selEval(this,'Впевнено')">
-                    <div class="eval-dot"></div>
-                    <div><strong>Впевнено</strong><br><span style="font-size:12px;color:var(--muted)">Розумію закономірності природи</span></div>
-                </div>
-                <div class="eval-opt" onclick="selEval(this,'Частково')">
-                    <div class="eval-dot"></div>
-                    <div><strong>Частково</strong><br><span style="font-size:12px;color:var(--muted)">Загалом зрозуміло, але плутаюсь</span></div>
-                </div>
-                <div class="eval-opt" onclick="selEval(this,'Потребую підтримки')">
-                    <div class="eval-dot"></div>
-                    <div><strong>Потребую підтримки</strong><br><span style="font-size:12px;color:var(--muted)">Матеріал складний</span></div>
-                </div>
-            </div>
-            <button class="btn-submit" onclick="submitData()">НАДІСЛАТИ ЗВІТ У ШТАБ →</button>
-        </div>
-    </div>
+// ========== КОНСТАНТИ ==========
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUCjrOlZuUGPrGzauifB6v-qoVT9arKkCKlXZxiQSgYvDlFJyO7jg0BEe_OtHrKfEDXg/exec";
 
-    <div id="sc-result" class="screen">
-        <div class="result-wrap">
-            <div class="res-title" id="res-title">МІСІЮ ВИКОНАНО</div>
-            <div class="res-name" id="res-name"></div>
-            <div class="score-ring">
-                <svg viewBox="0 0 110 110" width="140" height="140">
-                    <circle class="ring-bg" cx="55" cy="55" r="52"/>
-                    <circle class="ring-fill" id="ring-fill" cx="55" cy="55" r="52"/>
-                </svg>
-                <div class="ring-text"><div class="ring-pct" id="ring-pct">0%</div><div class="ring-label">ТОЧНІСТЬ</div></div>
-            </div>
-            <div class="stats-grid">
-                <div class="stat-c"><div class="stat-v" id="s-gr1">—</div><div class="stat-l">ГР 1</div></div>
-                <div class="stat-c"><div class="stat-v" id="s-gr2">—</div><div class="stat-l">ГР 2</div></div>
-                <div class="stat-c"><div class="stat-v" id="s-gr3">—</div><div class="stat-l">ГР 3</div></div>
-            </div>
-            <div id="gaps-section"></div>
-            <div class="res-sub" id="res-sub"></div>
-            <div class="sent-ok" id="sent-ok" style="display:none"><span class="pulse-dot"></span> &nbsp;Звіт надіслано в штаб</div>
-        </div>
-    </div>
+const TASKS = [
+    // ГР1
+    { statement: "Літосфера — це тверда оболонка Землі.", isTrue: true, gr: "GR1", gap: "ГР1_Поняття_географічної_оболонки" },
+    { statement: "Цілісність означає, що природа — єдиний організм.", isTrue: true, gr: "GR1", gap: "ГР1_Цілісність_ГО" },
+    { statement: "Ритмічність — це закономірність, яка пов'язує всі сфери.", isTrue: false, gr: "GR1", gap: "ГР1_Закономірності_ГО" },
+    { statement: "До природного комплексу входять гірські породи, клімат, води, ґрунти і живі організми.", isTrue: true, gr: "GR1", gap: "ГР1_Компоненти_ПК" },
+    { statement: "Материк Євразія — це найменший природний комплекс.", isTrue: false, gr: "GR1", gap: "ГР1_Зміна_ПК" },
+    // ГР2
+    { statement: "Головна причина природних зон — зміна співвідношення тепла і вологи.", isTrue: true, gr: "GR2", gap: "ГР2_Причина_зональності" },
+    { statement: "В Африці зони змінюються від екватора на північ і південь — це прояв висотної поясності.", isTrue: false, gr: "GR2", gap: "ГР2_Аналіз_карти_зон" },
+    { statement: "Правильний порядок зон від полюса до екватора: Арктичні пустелі → Тундра → Тайга → Степи → Тропічні пустелі → Екваторіальні ліси.", isTrue: true, gr: "GR2", gap: "ГР2_Читання_карти_зон" },
+    { statement: "Океанічні течії та гори не впливають на природні зони.", isTrue: false, gr: "GR2", gap: "ГР2_Порушення_зональності" },
+    // ГР3
+    { statement: "Зміна природи в горах із висотою називається широтною зональністю.", isTrue: false, gr: "GR3", gap: "ГР3_Висотна_поясність" },
+    { statement: "Кількість висотних поясів залежить від висоти гори та її близькості до екватора.", isTrue: true, gr: "GR3", gap: "ГР3_Залежність_висотної_поясності" },
+    { statement: "Осушення боліт на Поліссі призведе до зниження ґрунтових вод, зникнення птахів і посух.", isTrue: true, gr: "GR3", gap: "ГР3_Трансформація_комплексів" }
+];
 
-    <div id="fb-overlay" class="fb-overlay" style="display:none">
-        <div class="fb-icon" id="fb-icon"></div>
-        <div class="fb-status" id="fb-status"></div>
-        <div class="fb-msg" id="fb-msg"></div>
-        <div class="fb-fact" id="fb-fact"></div>
-        <button class="btn-next" id="fb-btn">ДАЛІ →</button>
-    </div>
+// ========== СТАН ==========
+let faceLandmarker;
+let video, statusText, instructionEl, feedbackEl, hudGr;
+let currentTaskIdx = 0;
+let scores = { GR1: [], GR2: [], GR3: [] };
+let selfEval = "";
+let deviceToken = localStorage.getItem('geo_dev_token') || 'dev_' + Math.random().toString(36).substr(2,9);
+localStorage.setItem('geo_dev_token', deviceToken);
 
-    <div id="loader" class="loader-sc" style="display:none">
-        <div class="loader-spin"></div>
-        <div class="loader-txt">ШИФРУВАННЯ ДАНИХ...</div>
-    </div>
-</div>
+// Мімічний буфер
+let expressionBuffer = [];
+let confirmCounter = 0;
+let isWaitingForResponse = false;
+const EXPRESSION_NEUTRAL = 'neutral';
+const EXPRESSION_SMILE = 'smile';
+const EXPRESSION_OPEN_MOUTH = 'open_mouth';
+const BUFFER_SIZE = 20;
+const CONFIRM_THRESHOLD = 15; // кадрів утримання
 
-<script>
-    const SCRIPT_URL="https://script.google.com/macros/s/AKfycbwUCjrOlZuUGPrGzauifB6v-qoVT9arKkCKlXZxiQSgYvDlFJyO7jg0BEe_OtHrKfEDXg/exec";
+// ========== DOM ==========
+video = document.getElementById('video');
+statusText = document.getElementById('status-text');
+instructionEl = document.getElementById('instruction');
+feedbackEl = document.getElementById('feedback');
+hudGr = document.getElementById('hud-gr');
 
-    const DB = {
-        "7-А":["Ашихмін Ярослав","Внуков Веніамін","Волков Давид","Вулєр Іван","Дабіжа Марія","Димитров Дмитро","Кирилюк Артем","Косар Нікіта","Кравчук Мілана","Кривенок Ілля","Лазаревич Георгій","Лазаревич Ніколь","Лісіцина Дар'я","Нестерова Varvara","Перванчук Марк","Полуянов Семен","Попков Андрій","Савченко Наталія","Скопенко Ніка","Усольцева Аріна","Халабура Вікторія","Химич Артем","Якутенко Володимир","Ященко Анастасія","Бохонок Олеся"],
-        "7-Б":["Алєксєюк Ірина","Андрусік Ул'яна","Болясна Аріна","Войтех Богдан","Голімбовська Єлизавета","Гуляєва Марія","Зєнов Геннадій","Кожухар Злата","Колесниченко Артем","Коростельова Анфіса","Кузьмін Дмитро","Левченко Тимур","Литовченко Кіра","Михайлова Ксенія","Ніколаєв Ілля","Ніща Дар'я","Переберін Артем","Сич Кіріл","Сташко Кароліна","Стерпул Олександр","Харченко Гліб","Хомутова Анна","Чернюк Андрій","Шаріпова Анастасія","Штурхаль Марія","Яремчук Єгор","Бохонок Олеся"],
-        "7-В":["Бєгу Євгеній","Білоус Катерина","Бодьо Арина","Величко Данило","Гаврилова Кира","Гаврилова Маргарита","Гєчева Вероніка","Гордієнко Дмитро","Іваньоха Мирослав","Ісхаков Кирило","Кушнір Віталіна","Левченко Олександр","Мацієвич Дмитро","Мельниченко Анастасія","Муравйов Андрій","Ніколайчук Іван","Остапчук Ангеліна","Охват Софія","Пєшкова Поліна","Піроженко Анна","Саванчук Крістіна","Чермних Єгор","Бохонок Олеся"],
-        "7-Г":["Баличев Давід","Білоножкіна Вікторія","Бохонок Олеся","Григор'єв Максим","Єленич Софія","Жемчужникова Дар'я","Карп Христина","Карташов Михайло","Клименко Назар","Ковальов Володимир","Маслій Руслан","Мельников Тимур","Потребенко Меланія","Раєнко Таїсія","Саранін Олександр","Солодухіна Жанна","Сопель Максим","Стоянов Владислав","Чеховський Кирило","Чорний Акім","Шеремет Ернест"],
-        "7-Д":["Балинський Вячеслав","Бохонок Олеся","Бурлак Аміна","Ганошенко Маттіа","Грозивчак Олександр","Дойчева Ангеліна","Касьянова Аріна","Кербенко Артем","Ковальчук Глєб","Лебін Ярослав","Маслаков Артем","Масленніков Іван","Михайловська Катерина","Перепьолка Таїсія","Петрова Аріна","Прокопенко Ярослав","Семенов Семен","Ткаченко Демір"]
+// ========== ІНІЦІАЛІЗАЦІЯ ==========
+document.getElementById('btn-start').addEventListener('click', async () => {
+    document.getElementById('start-screen').style.display = 'none';
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        video.srcObject = stream;
+        await initFaceAI();
+        startTask(0);
+    } catch (e) {
+        alert("Потрібен доступ до камери! " + e.message);
+    }
+});
+
+async function initFaceAI() {
+    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
+    faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+        baseOptions: {
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+            delegate: "GPU"
+        },
+        runningMode: "VIDEO",
+        numFaces: 1
+    });
+    // Запускаємо цикл аналізу
+    requestAnimationFrame(analyzeFrame);
+}
+
+function analyzeFrame() {
+    if (!faceLandmarker || !video.readyState) {
+        requestAnimationFrame(analyzeFrame);
+        return;
+    }
+    const results = faceLandmarker.detectForVideo(video, performance.now());
+    if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+        const face = results.faceLandmarks[0];
+        const expr = detectExpression(face);
+        updateExpressionBuffer(expr);
+    } else {
+        // Немає обличчя – скидаємо буфер
+        expressionBuffer = [];
+        confirmCounter = 0;
+    }
+    requestAnimationFrame(analyzeFrame);
+}
+
+// ========== РОЗПІЗНАВАННЯ МІМІКИ ==========
+function detectExpression(landmarks) {
+    // Точки губ (індекси з MediaPipe Face Landmarker)
+    const upperLip = landmarks[13];   // верхня губа (центр)
+    const lowerLip = landmarks[14];   // нижня губа (центр)
+    const leftCorner = landmarks[61]; // лівий кут рота
+    const rightCorner = landmarks[291]; // правий кут рота
+
+    const mouthWidth = Math.hypot(rightCorner.x - leftCorner.x, rightCorner.y - leftCorner.y);
+    const mouthHeight = Math.hypot(lowerLip.x - upperLip.x, lowerLip.y - upperLip.y);
+
+    // Відношення ширини до висоти
+    const ratio = mouthWidth / (mouthHeight + 0.001); // уникаємо ділення на нуль
+
+    // Пороги (підібрані емпірично)
+    if (mouthHeight > 0.08 && ratio < 2.5) {
+        return EXPRESSION_OPEN_MOUTH; // широко відкритий рот
+    } else if (ratio > 3.5 && mouthWidth > 0.25) {
+        return EXPRESSION_SMILE; // широка посмішка
+    }
+    return EXPRESSION_NEUTRAL;
+}
+
+function updateExpressionBuffer(expr) {
+    expressionBuffer.push(expr);
+    if (expressionBuffer.length > BUFFER_SIZE) expressionBuffer.shift();
+
+    // Визначаємо домінуючий вираз
+    const counts = { neutral: 0, smile: 0, open_mouth: 0 };
+    expressionBuffer.forEach(e => counts[e]++);
+    const dominant = counts.smile > counts.open_mouth ? EXPRESSION_SMILE : 
+                     counts.open_mouth > counts.neutral ? EXPRESSION_OPEN_MOUTH : EXPRESSION_NEUTRAL;
+
+    if (dominant === EXPRESSION_SMILE || dominant === EXPRESSION_OPEN_MOUTH) {
+        confirmCounter++;
+        if (confirmCounter >= CONFIRM_THRESHOLD && isWaitingForResponse) {
+            handleAnswer(dominant === EXPRESSION_SMILE); // true = Так (посмішка)
+            isWaitingForResponse = false;
+            confirmCounter = 0;
+        }
+    } else {
+        confirmCounter = 0;
+    }
+}
+
+// ========== УПРАВЛІННЯ ЗАВДАННЯМИ ==========
+function startTask(index) {
+    if (index >= TASKS.length) {
+        showEvalScreen();
+        return;
+    }
+    currentTaskIdx = index;
+    const task = TASKS[index];
+    statusText.textContent = `Твердження: ${task.statement}`;
+    instructionEl.textContent = "Посміхнись 😊 = Так, Відкрий рот 😮 = Ні";
+    hudGr.textContent = task.gr.replace('GR', 'ГР ');
+    isWaitingForResponse = true;
+    expressionBuffer = [];
+    confirmCounter = 0;
+}
+
+function handleAnswer(userSaysTrue) {
+    const task = TASKS[currentTaskIdx];
+    const correct = (userSaysTrue === task.isTrue);
+    // Зберігаємо бал
+    scores[task.gr].push(correct ? 1 : 0);
+
+    // Показуємо зворотний зв'язок
+    feedbackEl.style.display = 'block';
+    feedbackEl.textContent = correct ? '✅' : '❌';
+    feedbackEl.style.color = correct ? '#00ff88' : '#ff3d5a';
+    setTimeout(() => {
+        feedbackEl.style.display = 'none';
+        startTask(currentTaskIdx + 1);
+    }, 1000);
+}
+
+// ========== ЕКРАН САМООЦІНКИ ==========
+function showEvalScreen() {
+    video.pause();
+    document.getElementById('status-box').style.display = 'none';
+    document.getElementById('eval-screen').style.display = 'flex';
+    window.selectEval = function(el, val) {
+        document.querySelectorAll('.eval-option').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+        selfEval = val;
+        document.getElementById('btn-submit').disabled = false;
+        document.getElementById('btn-submit').onclick = submitData;
+    };
+}
+
+// ========== ВІДПРАВКА В GOOGLE ТАБЛИЦЮ ==========
+async function submitData() {
+    if (!selfEval) return;
+    const gr1pct = Math.round(avg(scores.GR1) * 100);
+    const gr2pct = Math.round(avg(scores.GR2) * 100);
+    const gr3pct = Math.round(avg(scores.GR3) * 100);
+    const totalPct = Math.round((gr1pct + gr2pct + gr3pct) / 3);
+
+    const gaps = [];
+    const gapMap = {
+        GR1: scores.GR1.map((v,i) => ({ s: v, g: TASKS[i].gap })),
+        GR2: scores.GR2.map((v,i) => ({ s: v, g: TASKS[i+5].gap })),
+        GR3: scores.GR3.map((v,i) => ({ s: v, g: TASKS[i+9].gap }))
+    };
+    [...gapMap.GR1, ...gapMap.GR2, ...gapMap.GR3].forEach(e => { if (!e.s) gaps.push(e.g); });
+
+    const payload = {
+        studentName: localStorage.getItem('student_name') || 'Анонім',
+        studentClass: localStorage.getItem('student_class') || '7-?',
+        totalScore: totalPct,
+        scoreGR1: gr1pct,
+        scoreGR2: gr2pct,
+        scoreGR3: gr3pct,
+        gaps,
+        selfEvaluation: selfEval,
+        deviceToken,
+        topic: 'obolonka'
     };
 
-    const CASES = [
-        // ГР1
-        { id:1, gr:"GR1", gap:"ГР1_Поняття_географічної_оболонки", tag:"ЗАВДАННЯ 1", type:"choice",
-          text:"Що таке географічна оболонка Землі?",
-          hint:"Це глобальна екосистема, де взаємодіють нижні шари атмосфери, верхня частина літосфери, вся гідросфера та біосфера.",
-          opts:["Тверда кам'яна оболонка","Найбільший природний комплекс, утворений взаємодією всіх оболонок","Повітряна оболонка","Штучне середовище"],
-          correct:1,
-          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Базове поняття засвоєно!",fact:"<strong>Географічна оболонка</strong> — це найбільший природний комплекс, де всі сфери проникають одна в одну."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Це лише одна зі сфер.",fact:"Правильна відповідь: <strong>Найбільший природний комплекс Землі</strong>."}}
-        },
-        { id:2, gr:"GR1", gap:"ГР1_Цілісність_ГО", tag:"ЗАВДАННЯ 2", type:"choice",
-          text:"Якщо в горах вирубати ліс, це призведе до змивання ґрунтів і пересихання річок. Яку закономірність це ілюструє?",
-          hint:"Усі компоненти природи міцно пов'язані.",
-          opts:["Ритмічність","Кругообіг речовин","Широтна зональність","Цілісність"],
-          correct:3,
-          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Закон цілісності виявлено!",fact:"<strong>Цілісність</strong> означає, що природа — єдиний організм."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Зверни увагу на зв'язок компонентів.",fact:"Правильна відповідь: <strong>Цілісність</strong>."}}
-        },
-        { id:3, gr:"GR1", gap:"ГР1_Закономірності_ГО", tag:"ДЕТЕКТОР АНОМАЛІЙ", type:"anomaly",
-          scenario:"Вирубка лісу в горах спричинила зсуви та пересихання струмків. Яка закономірність порушена?",
-          hint:"Подумай, який закон пов'язує всі компоненти природи воєдино.",
-          opts:["Ритмічність","Кругообіг речовин","Цілісність","Зональність"],
-          correct:2, timer:15,
-          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Аномалію виявлено!",fact:"<strong>Цілісність</strong> — ключовий закон."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Час вийшов або помилка.",fact:"Це <strong>Цілісність</strong>."}}
-        },
-        { id:4, gr:"GR1", gap:"ГР1_Компоненти_ПК", tag:"ПРИРОДНИЙ ПАЗЛ", type:"multichoice",
-          text:"Обери ВСІ природні компоненти, які входять до складу будь-якого природного комплексу:",
-          hint:"5 компонентів, без антропогену.",
-          opts:["Гірські породи та рельєф","Клімат (повітря)","Будівлі та дороги","Вода (внутрішні води)","Ґрунт, рослини і тварини","Автомобілі"],
-          correctSet:[0,1,3,4],
-          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Пазл складено!",fact:"<strong>5 компонентів:</strong> гірські породи, клімат, води, ґрунти, живі організми."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Будівлі та авто — антропогенне.",fact:"Правильні: <strong>гірські породи, клімат, вода, ґрунти і життя</strong>."}}
-        },
-        { id:5, gr:"GR1", gap:"ГР1_Зміна_ПК", tag:"ЗАВДАННЯ 5", type:"choice",
-          text:"Який із природних комплексів є найменшим і може бути змінений людиною найшвидше?",
-          hint:"Океани та материки змінити важко.",
-          opts:["Материк Євразія","Світовий океан","Місцевий яр або озеро","Природна зона пустель"],
-          correct:2,
-          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Локальний комплекс знайдено!",fact:"<strong>Яр, озеро</strong> — дрібний локальний комплекс."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Зверни увагу на масштаб.",fact:"Правильно: <strong>Місцевий яр або озеро</strong>."}}
-        },
-        // ГР2
-        { id:6, gr:"GR2", gap:"ГР2_Причина_зональності", tag:"ЗАВДАННЯ 6", type:"choice",
-          text:"Що є ГОЛОВНОЮ причиною формування різних природних зон на рівнинах?",
-          hint:"Природна зона визначається кліматом.",
-          opts:["Геологічна будова","Зміна співвідношення тепла і вологи залежно від широти","Урагани","Напрямок течії річок"],
-          correct:1,
-          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Причину зональності встановлено!",fact:"<strong>Співвідношення тепла і вологи</strong> — ключ."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Клімат формує зони.",fact:"Правильно: <strong>Зміна співвідношення тепла і вологи</strong>."}}
-        },
-        { id:7, gr:"GR2", gap:"ГР2_Аналіз_карти_зон", tag:"ЗАВДАННЯ 7", type:"choice",
-          text:"На карті Африки навколо екватора — ліси, далі савани. Про що це свідчить?",
-          hint:"Це класичний прояв головного географічного закону.",
-          opts:["Широтна зональність","Висотна поясність","Випадковість","Вирубка лісів"],
-          correct:0,
-          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Закономірність на карті виявлено!",fact:"<strong>Широтна зональність</strong> в Африці ідеальна."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Поглянь на рух від екватора.",fact:"Правильно: <strong>Широтна зональність</strong>."}}
-        },
-        { id:8, gr:"GR2", gap:"ГР2_Читання_карти_зон", tag:"МАРШРУТ ДРОНА", type:"drone",
-          text:"Проклади маршрут дрона від полюса до екватора, розставивши природні зони по порядку:",
-          hint:"Від найхолоднішої до найтеплішої.",
-          items:["Арктичні пустелі","Тундра","Тайга","Степи","Тропічні пустелі","Екваторіальні ліси"],
-          correctOrder:[0,1,2,3,4,5],
-          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Дрон долетів!",fact:"<strong>Послідовність:</strong> Арктика → Тундра → Тайга → Степи → Пустелі → Екваторіальні ліси."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Буря! Спробуй ще.",fact:"Правильний порядок: від льоду до вічного літа."}}
-        },
-        { id:9, gr:"GR2", gap:"ГР2_Порушення_зональності", tag:"ЗАВДАННЯ 9", type:"choice",
-          text:"Що найчастіше порушує ідеальну широтну зональність?",
-          hint:"Причина — у тому, що приносить холод або вологу вздовж берегів.",
-          opts:["Тварини","Океанічні течії та гори","Фази Місяця","Танення снігів"],
-          correct:1,
-          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Аномалії пояснено!",fact:"<strong>Океанічні течії та рельєф</strong> деформують зони."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Що впливає на клімат берегів?",fact:"Правильно: <strong>Океанічні течії та гори</strong>."}}
-        },
-        // ГР3
-        { id:10, gr:"GR3", gap:"ГР3_Висотна_поясність", tag:"ЗАВДАННЯ 10", type:"choice",
-          text:"У Гімалаях біля підніжжя джунглі, а на вершині сніг. Це прояв:",
-          hint:"Зміна природи з висотою.",
-          opts:["Широтна зональність","Висотна поясність","Кругообіг води","Тектонічний розлом"],
-          correct:1,
-          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Гірська закономірність підтверджена!",fact:"<strong>Висотна поясність</strong> — зміна природи з висотою."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Зональність — це для рівнин.",fact:"Правильно: <strong>Висотна поясність</strong>."}}
-        },
-        { id:11, gr:"GR3", gap:"ГР3_Залежність_висотної_поясності", tag:"ЗАВДАННЯ 11", type:"choice",
-          text:"Кількість висотних поясів залежить від:",
-          hint:"Чим вища гора і ближче до екватора, тим більше поясів.",
-          opts:["Віку гір","Висоти гір та близькості до екватора","Наявності річок","Кількості хижаків"],
-          correct:1,
-          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Фактори визначено!",fact:"Максимум поясів — у високих горах на екваторі."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Згадай про стартову температуру.",fact:"Правильно: <strong>Висота та близькість до екватора</strong>."}}
-        },
-        { id:12, gr:"GR3", gap:"ГР3_Трансформація_комплексів", tag:"ЕКО-ПРОГНОЗ", type:"ecofuture",
-          scenario:"Масштабне осушення боліт та вирубка лісів на Поліссі. Які наслідки?",
-          hint:"Обери картки з реальними негативними наслідками.",
-          opts:["Зниження рівня ґрунтових вод","Збільшення риби","Зникнення рослин і птахів","Погіршення мікроклімату (посухи)","Зростання льодовиків"],
-          correctSet:[0,2,3],
-          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Прогноз точний!",fact:"Втручання руйнує цілісність: зниження вод, зникнення видів, посухи."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Не всі наслідки вірні.",fact:"Правильні: <strong>зниження вод, зникнення флори/фауни, погіршення мікроклімату</strong>."}}
-        }
-    ];
+    // Показуємо результат
+    document.getElementById('eval-screen').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'flex';
+    const statsHtml = `
+        <div class="stat-box"><div class="value" style="color:${color(gr1pct)}">${gr1pct}%</div><div class="label">ГР 1</div></div>
+        <div class="stat-box"><div class="value" style="color:${color(gr2pct)}">${gr2pct}%</div><div class="label">ГР 2</div></div>
+        <div class="stat-box"><div class="value" style="color:${color(gr3pct)}">${gr3pct}%</div><div class="label">ГР 3</div></div>
+    `;
+    document.getElementById('result-stats').innerHTML = statsHtml;
+    const gapsHtml = gaps.length ? gaps.map(g => `<div class="gap-item">⚠ ${g}</div>`).join('') : '<div class="gap-item">Всі теми засвоєно!</div>';
+    document.getElementById('gaps-container').innerHTML = `<h3 style="color:#ff3d5a; margin-bottom:8px;">Прогалини:</h3>${gapsHtml}`;
 
-    let S = {
-        name:'', cls:'', cur:0,
-        scores:{GR1:[], GR2:[], GR3:[]},
-        selfEval:'',
-        deviceToken:'',
-        multiSelected:new Set(),
-        droneOrder:[],
-        ecoSelected:new Set(),
-        timerInterval:null,
-        timeLeft:0
-    };
-
-    (function init(){
-        if(!localStorage.getItem('geo_dev_token'))
-            localStorage.setItem('geo_dev_token','dev_'+Math.random().toString(36).substr(2,9));
-        S.deviceToken = localStorage.getItem('geo_dev_token');
-        if(localStorage.getItem('geo_obolonka_submitted')==='true') showSc('sc-lock');
-    })();
-
-    function showSc(id){
-        document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-    function loadNames(){
-        const c = document.getElementById('sel-class').value;
-        const s = document.getElementById('sel-name');
-        s.innerHTML = '<option value="">— Знайди себе —</option>';
-        if(c && DB[c]) DB[c].forEach(n=>{const o=document.createElement('option');o.value=o.text=n;s.appendChild(o)});
-    }
-    function startGame(){
-        const c = document.getElementById('sel-class').value;
-        const n = document.getElementById('sel-name').value;
-        if(!c||!n){alert('⚠ Оберіть клас і знайдіть своє прізвище!');return;}
-        S.cls=c; S.name=n;
-        document.getElementById('hdr-status').textContent = c;
-        showSc('sc-brief');
-    }
-    function startMission(){ S.cur=0; renderQ(); showSc('sc-game'); }
-
-    function renderQ(){
-        const q = CASES[S.cur];
-        document.getElementById('case-num').textContent = S.cur+1;
-        document.getElementById('prog-fill').style.width = (S.cur/12*100)+'%';
-        const scored = S.scores.GR1.filter(v=>v).length + S.scores.GR2.filter(v=>v).length + S.scores.GR3.filter(v=>v).length;
-        document.getElementById('hud-score').textContent = scored+' ОЧОК';
-        const grEl = document.getElementById('hud-gr');
-        grEl.textContent = q.gr.replace('GR','ГР ');
-        grEl.className = 'hud-gr '+(q.gr==='GR1'?'gr1':q.gr==='GR2'?'gr2':'gr3');
-
-        const area = document.getElementById('q-area');
-        switch(q.type){
-            case 'choice': area.innerHTML = renderChoice(q); break;
-            case 'multichoice': area.innerHTML = renderMulti(q); break;
-            case 'anomaly': area.innerHTML = renderAnomaly(q); startTimer(q.timer); break;
-            case 'drone': area.innerHTML = renderDrone(q); break;
-            case 'ecofuture': area.innerHTML = renderEcofuture(q); break;
-        }
-        S.multiSelected = new Set();
-        S.droneOrder = [];
-        S.ecoSelected = new Set();
-        if(S.timerInterval) clearInterval(S.timerInterval);
-    }
-
-    function renderChoice(q){
-        const optsHtml = q.opts.map((o,i)=>`<button class="opt" onclick="pickChoice(${i})">${o}</button>`).join('');
-        return `<div class="q-card"><div class="q-tag">${q.tag}</div><div class="q-text">${q.text}</div><div class="q-hint">${q.hint}</div></div><div class="opts-grid">${optsHtml}</div>`;
-    }
-    function pickChoice(i){
-        const q = CASES[S.cur];
-        document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
-        const btns = document.querySelectorAll('.opt');
-        const correct = (i===q.correct);
-        btns[i].classList.add(correct?'correct':'wrong');
-        if(!correct) btns[q.correct].classList.add('reveal');
-        recordAndFeedback(correct, q);
-    }
-
-    function renderMulti(q){
-        const optsHtml = q.opts.map((o,i)=>`<button class="opt" onclick="toggleMulti(this,${i})">${o}</button>`).join('');
-        return `<div class="q-card"><div class="q-tag">${q.tag}</div><div class="q-text">${q.text}</div><div class="q-hint">${q.hint}</div></div>
-        <div class="multi-hint">Обери всі правильні, потім «Підтвердити»</div>
-        <div class="opts-grid">${optsHtml}</div>
-        <button class="btn-confirm" onclick="confirmMulti()">ПІДТВЕРДИТИ ✓</button>`;
-    }
-    function toggleMulti(btn,i){
-        if(S.multiSelected.has(i)){ S.multiSelected.delete(i); btn.classList.remove('selected'); }
-        else{ S.multiSelected.add(i); btn.classList.add('selected'); }
-    }
-    function confirmMulti(){
-        const q = CASES[S.cur];
-        const sel = [...S.multiSelected].sort();
-        const cor = [...q.correctSet].sort();
-        const correct = JSON.stringify(sel)===JSON.stringify(cor);
-        document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
-        document.querySelector('.btn-confirm').disabled=true;
-        document.querySelectorAll('.opt').forEach((b,i)=>{
-            if(q.correctSet.includes(i)) b.classList.add('reveal');
-            else if(S.multiSelected.has(i) && !q.correctSet.includes(i)) b.classList.add('wrong');
+    // Відправка на сервер
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(payload)
         });
-        recordAndFeedback(correct, q);
-    }
-
-    function renderAnomaly(q){
-        const optsHtml = q.opts.map((o,i)=>`<button class="opt" onclick="pickAnomaly(${i})">${o}</button>`).join('');
-        return `<div class="q-card"><div class="q-tag">${q.tag}</div><div class="q-text">⚠️ ${q.scenario}</div><div class="q-hint">${q.hint}</div></div>
-        <div class="timer-container">
-            <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
-            <div class="timer-text" id="timer-text">${q.timer}с</div>
-        </div>
-        <div class="opts-grid">${optsHtml}</div>`;
-    }
-    function startTimer(seconds){
-        S.timeLeft = seconds;
-        const timerFill = document.getElementById('timer-fill');
-        const timerText = document.getElementById('timer-text');
-        S.timerInterval = setInterval(()=>{
-            S.timeLeft -= 0.1;
-            timerFill.style.width = (S.timeLeft/seconds*100)+'%';
-            timerText.textContent = Math.ceil(S.timeLeft)+'с';
-            if(S.timeLeft <= 0){
-                clearInterval(S.timerInterval);
-                if(!document.querySelector('.opt:disabled')){
-                    document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
-                    const q = CASES[S.cur];
-                    document.querySelectorAll('.opt')[q.correct].classList.add('reveal');
-                    recordAndFeedback(false, q);
-                }
-            }
-        }, 100);
-    }
-    function pickAnomaly(i){
-        clearInterval(S.timerInterval);
-        const q = CASES[S.cur];
-        document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
-        const btns = document.querySelectorAll('.opt');
-        const correct = (i===q.correct);
-        btns[i].classList.add(correct?'correct':'wrong');
-        if(!correct) btns[q.correct].classList.add('reveal');
-        recordAndFeedback(correct, q);
-    }
-
-    function renderDrone(q){
-        const itemsHtml = q.items.map((item,i)=>`<div class="sort-item" id="si-${i}" onclick="pickDroneStep(${i})">${item}</div>`).join('');
-        return `<div class="q-card"><div class="q-tag">${q.tag}</div><div class="q-text">🚁 ${q.text}</div><div class="q-hint">${q.hint}</div></div>
-        <div class="drone-scale">${q.items.map((_,i)=>`<div class="drone-step" id="ds-${i}">${i+1}</div>`).join('')}</div>
-        <div class="sort-list">${itemsHtml}</div>
-        <button class="btn-confirm" onclick="confirmDrone()">ЗАПУСТИТИ ДРОН 🚀</button>`;
-    }
-    function pickDroneStep(i){
-        if(S.droneOrder.includes(i)) return;
-        const q = CASES[S.cur];
-        S.droneOrder.push(i);
-        const stepNum = S.droneOrder.length;
-        document.getElementById('si-'+i).classList.add('sort-selected');
-        document.getElementById('ds-'+(stepNum-1)).classList.add('filled');
-        if(stepNum === q.items.length) document.querySelector('.btn-confirm').style.background='var(--cyan)';
-    }
-    function confirmDrone(){
-        const q = CASES[S.cur];
-        const correct = JSON.stringify(S.droneOrder) === JSON.stringify(q.correctOrder);
-        if(!correct){
-            document.querySelectorAll('.sort-item').forEach(el=>el.classList.remove('sort-selected'));
-            document.querySelectorAll('.drone-step').forEach(el=>el.classList.remove('filled'));
-            S.droneOrder = [];
-            alert('💥 Буря! Дрон збився з курсу. Спробуй ще раз.');
+        const data = await res.json();
+        if (data.result === 'already_exists') {
+            alert('Ваші результати вже збережено.');
         } else {
-            document.querySelectorAll('.sort-item').forEach(el=>el.classList.add('sort-correct'));
-            recordAndFeedback(true, q);
+            localStorage.setItem('geo_obolonka_submitted', 'true');
         }
+    } catch (e) {
+        console.error(e);
     }
+}
 
-    function renderEcofuture(q){
-        const cardsHtml = q.opts.map((o,i)=>`<div class="eco-card" id="eco-${i}" onclick="toggleEco(${i})">${o}</div>`).join('');
-        return `<div class="q-card"><div class="q-tag">${q.tag}</div><div class="q-text">🌍 ${q.scenario}</div><div class="q-hint">${q.hint}</div></div>
-        <div class="multi-hint">Обери картки з негативними наслідками</div>
-        <div class="eco-cards">${cardsHtml}</div>
-        <button class="btn-confirm" onclick="confirmEco()">ПРОГНОЗУВАТИ 📊</button>`;
-    }
-    function toggleEco(i){
-        const card = document.getElementById('eco-'+i);
-        if(S.ecoSelected.has(i)){ S.ecoSelected.delete(i); card.classList.remove('selected'); }
-        else{ S.ecoSelected.add(i); card.classList.add('selected'); }
-    }
-    function confirmEco(){
-        const q = CASES[S.cur];
-        const sel = [...S.ecoSelected].sort();
-        const cor = [...q.correctSet].sort();
-        const correct = JSON.stringify(sel)===JSON.stringify(cor);
-        document.querySelectorAll('.eco-card').forEach((c,i)=>{
-            if(q.correctSet.includes(i)) c.classList.add('correct');
-            else if(S.ecoSelected.has(i)) c.classList.add('wrong');
-            c.style.pointerEvents='none';
-        });
-        document.querySelector('.btn-confirm').disabled=true;
-        recordAndFeedback(correct, q);
-    }
+function avg(arr) { return arr.length ? arr.reduce((a,b) => a + b, 0) / arr.length : 0; }
+function color(v) { return v >= 75 ? '#00ff88' : v >= 50 ? '#ffb800' : '#ff3d5a'; }
 
-    function recordAndFeedback(correct, q){
-        S.scores[q.gr].push(correct?1:0);
-        if(correct) spawnParticles();
-
-        // Перевірка на бонусний раунд після завершення блоку
-        const blockEnd = (q.gr==='GR1' && S.cur===4) || (q.gr==='GR2' && S.cur===8) || (q.gr==='GR3' && S.cur===11);
-        if(blockEnd && hasMistakes(q.gr)){
-            showBonusRound(q.gr);
-            return;
-        }
-
-        const fb = correct ? q.fb.c : q.fb.w;
-        const overlay = document.getElementById('fb-overlay');
-        document.getElementById('fb-icon').textContent = fb.icon;
-        document.getElementById('fb-status').textContent = fb.st;
-        document.getElementById('fb-status').style.color = correct?'var(--green)':'var(--red)';
-        document.getElementById('fb-msg').textContent = fb.msg;
-        document.getElementById('fb-fact').innerHTML = fb.fact;
-        document.getElementById('fb-btn').onclick = ()=>{
-            overlay.style.display = 'none';
-            S.cur++;
-            if(S.cur < 12) renderQ();
-            else showSc('sc-eval');
-        };
-        overlay.style.display = 'flex';
-    }
-
-    function hasMistakes(gr){
-        return S.scores[gr].includes(0);
-    }
-
-    function showBonusRound(gr){
-        const mistakes = [];
-        S.scores[gr].forEach((v,i)=>{ if(v===0) mistakes.push(i); });
-        const randIdx = mistakes[Math.floor(Math.random()*mistakes.length)];
-        const bonusCase = CASES.filter(c=>c.gr===gr)[randIdx];
-        const overlay = document.getElementById('fb-overlay');
-        document.getElementById('fb-icon').textContent = '🛡️';
-        document.getElementById('fb-status').textContent = 'БОНУСНИЙ ВИКЛИК';
-        document.getElementById('fb-status').style.color = 'var(--amber)';
-        document.getElementById('fb-msg').textContent = `Давай перевіримо ще раз тему "${bonusCase.tag}"!`;
-        // Рендеримо те саме завдання, але без збереження бала
-        const area = document.getElementById('q-area');
-        if(bonusCase.type==='choice') area.innerHTML = renderChoice(bonusCase);
-        else if(bonusCase.type==='multichoice') area.innerHTML = renderMulti(bonusCase);
-        else if(bonusCase.type==='anomaly') { area.innerHTML = renderAnomaly(bonusCase); startTimer(bonusCase.timer); }
-        else if(bonusCase.type==='drone') area.innerHTML = renderDrone(bonusCase);
-        else if(bonusCase.type==='ecofuture') area.innerHTML = renderEcofuture(bonusCase);
-        // Змінюємо поведінку кнопок, щоб не викликати recordAndFeedback повторно
-        // Для простоти покажемо повідомлення і перейдемо далі
-        document.getElementById('fb-btn').textContent = 'ПРОДОВЖИТИ';
-        document.getElementById('fb-btn').onclick = ()=>{
-            overlay.style.display = 'none';
-            S.cur++;
-            if(S.cur < 12) renderQ();
-            else showSc('sc-eval');
-        };
-        overlay.style.display = 'flex';
-    }
-
-    let evalSel='';
-    function selEval(el,v){
-        document.querySelectorAll('.eval-opt').forEach(o=>o.classList.remove('sel'));
-        el.classList.add('sel');evalSel=v;
-    }
-    function submitData(){
-        if(!evalSel){alert('Будь ласка, оціни свій рівень.');return;}
-
-        const gr1pct=Math.round(avg(S.scores.GR1)*100);
-        const gr2pct=Math.round(avg(S.scores.GR2)*100);
-        const gr3pct=Math.round(avg(S.scores.GR3)*100);
-        const totalPct=Math.round((gr1pct+gr2pct+gr3pct)/3);
-
-        const gapMap={
-            GR1:[
-                {s:S.scores.GR1[0],g:"ГР1_Поняття_географічної_оболонки"},
-                {s:S.scores.GR1[1],g:"ГР1_Цілісність_ГО"},
-                {s:S.scores.GR1[2],g:"ГР1_Закономірності_ГО"},
-                {s:S.scores.GR1[3],g:"ГР1_Компоненти_ПК"},
-                {s:S.scores.GR1[4],g:"ГР1_Зміна_ПК"}
-            ],
-            GR2:[
-                {s:S.scores.GR2[0],g:"ГР2_Причина_зональності"},
-                {s:S.scores.GR2[1],g:"ГР2_Аналіз_карти_зон"},
-                {s:S.scores.GR2[2],g:"ГР2_Читання_карти_зон"},
-                {s:S.scores.GR2[3],g:"ГР2_Порушення_зональності"}
-            ],
-            GR3:[
-                {s:S.scores.GR3[0],g:"ГР3_Висотна_поясність"},
-                {s:S.scores.GR3[1],g:"ГР3_Залежність_висотної_поясності"},
-                {s:S.scores.GR3[2],g:"ГР3_Трансформація_комплексів"}
-            ]
-        };
-        const gaps=[];
-        [...gapMap.GR1,...gapMap.GR2,...gapMap.GR3].forEach(e=>{if(!e.s) gaps.push(e.g);});
-
-        const payload={
-            studentName:S.name,studentClass:S.cls,
-            totalScore:totalPct,
-            scoreGR1:gr1pct,scoreGR2:gr2pct,scoreGR3:gr3pct,
-            gaps,selfEvaluation:evalSel,deviceToken:S.deviceToken,
-            topic:'obolonka'
-        };
-
-        showSc('sc-result');
-        buildResult(payload,gr1pct,gr2pct,gr3pct,totalPct,gaps);
-
-        document.getElementById('loader').style.display='flex';
-        fetch(SCRIPT_URL,{method:'POST',mode:'cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
-            .then(r=>r.json())
-            .then(d=>{
-                document.getElementById('loader').style.display='none';
-                const n=document.getElementById('sent-ok');
-                if (d.result === 'already_exists') {
-                    n.style.borderColor = 'var(--red)';
-                    n.innerHTML = '<div style="color:var(--red); text-align:center; font-weight:600;">⚠ ДОСТУП ОБМЕЖЕНО<br><span style="font-size:13px; color:#a0aec0; font-weight:400;">Твої результати для цієї теми вже зафіксовані в базі.</span></div>';
-                    n.style.display = 'block';
-                } else {
-                    n.style.display = 'block';
-                    localStorage.setItem('geo_obolonka_submitted','true');
-                }
-            })
-            .catch(()=>{
-                document.getElementById('loader').style.display='none';
-                document.getElementById('sent-ok').style.display='block';
-            });
-    }
-    function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;}
-
-    function buildResult(p,gr1,gr2,gr3,total,gaps){
-        const titles={ high:'АНАЛІЗ ОБОЛОНКИ ЗАВЕРШЕНО', mid:'СТАЖУВАННЯ АГЕНТА ТРИВАЄ', low:'СПРАВА НА ДОВИВЧЕННІ' };
-        const t=total>=75?titles.high:total>=50?titles.mid:titles.low;
-        document.getElementById('res-title').textContent=t;
-        document.getElementById('res-name').textContent=p.studentName+' • '+p.studentClass;
-        const clr=(v)=>v>=75?'var(--green)':v>=50?'var(--amber)':'var(--red)';
-        document.getElementById('s-gr1').textContent=gr1+'%';document.getElementById('s-gr1').style.color=clr(gr1);
-        document.getElementById('s-gr2').textContent=gr2+'%';document.getElementById('s-gr2').style.color=clr(gr2);
-        document.getElementById('s-gr3').textContent=gr3+'%';document.getElementById('s-gr3').style.color=clr(gr3);
-        if(gaps.length){
-            const gapLabels={
-                "ГР1_Поняття_географічної_оболонки":"Поняття геооболонки",
-                "ГР1_Цілісність_ГО":"Цілісність",
-                "ГР1_Закономірності_ГО":"Закономірності",
-                "ГР1_Компоненти_ПК":"Компоненти ПК",
-                "ГР1_Зміна_ПК":"Зміна ПК",
-                "ГР2_Причина_зональності":"Причина зональності",
-                "ГР2_Аналіз_карти_зон":"Аналіз карти зон",
-                "ГР2_Читання_карти_зон":"Читання карти зон",
-                "ГР2_Порушення_зональності":"Порушення зональності",
-                "ГР3_Висотна_поясність":"Висотна поясність",
-                "ГР3_Залежність_висотної_поясності":"Залежність поясності",
-                "ГР3_Трансформація_комплексів":"Трансформація комплексів"
-            };
-            const items=gaps.map(g=>`<div class="gap-item">⚠ ${gapLabels[g]||g}</div>`).join('');
-            document.getElementById('gaps-section').innerHTML=`<div class="gaps-box"><div class="gaps-title">ТЕМИ ДЛЯ ПОВТОРЕННЯ</div>${items}</div>`;
-        }
-        const subs={high:"Відмінно! Ти — провідний дослідник.",mid:"Гарна робота! Повтори відмічені теми.",low:"Відкрий атлас і повтори закономірності."};
-        document.getElementById('res-sub').textContent=total>=75?subs.high:total>=50?subs.mid:subs.low;
-        setTimeout(()=>{
-            const circ=326;
-            document.getElementById('ring-fill').style.strokeDashoffset=circ-(circ*total/100);
-            document.getElementById('ring-pct').textContent=total+'%';
-            document.getElementById('ring-fill').style.stroke=clr(total);
-        },200);
-    }
-
-    function spawnParticles(){
-        const colors=['var(--cyan)','var(--green)','var(--amber)','var(--purple)'];
-        for(let i=0;i<12;i++){
-            const p=document.createElement('div');p.className='particle';
-            const sz=3+Math.random()*6,ang=Math.random()*Math.PI*2,dist=60+Math.random()*100;
-            p.style.cssText=`width:${sz}px;height:${sz}px;background:${colors[Math.floor(Math.random()*colors.length)]};left:40%;top:40%;--dx:${Math.cos(ang)*dist}px;--dy:${Math.sin(ang)*dist}px`;
-            document.body.appendChild(p);setTimeout(()=>p.remove(),800);
-        }
-    }
 </script>
 </body>
 </html>
