@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ГЕО-ДЕТЕКТИВ //Відповідай мімікою</title>
+    <title>ГЕО-ДЕТЕКТИВ // Язик = ТАК, Рот = НІ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Fredoka+One&family=Rajdhani:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -18,8 +18,9 @@
         .auth-title { font-family:'Fredoka One',cursive; font-size:26px; color:#00d4ff; margin-bottom:6px; }
         .auth-sub { font-size:13px; color:#5a7399; margin-bottom:18px; }
         .field-label { font-size:11px; letter-spacing:1.5px; color:#5a7399; text-transform:uppercase; margin-bottom:6px; font-family:'IBM Plex Mono',monospace; text-align:left; }
-        select { width:100%; padding:12px 14px; background:rgba(255,255,255,.04); border:1px solid #1e3a5f; border-radius:10px; color:#e2eaff; font-size:15px; font-family:inherit; margin-bottom:14px; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7399' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; }
-        select:focus { outline:none; border-color:#00d4ff; }
+        select { width:100%; padding:12px 14px; background:#1a2a44; border:1px solid #2e4a7a; border-radius:10px; color:#ffffff; font-size:15px; font-family:inherit; margin-bottom:14px; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ffffff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; cursor:pointer; }
+        select:focus { outline:none; border-color:#00d4ff; background:#1e2f50; }
+        select option { background:#1a2a44; color:#ffffff; padding:10px; }
         .btn { width:100%; padding:15px; background:#00d4ff; color:#060a14; border:none; border-radius:14px; font-family:'Fredoka One',cursive; font-size:18px; letter-spacing:1px; cursor:pointer; transition:transform .15s, opacity .15s; }
         .btn:active { transform:scale(0.97); }
         .btn:disabled { opacity:.4; pointer-events:none; }
@@ -105,6 +106,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
 <script>
+    // ---------- БАЗА ДАНИХ (класи) ----------
     const DB = {
         "7-А":["Ашихмін Ярослав","Внуков Веніамін","Волков Давид","Вулєр Іван","Дабіжа Марія","Димитров Дмитро","Кирилюк Артем","Косар Нікіта","Кравчук Мілана","Кривенок Ілля","Лазаревич Георгій","Лазаревич Ніколь","Лісіцина Дар'я","Нестерова Варвара","Перванчук Марк","Полуянов Семен","Попков Андрій","Савченко Наталія","Скопенко Ніка","Усольцева Аріна","Халабура Вікторія","Химич Артем","Якутенко Володимир","Ященко Анастасія","Бохонок Олеся"],
         "7-Б":["Алєксєюк Ірина","Андрусік Ул'яна","Болясна Аріна","Войтех Богдан","Голімбовська Єлизавета","Гуляєва Марія","Зєнов Геннадій","Кожухар Злата","Колесниченко Артем","Коростельова Анфіса","Кузьмін Дмитро","Левченко Тимур","Литовченко Кіра","Михайлова Ксенія","Ніколаєв Ілля","Ніща Дар'я","Переберін Артем","Сич Кіріл","Сташко Кароліна","Стерпул Олександр","Харченко Гліб","Хомутова Анна","Чернюк Андрій","Шаріпова Анастасія","Штурхаль Марія","Яремчук Єгор","Бохонок Олеся"],
@@ -114,20 +116,21 @@
     };
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUCjrOlZuUGPrGzauifB6v-qoVT9arKkCKlXZxiQSgYvDlFJyO7jg0BEe_OtHrKfEDXg/exec";
     const TASK_TIMEOUT_MS = 15000;
-    const TASKS = [
-        { statement: "Природний комплекс — це поєднання природних компонентів, нерозривно пов'язаних між собою.", isTrue: true, gr:"GR1", gap:"Поняття ПК", explain:"Так! ПК = компоненти + зв'язок." },
-        { statement: "Географічна оболонка — найбільший природний комплекс на Землі.", isTrue: true, gr:"GR1", gap:"ГО — найбільший ПК", explain:"Так! ГО охоплює всю Землю." },
-        { statement: "Цілісність ГО — це взаємозв'язки між усіма її компонентами.", isTrue: true, gr:"GR1", gap:"Цілісність ГО", explain:"Так! Зміна одного компонента змінює всі." },
-        { statement: "Ритмічність — це повторюваність природних процесів. Приклад: зміна дня і ночі.", isTrue: true, gr:"GR1", gap:"Ритмічність", explain:"Так! День/ніч — ритмічність." },
-        { statement: "Широтна зональність — зміна ПК від екватора до полюсів.", isTrue: true, gr:"GR2", gap:"Широтна зональність", explain:"Так! Від екватора до полюсів змінюються зони." },
-        { statement: "Секторність — зміна природних зон від узбережжя вглиб материка.", isTrue: true, gr:"GR2", gap:"Секторність", explain:"Так! Від моря вглиб — зміна клімату." },
-        { statement: "Азональні ПК формуються ТІЛЬКИ під впливом клімату.", isTrue: false, gr:"GR2", gap:"Азональні ПК", explain:"Ні! Вони залежать від рельєфу та будови земної кори." },
-        { statement: "Природні зони — це дрібні ділянки лісу або поля.", isTrue: false, gr:"GR2", gap:"Природні зони", explain:"Ні! Природні зони — величезні території." },
-        { statement: "Висотна поясність НЕ залежить від висоти гір.", isTrue: false, gr:"GR3", gap:"Висотна поясність", explain:"Ні! Чим вищі гори — тим більше поясів." },
-        { statement: "Кількість висотних поясів однакова у всіх горах світу.", isTrue: false, gr:"GR3", gap:"Кількість поясів", explain:"Ні! Залежить від висоти та широти." },
-        { statement: "Вирубка лісів впливає ТІЛЬКИ на рослинність.", isTrue: false, gr:"GR3", gap:"Вплив людини на ПК", explain:"Ні! Знищення лісу змінює ґрунти, воду, тварин." },
-        { statement: "Антропогенні комплекси займають менше 10% території України.", isTrue: false, gr:"GR3", gap:"Антропогенні ПК", explain:"Ні! Вони займають близько 85%." }
-    ];
+// Твердження (6 так / 6 ні) - Спрощені для дітей
+const TASKS = [
+    { statement: "Природний комплекс — це коли повітря, вода, рослини і тварини в одному місці пов'язані між собою.", isTrue: true, gr:"GR1", gap:"Поняття ПК", explain:"Так! У природі всі компоненти товаришують і пов'язані." },
+    { statement: "Географічна оболонка — це найбільший природний дім, який об'єднує всю нашу планету Земля.", isTrue: true, gr:"GR1", gap:"ГО — найбільший ПК", explain:"Так! Це найбільший комплекс, що охоплює всю Землю." },
+    { statement: "Цілісність природи означає: якщо зіпсувати щось одне (наприклад, воду), то стане погано всім тваринам і рослинам.", isTrue: true, gr:"GR1", gap:"Цілісність ГО", explain:"Так! Якщо змінити один шматочок природи, зміниться все інше." },
+    { statement: "Ритмічність у природі — це коли події повторюються, наприклад, як зміна дня і ніч або зими і літа.", isTrue: true, gr:"GR1", gap:"Ритмічність", explain:"Так! Природа повторює свої процеси, як годинник." },
+    { statement: "Широтна зональність — це коли природа змінюється, якщо їхати від гарячого екватора до холодних полюсів.", isTrue: true, gr:"GR2", gap:"Широтна зональність", explain:"Так! Від екватора до полюсів стає холодніше, тому й зони змінюються." },
+    { statement: "Секторність — це коли природа біля моря зовсім не така, як далеко вглиб материка.", isTrue: true, gr:"GR2", gap:"Секторність", explain:"Так! Біля моря повітря вологіше, а в глибині землі — сухіше." },
+    { statement: "Озера, болота та гори формуються ТІЛЬКИ через погоду та дощі.", isTrue: false, gr:"GR2", gap:"Азональні ПК", explain:"Ні! Вони з'являються через рельєф та будову земної кори." },
+    { statement: "Природні зони (як-от ліси чи степи) — це зовсім маленькі ділянки землі, як шкільний двір або грядка.", isTrue: false, gr:"GR2", gap:"Природні зони", explain:"Ні! Природні зони — це величезні території на карті." },
+    { statement: "Які рослини ростуть у горах, зовсім НЕ залежить від висоти цих гір.", isTrue: false, gr:"GR3", gap:"Висотна поясність", explain:"Ні! Чим вищі гори — тим холодніше на верхівці й тим більше там різних поясів." },
+    { statement: "Кількість різних рослинних поясів абсолютно однакова у всіх горах світу.", isTrue: false, gr:"GR3", gap:"Кількість поясів", explain:"Ні! Це залежить від висоти гори та від того, де вона стоїть — у теплих чи холодних країнах." },
+    { statement: "Якщо люди зрубають ліс, то це зашкодить ТІЛЬКИ деревам.", isTrue: false, gr:"GR3", gap:"Вплив людини на ПК", explain:"Ні! Без лісу зникнуть тварини, зіпсується ґрунт і зникне вода." },
+    { statement: "Міста, дороги та засіяні поля займають дуже маленьку частину території України.", isTrue: false, gr:"GR3", gap:"Антропогенні ПК", explain:"Ні! Люди змінили майже всю Україну (близько 85% землі)." }
+];
     const RANKS = [
         { min:90, emoji:"🏆", title:"Агент-Геній", color:"#FFD700" },
         { min:75, emoji:"🥇", title:"Польовий агент", color:"#00ff88" },
@@ -135,6 +138,7 @@
         { min:0,  emoji:"🎖️", title:"Агент-стажер", color:"#ffb800" }
     ];
 
+    // ---------- ГЛОБАЛЬНІ ЗМІННІ ----------
     let studentName = "", studentClass = "";
     let currentTaskIdx = 0;
     let scores = { GR1:[], GR2:[], GR3:[] };
@@ -148,12 +152,14 @@
     let taskStartTime = 0;
     let finalRank = null, finalScore = 0;
     let lastAnswerTimestamp = 0;
-    let currentFaceLandmarks = null; // зберігаємо координати обличчя для сердечок
+    let currentFaceLandmarks = null;
+    let modelReady = false;          // чи отримали перші landmarks
+    let gameStarted = false;         // чи дозволено починати завдання
 
     let tongueBuffer = [];
     let openMouthBuffer = [];
-    const BUFFER_SIZE = 15;
-    const CONFIRM_COUNT = 10;
+    const BUFFER_SIZE = 20;
+    const CONFIRM_COUNT = 12;
 
     const video = document.getElementById('video');
     const statusText = document.getElementById('status-text');
@@ -165,6 +171,7 @@
     const timeoutBar = document.getElementById('timeout-bar');
     const progressDots = document.getElementById('progress-dots');
 
+    // ---------- ДОПОМІЖНІ ФУНКЦІЇ ----------
     function showError(msg, ms=3500) {
         const t = document.getElementById('error-toast');
         t.textContent = msg; t.classList.add('show');
@@ -201,14 +208,12 @@
         } catch(e) {}
     }
 
-    // Виправлена spawnHearts з перевіркою наявності точок
     function spawnHearts(faceLandmarks) {
         if (!faceLandmarks) return;
         const rect = video.getBoundingClientRect();
-        const offsetX = rect.left, offsetY = rect.top;
         const w = rect.width, h = rect.height;
-        const points = [faceLandmarks[118], faceLandmarks[347]];
-        points.forEach(pos => {
+        const offsetX = rect.left, offsetY = rect.top;
+        [faceLandmarks[118], faceLandmarks[347]].forEach(pos => {
             if (!pos) return;
             let x = (1 - pos.x) * w + offsetX;
             let y = pos.y * h + offsetY;
@@ -224,6 +229,7 @@
         });
     }
 
+    // ---------- АВТОРИЗАЦІЯ ----------
     document.getElementById('sel-class').addEventListener('change', function() {
         const c = this.value;
         const s = document.getElementById('sel-name');
@@ -242,6 +248,7 @@
         showScreen('screen-start');
     });
 
+    // ---------- СТАРТ ГРИ ----------
     document.getElementById('btn-start').addEventListener('click', startGame);
     async function startGame() {
         const btn = document.getElementById('btn-start');
@@ -256,7 +263,7 @@
             showError('Потрібен доступ до камери!', 5000);
             btn.disabled = false; return;
         }
-        setLoading(true, 'Завантажую FaceMesh...');
+        setLoading(true, 'Завантажую FaceMesh та калібрую...');
         try {
             await initFaceMesh();
         } catch(e) {
@@ -264,7 +271,13 @@
             showError("Не вдалося завантажити FaceMesh.", 5000);
             stopCamera(); btn.disabled=false; return;
         }
+        // Чекаємо, поки модель отримає перші landmarks (максимум 3 секунди)
+        let waitStart = Date.now();
+        while (!modelReady && (Date.now() - waitStart) < 3000) {
+            await new Promise(r => setTimeout(r, 100));
+        }
         setLoading(false);
+        gameStarted = true;
         showScreen(null);
         document.getElementById('game-hud').style.display='flex';
         document.getElementById('status-box').style.display='block';
@@ -278,6 +291,10 @@
         if (camera) camera.stop();
         if (mediaStream) mediaStream.getTracks().forEach(t=>t.stop());
         mediaStream = null;
+        if (faceMesh) faceMesh.close();
+        faceMesh = null;
+        modelReady = false;
+        gameStarted = false;
     }
 
     async function initFaceMesh() {
@@ -311,7 +328,11 @@
         noFaceFrames = 0;
         noFaceWarn.style.display = 'none';
         const landmarks = results.multiFaceLandmarks[0];
-        currentFaceLandmarks = landmarks; // зберігаємо для сердечок
+        currentFaceLandmarks = landmarks;
+        if (!modelReady) {
+            modelReady = true;
+            console.log("FaceMesh ready, landmarks received");
+        }
 
         const lipTop = landmarks[13].y;
         const lipBottom = landmarks[14].y;
@@ -328,7 +349,7 @@
         openMouthBuffer.push(mouthOpen && !tongueVisible);
         if (openMouthBuffer.length > BUFFER_SIZE) openMouthBuffer.shift();
 
-        if (!isWaitingForResponse) return;
+        if (!isWaitingForResponse || !gameStarted) return;
         if ((Date.now() - lastAnswerTimestamp) < 600) return;
 
         if (tongueBuffer.filter(v=>v).length >= CONFIRM_COUNT) {
@@ -341,6 +362,7 @@
         }
     }
 
+    // ---------- ЛОГІКА ЗАВДАНЬ ----------
     function buildDots() {
         progressDots.innerHTML = '';
         TASKS.forEach((_,i) => {
@@ -424,6 +446,7 @@
         answerHint.style.display = hint ? 'block' : 'none';
     }
 
+    // ---------- ЕКРАН ОЦІНКИ ТА ВІДПРАВКА ----------
     function showEvalScreen() {
         document.getElementById('game-hud').style.display='none';
         document.getElementById('status-box').style.display='none';
@@ -477,14 +500,15 @@
 
         const saveStatus = document.getElementById('save-status');
         let saved = false;
-        for (let i=1;i<=3&&!saved;i++) {
+        for (let i=1;i<=3 && !saved;i++) {
             try {
-                const res = await fetch(SCRIPT_URL, {method:'POST', mode:'cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify(payload)});
+                const res = await fetch(SCRIPT_URL, { method:'POST', mode:'cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify(payload) });
                 const data = await res.json();
                 saved = true;
-                saveStatus.textContent = data.result==='already_exists' ? '✅ Результати вже збережено.' : '✅ Звіт надіслано вчителю!';
+                saveStatus.textContent = data.result === 'already_exists' ? '✅ Результати вже збережено.' : '✅ Звіт надіслано вчителю!';
                 if (data.result !== 'already_exists') localStorage.setItem('geo_obolonka_submitted','true');
             } catch(e) {
+                console.error("Помилка надсилання:", e);
                 if (i===3) saveStatus.textContent = '⚠️ Не вдалося надіслати. Скажи вчителю.';
                 else await new Promise(r=>setTimeout(r,1500));
             }
