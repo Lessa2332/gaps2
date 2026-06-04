@@ -3,546 +3,644 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ГЕО-ДЕТЕКТИВ // Язик = ТАК, Рот = НІ</title>
+    <title>ГЕО-ДЕТЕКТИВ // Посмішка = ТАК, Здивування = НІ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Fredoka+One&family=Rajdhani:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
-        body { overflow:hidden; background:#060a14; font-family:'Nunito',sans-serif; }
+        body { overflow:hidden; background:#060a14; font-family:'Nunito',sans-serif; color: #fff; }
         #video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; transform:scaleX(-1); }
         .heart-float { position:absolute; z-index:200; font-size:2rem; animation:floatUp 1.5s ease-out forwards; pointer-events:none; }
         @keyframes floatUp { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-100px) scale(1.5)} }
-        .screen { position:fixed; inset:0; z-index:3000; background:rgba(6,10,20,0.96); backdrop-filter:blur(12px); display:none; flex-direction:column; align-items:center; justify-content:center; gap:14px; color:#e2eaff; text-align:center; padding:20px; overflow-y:auto; }
-        .screen.active { display:flex; }
-        .auth-card { background:#111d35; border:2px solid #1e3a5f; border-radius:24px; padding:28px 20px; max-width:400px; width:100%; }
-        .auth-title { font-family:'Fredoka One',cursive; font-size:26px; color:#00d4ff; margin-bottom:6px; }
-        .auth-sub { font-size:13px; color:#5a7399; margin-bottom:18px; }
-        .field-label { font-size:11px; letter-spacing:1.5px; color:#5a7399; text-transform:uppercase; margin-bottom:6px; font-family:'IBM Plex Mono',monospace; text-align:left; }
-        select { width:100%; padding:12px 14px; background:#1a2a44; border:1px solid #2e4a7a; border-radius:10px; color:#ffffff; font-size:15px; font-family:inherit; margin-bottom:14px; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ffffff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; cursor:pointer; }
-        select:focus { outline:none; border-color:#00d4ff; background:#1e2f50; }
-        select option { background:#1a2a44; color:#ffffff; padding:10px; }
-        .btn { width:100%; padding:15px; background:#00d4ff; color:#060a14; border:none; border-radius:14px; font-family:'Fredoka One',cursive; font-size:18px; letter-spacing:1px; cursor:pointer; transition:transform .15s, opacity .15s; }
-        .btn:active { transform:scale(0.97); }
-        .btn:disabled { opacity:.4; pointer-events:none; }
-        .btn-outline { background:transparent; border:2px solid #00d4ff; color:#00d4ff; }
-        .hud { position:absolute; top:16px; left:16px; right:16px; z-index:150; display:flex; justify-content:space-between; align-items:center; pointer-events:none; }
-        .hud-logo { font-family:'Fredoka One',cursive; font-size:20px; color:#00d4ff; text-shadow:0 0 15px rgba(0,212,255,0.5); }
-        .hud-badge { background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.25); color:#00d4ff; padding:6px 14px; border-radius:20px; font-family:'IBM Plex Mono',monospace; font-size:12px; }
-        #status-box { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); z-index:100; width:90%; max-width:480px; background:rgba(6,10,20,0.92); border:1px solid #1e3a5f; border-radius:24px; padding:16px 18px 20px; text-align:center; backdrop-filter:blur(12px); }
-        #status-text { font-size:1.05rem; font-weight:700; color:#e2eaff; margin-bottom:8px; line-height:1.4; }
-        #instruction { font-size:0.85rem; color:#ffb800; font-weight:700; }
-        #timeout-bar { position:absolute; bottom:0; left:0; height:5px; background:#00d4ff; border-radius:0 0 24px 24px; transition:width .1s linear; width:100%; }
-        #feedback { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:5rem; z-index:200; display:none; animation:popIn .3s ease; }
-        @keyframes popIn { 0%{transform:translate(-50%,-50%) scale(0.5)} 60%{transform:translate(-50%,-50%) scale(1.2)} 100%{transform:translate(-50%,-50%) scale(1)} }
-        #answer-hint { position:absolute; top:calc(50% + 60px); left:50%; transform:translateX(-50%); z-index:200; background:rgba(6,10,20,0.9); border-radius:14px; padding:10px 20px; color:#e2eaff; font-size:0.9rem; font-weight:700; display:none; text-align:center; max-width:85vw; }
-        #expression-indicator { position:absolute; top:76px; right:18px; z-index:200; font-size:2rem; background:rgba(0,0,0,0.5); border-radius:14px; padding:8px 12px; display:none; backdrop-filter:blur(4px); }
-        #no-face-warning { position:absolute; top:130px; left:50%; transform:translateX(-50%); z-index:200; background:rgba(255,184,0,0.15); border:1px solid #ffb800; border-radius:12px; padding:9px 16px; color:#ffb800; font-size:0.82rem; display:none; white-space:nowrap; }
-        #progress-dots { position:absolute; top:66px; left:50%; transform:translateX(-50%); z-index:150; display:none; gap:6px; }
-        .pdot { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,0.18); transition:background .3s; }
+        
+        /* Прості стилі для екранів та HUD (адаптуйте під ваші класи за потреби) */
+        .screen { position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(6,10,20,0.85); padding:20px; text-align:center; }
+        .screen-active { display:flex !important; }
+        #game-hud { position:absolute; top:20px; left:20px; right:20px; z-index:5; display:flex; justify-content:between; align-items:center; pointer-events:none; }
+        #status-box { position:absolute; bottom:120px; left:20px; right:20px; z-index:5; background:rgba(13,27,62,0.9); padding:15px; border-radius:12px; border:1px solid #00d4ff; text-align:center; }
+        #expr-indicator { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); z-index:5; font-size:3rem; background:rgba(0,0,0,0.6); padding:10px 20px; border-radius:50px; }
+        #progress-dots { position:absolute; top:80px; left:50%; transform:translateX(-50%); z-index:5; display:flex; gap:8px; }
+        .pdot { width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,0.3); border:1px solid rgba(0,0,0,0.5); }
+        .pdot.current { background:#00d4ff; box-shadow:0 0 8px #00d4ff; }
         .pdot.done-correct { background:#00ff88; }
         .pdot.done-wrong { background:#ff3d5a; }
-        .pdot.current { background:#00d4ff; animation:pulse 1s infinite; }
-        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.35)} }
-        #error-toast { position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9000; background:#ff3d5a; color:#fff; padding:13px 22px; border-radius:14px; font-weight:700; font-size:14px; display:none; max-width:88vw; text-align:center; }
-        #error-toast.show { display:block; animation:fadeIn .3s; }
-        @keyframes fadeIn { from{opacity:0;transform:translateX(-50%) translateY(-8px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-        .rule-box { border-radius:16px; padding:13px 22px; width:100%; max-width:320px; }
-        .rule-yes { background:rgba(0,255,136,0.08); border:2px solid rgba(0,255,136,0.35); }
-        .rule-no { background:rgba(255,61,90,0.08); border:2px solid rgba(255,61,90,0.35); }
-        .eval-option { background:rgba(255,255,255,0.05); border:2px solid #1e3a5f; border-radius:16px; padding:14px 20px; width:88%; max-width:320px; cursor:pointer; font-size:1rem; font-weight:700; transition:border-color .2s, background .2s; }
-        .eval-option.selected { border-color:#00d4ff; background:rgba(0,212,255,0.1); }
-        .result-stat { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:85%; max-width:340px; }
-        .stat-box { background:rgba(17,29,53,0.8); border:1px solid #1e3a5f; border-radius:14px; padding:12px 8px; text-align:center; }
-        .stat-box .value { font-size:1.8rem; font-weight:900; }
-        .stat-box .label { font-size:0.72rem; color:#5a7399; }
-        .gaps-box { background:rgba(255,61,90,0.1); border:1px solid rgba(255,61,90,0.3); border-radius:14px; padding:14px 16px; text-align:left; width:88%; max-width:400px; }
-        .gap-item { padding:5px 0; border-bottom:1px solid #1e3a5f; color:#d0a0a8; font-size:0.88rem; }
-        #cert-canvas { border-radius:20px; max-width:340px; width:100%; box-shadow:0 8px 40px rgba(0,0,0,0.6); }
-        #screen-lock { z-index:5000; background:#060a14; }
-        #loading-overlay { position:fixed; inset:0; z-index:8000; background:rgba(6,10,20,0.97); display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; color:#e2eaff; }
-        #loading-overlay.show { display:flex; }
-        .spinner { width:48px; height:48px; border:4px solid rgba(0,212,255,0.2); border-top-color:#00d4ff; border-radius:50%; animation:spin 0.8s linear infinite; }
-        @keyframes spin { to{transform:rotate(360deg)} }
+        #timeout-bar-container { position:absolute; top:0; left:0; right:0; height:6px; background:rgba(255,255,255,0.1); z-index:6; }
+        #timeout-bar { width:100%; height:100%; background:#00d4ff; transition:width 0.1s linear; }
+        #feedback-el { position:absolute; top:35%; left:50%; transform:translate(-50%,-50%); z-index:100; font-size:6rem; display:none; text-shadow:0 0 20px rgba(0,0,0,0.8); }
+        #answer-hint { position:absolute; top:55%; left:50%; transform:translate(-50%,-50%); z-index:100; background:rgba(0,0,0,0.85); padding:15px 25px; border-radius:12px; max-width:80%; text-align:center; font-size:1.3rem; display:none; border:2px solid #fff; }
+        .stat-box { background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; text-align:center; min-width:80px; }
+        .stat-box .value { font-size:1.5rem; font-weight:900; }
+        .stat-box .label { font-size:0.8rem; color:rgba(255,255,255,0.6); }
+        #gaps-container { margin-top:15px; text-align:left; background:rgba(255,61,90,0.1); padding:10px; border-radius:8px; border:1px solid rgba(255,61,90,0.3); }
+        .gap-item { font-size:0.85rem; margin:4px 0; color:rgba(255,255,255,0.8); }
+        #cert-canvas { display:none; margin-top:15px; max-width:100%; height:auto; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
-<div id="error-toast"></div>
-<div id="loading-overlay"><div class="spinner"></div><p id="loading-text" style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#00d4ff;">Завантажую камеру...</p></div>
+    <video id="video" autoplay playsinline></video>
+    
+    <div id="timeout-bar-container"><div id="timeout-bar"></div></div>
+    <div id="feedback-el"></div>
+    <div id="answer-hint"></div>
 
-<div id="screen-lock" class="screen"><div style="font-size:4rem">🔐</div><h2 style="font-family:'Fredoka One',cursive;font-size:1.8rem;">Звіт вже надіслано!</h2><p style="color:#5a7399;">Твої результати вже у вчителя.</p><button class="btn" style="max-width:260px;margin-top:12px;" onclick="localStorage.removeItem('geo_obolonka_submitted');location.reload()">Пройти ще раз</button></div>
+    <div id="game-hud">
+        <div id="hud-gr" style="color:#00d4ff; font-weight:900; font-size:1.2rem; background:rgba(6,10,20,0.7); padding:5px 15px; border-radius:20px;">ГР 1</div>
+    </div>
+    
+    <div id="progress-dots"></div>
+    
+    <div id="status-box">
+        <p id="status-text" style="font-size:1.1rem; font-weight:700; line-height:1.4;"></p>
+    </div>
+    
+    <div id="expr-indicator">😐</div>
+    <div id="no-face-warn" style="position:absolute; top:20px; left:50%; transform:translateX(-50%); background:#ff3d5a; color:#fff; padding:8px 16px; border-radius:20px; z-index:10; display:none; font-weight:700;">⚠️ Камера не бачить обличчя!</div>
 
-<div id="screen-auth" class="screen active">
-    <div class="auth-card"><div class="auth-title">🔍 Авторизація агента</div><div class="auth-sub">Введи дані для доступу до справи</div>
-    <div class="field-label">Підрозділ (клас)</div>
-    <select id="sel-class"><option value="">— Оберіть клас —</option><option>7-А</option><option>7-Б</option><option>7-В</option><option>7-Г</option><option>7-Д</option></select>
-    <div class="field-label">Позивний (прізвище)</div>
-    <select id="sel-name"><option value="">— Спочатку оберіть клас —</option></select>
-    <button class="btn" id="btn-auth" disabled>ПРОДОВЖИТИ →</button></div>
-</div>
+    <div id="screen-eval" class="screen" style="display:none;">
+        <h2 style="color:#00d4ff; margin-bottom:15px;">Як тобі було проходити місію?</h2>
+        <div style="display:flex; gap:15px; margin-bottom:25px;">
+            <button class="eval-option" style="background:#0d1b3e; color:#fff; border:2px solid #00d4ff; padding:15px; border-radius:12px; font-size:1.1rem; cursor:pointer;">💪 Легко й весело</button>
+            <button class="eval-option" style="background:#0d1b3e; color:#fff; border:2px solid #ffb800; padding:15px; border-radius:12px; font-size:1.1rem; cursor:pointer;">🤔 Треба подумати</button>
+            <button class="eval-option" style="background:#0d1b3e; color:#fff; border:2px solid #ff3d5a; padding:15px; border-radius:12px; font-size:1.1rem; cursor:pointer;">🆘 Було складно</button>
+        </div>
+        <button id="btn-submit" disabled style="background:#00ff88; color:#060a14; border:none; padding:12px 30px; border-radius:25px; font-size:1.2rem; font-weight:900; cursor:pointer;">Отримати сертифікат</button>
+    </div>
 
-<div id="screen-start" class="screen">
-    <div style="font-size:3.5rem">🌍</div><h1 style="font-family:'Fredoka One',cursive;font-size:2rem;">Операція «Гео-Оболонка»</h1>
-    <p style="color:#aac4e8;">Відповідай на 12 тверджень мімікою:</p>
-    <div class="rule-box rule-yes"><p style="color:#00ff88;font-size:1.1rem;font-weight:900;">😛 Покажи язик = ТАК</p></div>
-    <div class="rule-box rule-no"><p style="color:#ff3d5a;font-size:1.1rem;font-weight:900;">😮 Відкрий рот (без язика) = НІ</p></div>
-    <p style="font-size:0.8rem;color:#5a7399;">Утримуй вираз ~1 секунду • 15 секунд на питання</p>
-    <button class="btn" id="btn-start" style="max-width:280px;">🚀 ПОЇХАЛИ!</button>
-</div>
+    <div id="screen-result" class="screen" style="display:none; overflow-y:auto; justify-content:flex-start; padding-top:40px;">
+        <div id="result-emoji" style="font-size:5rem; margin-bottom:10px;">🏆</div>
+        <h1 id="rank-title" style="font-size:2rem; font-weight:900; margin-bottom:5px;"></h1>
+        <p id="rank-label" style="font-size:1.2rem; color:rgba(255,255,255,0.7); margin-bottom:20px;"></p>
+        
+        <div id="result-stats" style="display:flex; gap:15px; margin-bottom:15px;"></div>
+        <div id="gaps-container" style="width:100%; max-width:400px; margin-bottom:20px;"></div>
+        
+        <button id="btn-save-cert" style="background:#00d4ff; color:#060a14; border:none; padding:10px 24px; border-radius:20px; font-weight:900; cursor:pointer; font-size:1rem; margin-bottom:20px;">💾 Зберегти сертифікат на пристрій</button>
+        <p id="save-status" style="font-size:0.9rem; color:#00ff88; margin-bottom:20px;"></p>
+        
+        <canvas id="cert-canvas"></canvas>
+    </div>
 
-<video id="video" autoplay playsinline muted></video>
-<div class="hud" id="game-hud" style="display:none;"><div class="hud-logo">ГЕО-ДЕТЕКТИВ</div><div class="hud-badge" id="hud-gr">СЕКТОР 8</div></div>
-<div id="progress-dots"></div>
-<div id="status-box" style="display:none;"><div id="status-text">Завантаження...</div><div id="instruction">😛 Язик = Так &nbsp;•&nbsp; 😮 Рот (без язика) = Ні</div><div id="timeout-bar"></div></div>
-<div id="feedback"></div><div id="answer-hint"></div><div id="expression-indicator">😐</div><div id="no-face-warning">⚠️ Покажи обличчя в камеру</div>
+    <div id="screen-lock" class="screen" style="display:none; background:#060a14;">
+        <div style="font-size:4rem; margin-bottom:15px;">🔒</div>
+        <h2>Місію вже виконано!</h2>
+        <p style="color:rgba(255,255,255,0.6); margin-top:10px; max-width:300px;">Твій звіт та сертифікат успішно надіслано вчителю. Повторне проходження не потрібне.</p>
+    </div>
 
-<div id="screen-eval" class="screen"><div style="font-size:3rem">📋</div><h2 style="font-family:'Fredoka One',cursive;font-size:1.8rem;">Звіт агента</h2><p>12 завдань виконано! Оціни себе:</p>
-<div class="eval-option" id="eval-1">💪 Впевнено — все зрозуміло!</div><div class="eval-option" id="eval-2">🤔 Частково — щось незрозуміло</div><div class="eval-option" id="eval-3">🆘 Потребую підтримки</div>
-<button class="btn" id="btn-submit" disabled>НАДІСЛАТИ ЗВІТ 📤</button></div>
-
-<div id="screen-result" class="screen"><div style="font-size:2.5rem" id="result-emoji">🎉</div><h2 id="rank-title">Місія виконана!</h2><p id="rank-label"></p><div class="result-stat" id="result-stats"></div><div class="gaps-box" id="gaps-container"></div><p id="save-status">Зберігаємо...</p><canvas id="cert-canvas" width="680" height="960"></canvas><button class="btn" id="btn-save-cert">💾 ЗБЕРЕГТИ СЕРТИФІКАТ</button><button class="btn btn-outline" onclick="location.reload()">ЗАВЕРШИТИ</button></div>
-
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
-
-<script>
-    // ---------- БАЗА ДАНИХ (класи) ----------
-    const DB = {
-        "7-А":["Ашихмін Ярослав","Внуков Веніамін","Волков Давид","Вулєр Іван","Дабіжа Марія","Димитров Дмитро","Кирилюк Артем","Косар Нікіта","Кравчук Мілана","Кривенок Ілля","Лазаревич Георгій","Лазаревич Ніколь","Лісіцина Дар'я","Нестерова Варвара","Перванчук Марк","Полуянов Семен","Попков Андрій","Савченко Наталія","Скопенко Ніка","Усольцева Аріна","Халабура Вікторія","Химич Артем","Якутенко Володимир","Ященко Анастасія","Бохонок Олеся"],
-        "7-Б":["Алєксєюк Ірина","Андрусік Ул'яна","Болясна Аріна","Войтех Богдан","Голімбовська Єлизавета","Гуляєва Марія","Зєнов Геннадій","Кожухар Злата","Колесниченко Артем","Коростельова Анфіса","Кузьмін Дмитро","Левченко Тимур","Литовченко Кіра","Михайлова Ксенія","Ніколаєв Ілля","Ніща Дар'я","Переберін Артем","Сич Кіріл","Сташко Кароліна","Стерпул Олександр","Харченко Гліб","Хомутова Анна","Чернюк Андрій","Шаріпова Анастасія","Штурхаль Марія","Яремчук Єгор","Бохонок Олеся"],
-        "7-В":["Бєгу Євгеній","Білоус Катерина","Бодьо Арина","Величко Данило","Гаврилова Кира","Гаврилова Маргарита","Гєчева Вероніка","Гордієнко Дмитро","Іваньоха Мирослав","Ісхаков Кирило","Кушнір Віталіна","Левченко Олександр","Мацієвич Дмитро","Мельниченко Анастасія","Муравйов Андрій","Ніколайчук Іван","Остапчук Ангеліна","Охват Софія","Пєшкова Поліна","Піроженко Анна","Саванчук Крістіна","Чермних Єгор","Бохонок Олеся"],
-        "7-Г":["Баличев Давід","Білоножкіна Вікторія","Бохонок Олеся","Григор'єв Максим","Єленич Софія","Жемчужникова Дар'я","Карп Христина","Карташов Михайло","Клименко Назар","Ковальов Володимир","Маслій Руслан","Мельников Тимур","Потребенко Меланія","Раєнко Таїсія","Саранін Олександр","Солодухіна Жанна","Сопель Максим","Стоянов Владислав","Чеховський Кирило","Чорний Акім","Шеремет Ернест"],
-        "7-Д":["Балинський Вячеслав","Бохонок Олеся","Бурлак Аміна","Ганошенко Маттіа","Грозивчак Олександр","Дойчева Ангеліна","Касьянова Аріна","Кербенко Артем","Ковальчук Глєб","Лебін Ярослав","Маслаков Артем","Масленніков Іван","Михайловська Катерина","Перепьолка Таїсія","Петрова Аріна","Прокопенко Ярослав","Семенов Семен","Ткаченко Демір"]
-    };
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUCjrOlZuUGPrGzauifB6v-qoVT9arKkCKlXZxiQSgYvDlFJyO7jg0BEe_OtHrKfEDXg/exec";
-    const TASK_TIMEOUT_MS = 15000;
-// Твердження (6 так / 6 ні) - Спрощені для дітей
-const TASKS = [
-    { statement: "Природний комплекс — це коли повітря, вода, рослини і тварини в одному місці пов'язані між собою.", isTrue: true, gr:"GR1", gap:"Поняття ПК", explain:"Так! У природі всі компоненти товаришують і пов'язані." },
-    { statement: "Географічна оболонка — це найбільший природний дім, який об'єднує всю нашу планету Земля.", isTrue: true, gr:"GR1", gap:"ГО — найбільший ПК", explain:"Так! Це найбільший комплекс, що охоплює всю Землю." },
-    { statement: "Цілісність природи означає: якщо зіпсувати щось одне (наприклад, воду), то стане погано всім тваринам і рослинам.", isTrue: true, gr:"GR1", gap:"Цілісність ГО", explain:"Так! Якщо змінити один шматочок природи, зміниться все інше." },
-    { statement: "Ритмічність у природі — це коли події повторюються, наприклад, як зміна дня і ніч або зими і літа.", isTrue: true, gr:"GR1", gap:"Ритмічність", explain:"Так! Природа повторює свої процеси, як годинник." },
-    { statement: "Широтна зональність — це коли природа змінюється, якщо їхати від гарячого екватора до холодних полюсів.", isTrue: true, gr:"GR2", gap:"Широтна зональність", explain:"Так! Від екватора до полюсів стає холодніше, тому й зони змінюються." },
-    { statement: "Секторність — це коли природа біля моря зовсім не така, як далеко вглиб материка.", isTrue: true, gr:"GR2", gap:"Секторність", explain:"Так! Біля моря повітря вологіше, а в глибині землі — сухіше." },
-    { statement: "Озера, болота та гори формуються ТІЛЬКИ через погоду та дощі.", isTrue: false, gr:"GR2", gap:"Азональні ПК", explain:"Ні! Вони з'являються через рельєф та будову земної кори." },
-    { statement: "Природні зони (як-от ліси чи степи) — це зовсім маленькі ділянки землі, як шкільний двір або грядка.", isTrue: false, gr:"GR2", gap:"Природні зони", explain:"Ні! Природні зони — це величезні території на карті." },
-    { statement: "Які рослини ростуть у горах, зовсім НЕ залежить від висоти цих гір.", isTrue: false, gr:"GR3", gap:"Висотна поясність", explain:"Ні! Чим вищі гори — тим холодніше на верхівці й тим більше там різних поясів." },
-    { statement: "Кількість різних рослинних поясів абсолютно однакова у всіх горах світу.", isTrue: false, gr:"GR3", gap:"Кількість поясів", explain:"Ні! Це залежить від висоти гори та від того, де вона стоїть — у теплих чи холодних країнах." },
-    { statement: "Якщо люди зрубають ліс, то це зашкодить ТІЛЬКИ деревам.", isTrue: false, gr:"GR3", gap:"Вплив людини на ПК", explain:"Ні! Без лісу зникнуть тварини, зіпсується ґрунт і зникне вода." },
-    { statement: "Міста, дороги та засіяні поля займають дуже маленьку частину території України.", isTrue: false, gr:"GR3", gap:"Антропогенні ПК", explain:"Ні! Люди змінили майже всю Україну (близько 85% землі)." }
-];
+    <script>
+    // Глобальні змінні заглушки (ініціалізуйте у вашому головному коді або залиште логіку вікон)
+    let faceLandmarker = null; 
+    let video = document.getElementById('video');
+    let rafId = null;
+    let lastFaceLandmarks = null;
+    let noFaceFrames = 0;
+    const noFaceWarn = document.getElementById('no-face-warn');
+    const exprIndicator = document.getElementById('expr-indicator');
+    const progressDots = document.getElementById('progress-dots');
+    const statusText = document.getElementById('status-text');
+    const hudGr = document.getElementById('hud-gr');
+    const timeoutBar = document.getElementById('timeout-bar');
+    const feedbackEl = document.getElementById('feedback-el');
+    const answerHint = document.getElementById('answer-hint');
+    
+    let currentTaskIdx = 0;
+    let isWaitingForResponse = false;
+    let taskStartTime = 0;
+    let taskTimeoutId = null;
+    const TASK_TIMEOUT_MS = 20000; // 20 секунд на питання
+    
+    let studentName = localStorage.getItem('geo_name') || "Агент Розумник";
+    let studentClass = localStorage.getItem('geo_class') || "6-А";
+    let selfEval = "";
+    let finalScore = 0;
+    let finalRank = null;
+    
+    let scores = { GR1: [], GR2: [], GR3: [] };
     const RANKS = [
-        { min:90, emoji:"🏆", title:"Агент-Геній", color:"#FFD700" },
-        { min:75, emoji:"🥇", title:"Польовий агент", color:"#00ff88" },
-        { min:55, emoji:"🥈", title:"Агент-дослідник", color:"#00d4ff" },
-        { min:0,  emoji:"🎖️", title:"Агент-стажер", color:"#ffb800" }
+        { min: 90, title: "ГЕО-МАЙСТЕР ГАЛАКТИКИ", emoji: "🌌", color: "#FFD700" },
+        { min: 70, title: "СТАРШИЙ СЛІДЧИЙ ПРИРОДИ", emoji: "🕵️‍♂️", color: "#00d4ff" },
+        { min: 50, title: "ШУКАЧ ТАЄМНИЦЬ", emoji: "🧭", color: "#ffb800" },
+        { min: 0, title: "СТАЖЕР-КАРТОГРАФ", emoji: "🥾", color: "#ff3d5a" }
+    ];
+    
+    const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE"; // Вставте сюди свій URL веб-додатка Google Таблиць
+    
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+        const sc = document.getElementById(id);
+        if(sc) sc.style.display = 'flex';
+    }
+    function stopCamera() { if(video.srcObject) { video.srcObject.getTracks().forEach(t => t.stop()); } }
+    function playSound(type) { /* Реалізація звуків аудіоконтексту */ }
+    function spawnHearts(landmarks) { /* Ваша реалізація ефекту частинок */ }
+    const avg = arr => arr.length ? arr.reduce((a,b)=>a+b, 0) / arr.length : 0;
+
+    // ── Твердження (6 так / 6 ні) - Спрощені для дітей ──────────────────────────
+    const TASKS = [
+        { statement: "Природний комплекс — це коли повітря, вода, рослини і тварини в одному місці пов'язані між собою.", isTrue: true, gr:"GR1", gap:"Поняття ПК", explain:"Так! У природи всі компоненти товаришують і пов'язані." },
+        { statement: "Географічна оболонка — це найбільший природний дім, який об'єднує всю нашу планету Земля.", isTrue: true, gr:"GR1", gap:"ГО — найбільший ПК", explain:"Так! Це найбільший комплекс, що охоплює всю Землю." },
+        { statement: "Цілісність природи означає: якщо зіпсувати щось одне (наприклад, воду), то стане погано всім тваринам і рослинам.", isTrue: true, gr:"GR1", gap:"Цілісність ГО", explain:"Так! Якщо змінити один шматочок природи, зміниться все інше." },
+        { statement: "Ритмічність у природі — це коли події повторюються, наприклад, як зміна дня і ніч або зими і літа.", isTrue: true, gr:"GR1", gap:"Ритмічність", explain:"Так! Природа повторює свої процеси, як годинник." },
+        { statement: "Широтна зональність — це коли природа змінюється, якщо їхати від гарячого екватора до холодних полюсів.", isTrue: true, gr:"GR2", gap:"Широтна зональність", explain:"Так! Від екватора до полюсів стає холодніше, тому й зони змінюються." },
+        { statement: "Секторність — це коли природа біля моря зовсім не така, як далеко вглиб материка.", isTrue: true, gr:"GR2", gap:"Секторність", explain:"Так! Біля моря повітря вологіше, а в глибині землі — сухіше." },
+        { statement: "Озера, болота та гори формуються ТІЛЬКИ через погоду та дощі.", isTrue: false, gr:"GR2", gap:"Азональні ПК", explain:"Ні! Вони з'являються через рельєф та будову земної кори." },
+        { statement: "Природні зони (як-от ліси чи степи) — це зовсім маленькі ділянки землі, як шкільний двір або грядка.", isTrue: false, gr:"GR2", gap:"Природні зони", explain:"Ні! Природні зони — це величезні території на карті." },
+        { statement: "Які рослини ростуть у горах, зовсім НЕ залежить від висоти цих гір.", isTrue: false, gr:"GR3", gap:"Висотна поясність", explain:"Ні! Чим вищі гори — тим холодніше на верхівці й тим більше там різних поясів." },
+        { statement: "Кількість різних рослинних поясів абсолютно однакова у всіх горах світу.", isTrue: false, gr:"GR3", gap:"Кількість поясів", explain:"Ні! Це залежить від висоти гори та від того, де вона стоїть — у теплих чи холодних країнах." },
+        { statement: "Якщо люди зрубають ліс, то це зашкодить ТІЛЬКИ деревам.", isTrue: false, gr:"GR3", gap:"Вплив людини на ПК", explain:"Ні! Без лісу зникнуть тварини, зіпсується ґрунт і зникне вода." },
+        { statement: "Міста, дороги та засіяні поля займають дуже маленьку частину території України.", isTrue: false, gr:"GR3", gap:"Антропогенні ПК", explain:"Ні! Люди змінили майже всю Україну (близько 85% землі)." }
     ];
 
-    // ---------- ГЛОБАЛЬНІ ЗМІННІ ----------
-    let studentName = "", studentClass = "";
-    let currentTaskIdx = 0;
-    let scores = { GR1:[], GR2:[], GR3:[] };
-    let selfEval = "";
-    let mediaStream = null;
-    let faceMesh = null;
-    let camera = null;
-    let isWaitingForResponse = false;
-    let noFaceFrames = 0;
-    let taskInterval = null, taskMainTimeout = null;
-    let taskStartTime = 0;
-    let finalRank = null, finalScore = 0;
-    let lastAnswerTimestamp = 0;
-    let currentFaceLandmarks = null;
-    let modelReady = false;          // чи отримали перші landmarks
-    let gameStarted = false;         // чи дозволено починати завдання
+    // Буфери для стабілізації розпізнавання емоцій
+    let smileBuffer = [];
+    let frownBuffer = [];
+    const EMOTION_BUFFER_SIZE = 10;
+    const EMOTION_CONFIRM_COUNT = 7;
 
-    let tongueBuffer = [];
-    let openMouthBuffer = [];
-    const BUFFER_SIZE = 20;
-    const CONFIRM_COUNT = 12;
+    function analyzeFrame() {
+        if (!faceLandmarker || video.readyState < 2) { 
+            rafId = requestAnimationFrame(analyzeFrame); 
+            return; 
+        }
+        
+        const results = faceLandmarker.detectForVideo(video, performance.now());
+     
+        if (results.faceLandmarks?.length) {
+            const face = results.faceLandmarks[0];
+            lastFaceLandmarks = face; 
+            noFaceFrames = 0; 
+            noFaceWarn.style.display = 'none';
 
-    const video = document.getElementById('video');
-    const statusText = document.getElementById('status-text');
-    const feedbackEl = document.getElementById('feedback');
-    const answerHint = document.getElementById('answer-hint');
-    const exprIndicator = document.getElementById('expression-indicator');
-    const hudGr = document.getElementById('hud-gr');
-    const noFaceWarn = document.getElementById('no-face-warning');
-    const timeoutBar = document.getElementById('timeout-bar');
-    const progressDots = document.getElementById('progress-dots');
+            let isSmiling = false;
+            let isSurprisedOrFrowning = false;
 
-    // ---------- ДОПОМІЖНІ ФУНКЦІЇ ----------
-    function showError(msg, ms=3500) {
-        const t = document.getElementById('error-toast');
-        t.textContent = msg; t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), ms);
-    }
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        if (id) { const el = document.getElementById(id); if (el) el.classList.add('active'); }
-    }
-    function setLoading(show, text='Завантажую...') {
-        const o = document.getElementById('loading-overlay');
-        document.getElementById('loading-text').textContent = text;
-        o.classList.toggle('show', show);
-    }
-    function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+            // Використовуємо blendShapes (якщо доступна нейромережа MediaPipe FaceLandmarker з емоціями)
+            if (results.faceBlendshapes?.length) {
+                const shapes = results.faceBlendshapes[0].categories;
+                const smileLeft = shapes.find(s => s.categoryName === 'mouthSmileLeft')?.score || 0;
+                const smileRight = shapes.find(s => s.categoryName === 'mouthSmileRight')?.score || 0;
+                const jawOpen = shapes.find(s => s.categoryName === 'jawOpen')?.score || 0;
+                const frownLeft = shapes.find(s => s.categoryName === 'mouthFrownLeft')?.score || 0;
+                const frownRight = shapes.find(s => s.categoryName === 'mouthFrownRight')?.score || 0;
 
-    let audioCtx = null;
-    function playSound(type) {
-        try {
-            if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-            const now = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            if (type==='correct') {
-                osc.type='sine'; osc.frequency.setValueAtTime(880,now); osc.frequency.setValueAtTime(1100,now+0.1);
-                gain.gain.setValueAtTime(0.3,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.3);
-                osc.start(now); osc.stop(now+0.3);
+                // Логіка розпізнавання емоцій для дитячої міміки
+                isSmiling = (smileLeft + smileRight) / 2 > 0.45;
+                isSurprisedOrFrowning = (jawOpen > 0.5 && !isSmiling) || ((frownLeft + frownRight) / 2 > 0.4);
             } else {
-                osc.type='square'; osc.frequency.setValueAtTime(220,now);
-                gain.gain.setValueAtTime(0.2,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.4);
-                osc.start(now); osc.stop(now+0.4);
+                // Геометричний фолбек за точками FaceLandmarks (якщо блендшейпи відсутні в збірці)
+                const mouthWidth = Math.hypot(face[61].x - face[291].x, face[61].y - face[291].y);
+                const eyeDist = Math.hypot(face[33].x - face[263].x, face[33].y - face[263].y);
+                const smileRatio = mouthWidth / eyeDist;
+
+                const mouthHeight = Math.hypot(face[14].x - face[13].x, face[14].y - face[13].y);
+
+                isSmiling = smileRatio > 0.78; 
+                isSurprisedOrFrowning = mouthHeight > 0.065 && !isSmiling; 
             }
-        } catch(e) {}
-    }
 
-    function spawnHearts(faceLandmarks) {
-        if (!faceLandmarks) return;
-        const rect = video.getBoundingClientRect();
-        const w = rect.width, h = rect.height;
-        const offsetX = rect.left, offsetY = rect.top;
-        [faceLandmarks[118], faceLandmarks[347]].forEach(pos => {
-            if (!pos) return;
-            let x = (1 - pos.x) * w + offsetX;
-            let y = pos.y * h + offsetY;
-            for (let i=0;i<3;i++) {
-                const heart = document.createElement('div');
-                heart.className = 'heart-float';
-                heart.textContent = ['❤️','💖','💕'][Math.floor(Math.random()*3)];
-                heart.style.left = (x + (Math.random()-.5)*40) + 'px';
-                heart.style.top = (y + (Math.random()-.5)*20) + 'px';
-                document.body.appendChild(heart);
-                setTimeout(()=>heart.remove(),1500);
+            // Оновлюємо емодзі-індикатор на екрані
+            if (isSmiling) {
+                exprIndicator.textContent = '😁';
+            } else if (isSurprisedOrFrowning) {
+                exprIndicator.textContent = '😮';
+            } else {
+                exprIndicator.textContent = '😐';
             }
-        });
-    }
 
-    // ---------- АВТОРИЗАЦІЯ ----------
-    document.getElementById('sel-class').addEventListener('change', function() {
-        const c = this.value;
-        const s = document.getElementById('sel-name');
-        s.innerHTML='<option value="">— Знайди себе —</option>';
-        if (c && DB[c]) DB[c].forEach(n => { const o=document.createElement('option'); o.value=o.text=n; s.appendChild(o); });
-        document.getElementById('btn-auth').disabled = !c;
-    });
-    document.getElementById('sel-name').addEventListener('change', function() {
-        document.getElementById('btn-auth').disabled = !this.value;
-    });
-    document.getElementById('btn-auth').addEventListener('click', () => {
-        const c = document.getElementById('sel-class').value;
-        const n = document.getElementById('sel-name').value;
-        if (!c||!n) { showError('Оберіть клас і прізвище!'); return; }
-        studentClass = c; studentName = n;
-        showScreen('screen-start');
-    });
+            // Накопичуємо дані у буфери стабільності
+            smileBuffer.push(isSmiling);
+            frownBuffer.push(isSurprisedOrFrowning);
+            if (smileBuffer.length > EMOTION_BUFFER_SIZE) smileBuffer.shift();
+            if (frownBuffer.length > EMOTION_BUFFER_SIZE) frownBuffer.shift();
 
-    // ---------- СТАРТ ГРИ ----------
-    document.getElementById('btn-start').addEventListener('click', startGame);
-    async function startGame() {
-        const btn = document.getElementById('btn-start');
-        btn.disabled = true;
-        setLoading(true, 'Підключаю камеру...');
-        try {
-            mediaStream = await navigator.mediaDevices.getUserMedia({ video:{facingMode:"user"} });
-            video.srcObject = mediaStream;
-            await new Promise(r => video.onloadedmetadata = r);
-        } catch(e) {
-            setLoading(false);
-            showError('Потрібен доступ до камери!', 5000);
-            btn.disabled = false; return;
-        }
-        setLoading(true, 'Завантажую FaceMesh та калібрую...');
-        try {
-            await initFaceMesh();
-        } catch(e) {
-            setLoading(false);
-            showError("Не вдалося завантажити FaceMesh.", 5000);
-            stopCamera(); btn.disabled=false; return;
-        }
-        // Чекаємо, поки модель отримає перші landmarks (максимум 3 секунди)
-        let waitStart = Date.now();
-        while (!modelReady && (Date.now() - waitStart) < 3000) {
-            await new Promise(r => setTimeout(r, 100));
-        }
-        setLoading(false);
-        gameStarted = true;
-        showScreen(null);
-        document.getElementById('game-hud').style.display='flex';
-        document.getElementById('status-box').style.display='block';
-        exprIndicator.style.display='block';
-        progressDots.style.display='flex';
-        buildDots();
-        startTask(0);
-    }
-
-    function stopCamera() {
-        if (camera) camera.stop();
-        if (mediaStream) mediaStream.getTracks().forEach(t=>t.stop());
-        mediaStream = null;
-        if (faceMesh) faceMesh.close();
-        faceMesh = null;
-        modelReady = false;
-        gameStarted = false;
-    }
-
-    async function initFaceMesh() {
-        faceMesh = new FaceMesh({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-        });
-        faceMesh.setOptions({
-            maxNumFaces: 1,
-            refineLandmarks: true,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
-        });
-        faceMesh.onResults(onFaceMeshResults);
-        camera = new Camera(video, {
-            onFrame: async () => { if (faceMesh) await faceMesh.send({ image: video }); },
-            width: 640,
-            height: 480,
-            facingMode: "user"
-        });
-        camera.start();
-    }
-
-    function onFaceMeshResults(results) {
-        if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
-            exprIndicator.textContent = '❓';
+            // Спрацювання відповіді за умови утримання міміки
+            if (isWaitingForResponse) {
+                if (smileBuffer.filter(v => v).length >= EMOTION_CONFIRM_COUNT) {
+                    smileBuffer = []; frownBuffer = [];
+                    triggerAnswer(true); // Посмішка = ТАК
+                    rafId = requestAnimationFrame(analyzeFrame); 
+                    return;
+                }
+                if (frownBuffer.filter(v => v).length >= EMOTION_CONFIRM_COUNT) {
+                    smileBuffer = []; frownBuffer = [];
+                    triggerAnswer(false); // Здивування / Опущені губи = НІ
+                    rafId = requestAnimationFrame(analyzeFrame); 
+                    return;
+                }
+            }
+        } else {
+            smileBuffer = []; 
+            frownBuffer = [];
+            exprIndicator.textContent = '❓'; 
             noFaceFrames++;
             if (noFaceFrames > 30) noFaceWarn.style.display = 'block';
-            else noFaceWarn.style.display = 'none';
-            return;
         }
-        noFaceFrames = 0;
-        noFaceWarn.style.display = 'none';
-        const landmarks = results.multiFaceLandmarks[0];
-        currentFaceLandmarks = landmarks;
-        if (!modelReady) {
-            modelReady = true;
-            console.log("FaceMesh ready, landmarks received");
-        }
-
-        const lipTop = landmarks[13].y;
-        const lipBottom = landmarks[14].y;
-        const mouthOpen = (lipBottom - lipTop) > 0.025;
-        const tongueTip = landmarks[20].y;
-        const tongueVisible = mouthOpen && (tongueTip < lipTop - 0.01);
-
-        if (tongueVisible) exprIndicator.textContent = '😛';
-        else if (mouthOpen) exprIndicator.textContent = '😮';
-        else exprIndicator.textContent = '😐';
-
-        tongueBuffer.push(tongueVisible);
-        if (tongueBuffer.length > BUFFER_SIZE) tongueBuffer.shift();
-        openMouthBuffer.push(mouthOpen && !tongueVisible);
-        if (openMouthBuffer.length > BUFFER_SIZE) openMouthBuffer.shift();
-
-        if (!isWaitingForResponse || !gameStarted) return;
-        if ((Date.now() - lastAnswerTimestamp) < 600) return;
-
-        if (tongueBuffer.filter(v=>v).length >= CONFIRM_COUNT) {
-            triggerAnswer(true);
-            return;
-        }
-        if (openMouthBuffer.filter(v=>v).length >= CONFIRM_COUNT) {
-            triggerAnswer(false);
-            return;
-        }
+        
+        rafId = requestAnimationFrame(analyzeFrame);
     }
-
-    // ---------- ЛОГІКА ЗАВДАНЬ ----------
+     
+    // ── Завдання ──────────────────────────────────────────────────────────────────
     function buildDots() {
         progressDots.innerHTML = '';
-        TASKS.forEach((_,i) => {
-            const d = document.createElement('div'); d.className='pdot'; d.id=`dot-${i}`;
+        TASKS.forEach((_, i) => {
+            const d = document.createElement('div'); 
+            d.className = 'pdot'; 
+            d.id = `dot-${i}`; 
             progressDots.appendChild(d);
         });
     }
-    function setDot(i, cls) {
-        const d = document.getElementById(`dot-${i}`);
-        if (d) d.className = `pdot ${cls}`;
+    function setDot(i, cls) { 
+        const d = document.getElementById(`dot-${i}`); 
+        if (d) d.className = `pdot ${cls}`; 
     }
-    function clearTaskTimeouts() {
-        if (taskInterval) clearInterval(taskInterval);
-        if (taskMainTimeout) clearTimeout(taskMainTimeout);
-        taskInterval = null; taskMainTimeout = null;
-    }
+     
     function startTask(index) {
-        if (index >= TASKS.length) {
-            clearTaskTimeouts();
-            stopCamera();
-            showEvalScreen();
-            return;
+        if (index >= TASKS.length) { 
+            clearTT(); 
+            stopCamera(); 
+            showEvalScreen(); 
+            return; 
         }
         currentTaskIdx = index;
-        const task = TASKS[index];
-        statusText.textContent = `${index+1}/12 · ${task.statement}`;
-        hudGr.textContent = task.gr.replace('GR','ГР ');
-        isWaitingForResponse = true;
-        tongueBuffer = [];
-        openMouthBuffer = [];
-        lastAnswerTimestamp = 0;
+        const t = TASKS[index];
+        statusText.textContent = `${index + 1}/12 · ${t.statement}`;
+        hudGr.textContent = t.gr.replace('GR', 'ГР ');
+        
+        isWaitingForResponse = true; 
+        smileBuffer = []; 
+        frownBuffer = [];
         setDot(index, 'current');
-        clearTaskTimeouts();
+        clearTT();
+        
         taskStartTime = Date.now();
-
-        taskMainTimeout = setTimeout(() => {
-            if (isWaitingForResponse) {
-                clearTaskTimeouts();
-                isWaitingForResponse = false;
-                scores[task.gr].push(0);
-                setDot(index, 'done-wrong');
-                showFeedback('⏱️','#ffb800','Час вичерпано!');
-                setTimeout(() => startTask(index+1), 1500);
-            }
-        }, TASK_TIMEOUT_MS);
-
-        taskInterval = setInterval(() => {
+        taskTimeoutId = setInterval(updateBar, 100);
+        
+        setTimeout(() => {
             if (!isWaitingForResponse) return;
-            const elapsed = Date.now() - taskStartTime;
-            const pct = Math.max(0, 100 - (elapsed / TASK_TIMEOUT_MS) * 100);
-            timeoutBar.style.width = pct+'%';
-            timeoutBar.style.background = pct>40?'#00d4ff':pct>15?'#ffb800':'#ff3d5a';
-        }, 100);
+            clearTT(); 
+            isWaitingForResponse = false;
+            scores[t.gr].push(0); 
+            setDot(index, 'done-wrong');
+            showFeedback('⏱️', '#ffb800', '');
+            setTimeout(() => startTask(index + 1), 1000);
+        }, TASK_TIMEOUT_MS);
     }
-
+     
+    function clearTT() {
+        if (taskTimeoutId) { clearInterval(taskTimeoutId); taskTimeoutId = null; }
+        timeoutBar.style.width = '100%';
+    }
+    function updateBar() {
+        const pct = Math.max(0, 100 - (Date.now() - taskStartTime) / TASK_TIMEOUT_MS * 100);
+        timeoutBar.style.width = pct + '%';
+        timeoutBar.style.background = pct > 40 ? '#00d4ff' : pct > 15 ? '#ffb800' : '#ff3d5a';
+    }
+     
     function triggerAnswer(userSaysTrue) {
         if (!isWaitingForResponse) return;
-        isWaitingForResponse = false;
-        lastAnswerTimestamp = Date.now();
-        clearTaskTimeouts();
-
+        isWaitingForResponse = false; 
+        clearTT();
+        
         const task = TASKS[currentTaskIdx];
         const correct = (userSaysTrue === task.isTrue);
         scores[task.gr].push(correct ? 1 : 0);
         setDot(currentTaskIdx, correct ? 'done-correct' : 'done-wrong');
         playSound(correct ? 'correct' : 'wrong');
         showFeedback(correct ? '✅' : '❌', correct ? '#00ff88' : '#ff3d5a', task.explain);
-        if (correct && currentFaceLandmarks) spawnHearts(currentFaceLandmarks);
-        setTimeout(() => {
-            feedbackEl.style.display = 'none';
-            answerHint.style.display = 'none';
-            startTask(currentTaskIdx + 1);
+        
+        if (correct && lastFaceLandmarks) spawnHearts(lastFaceLandmarks);
+        
+        setTimeout(() => { 
+            feedbackEl.style.display = 'none'; 
+            answerHint.style.display = 'none'; 
+            startTask(currentTaskIdx + 1); 
         }, 1800);
     }
-
+     
     function showFeedback(emoji, color, hint) {
-        feedbackEl.textContent = emoji;
-        feedbackEl.style.color = color;
+        feedbackEl.textContent = emoji; 
+        feedbackEl.style.color = color; 
         feedbackEl.style.display = 'block';
-        answerHint.textContent = hint || '';
-        answerHint.style.display = hint ? 'block' : 'none';
+        if (hint) { 
+            answerHint.textContent = hint; 
+            answerHint.style.display = 'block'; 
+        } else { 
+            answerHint.style.display = 'none'; 
+        }
     }
-
-    // ---------- ЕКРАН ОЦІНКИ ТА ВІДПРАВКА ----------
+     
+    // ── Eval ──────────────────────────────────────────────────────────────────────
     function showEvalScreen() {
-        document.getElementById('game-hud').style.display='none';
-        document.getElementById('status-box').style.display='none';
-        exprIndicator.style.display='none';
-        progressDots.style.display='none';
+        document.getElementById('game-hud').style.display = 'none';
+        document.getElementById('status-box').style.display = 'none';
+        exprIndicator.style.display = 'none';
+        progressDots.style.display = 'none';
         showScreen('screen-eval');
     }
     document.querySelectorAll('.eval-option').forEach(el => {
         el.addEventListener('click', function() {
-            document.querySelectorAll('.eval-option').forEach(o=>o.classList.remove('selected'));
+            document.querySelectorAll('.eval-option').forEach(o => o.classList.remove('selected'));
             this.classList.add('selected');
-            selfEval = this.textContent.replace(/[💪🤔🆘]/g,'').trim();
+            selfEval = this.textContent.replace(/[💪🤔🆘]/g, '').trim();
             document.getElementById('btn-submit').disabled = false;
         });
     });
     document.getElementById('btn-submit').addEventListener('click', submitData);
-
+     
+    // ── Відправка + Результат ─────────────────────────────────────────────────────
     async function submitData() {
         if (!selfEval) return;
         document.getElementById('btn-submit').disabled = true;
-        const gr1 = Math.round(avg(scores.GR1)*100);
-        const gr2 = Math.round(avg(scores.GR2)*100);
-        const gr3 = Math.round(avg(scores.GR3)*100);
-        finalScore = Math.round((gr1+gr2+gr3)/3);
-        finalRank = RANKS.find(r=>finalScore>=r.min);
-
+        const gr1 = Math.round(avg(scores.GR1) * 100);
+        const gr2 = Math.round(avg(scores.GR2) * 100);
+        const gr3 = Math.round(avg(scores.GR3) * 100);
+        finalScore = Math.round((gr1 + gr2 + gr3) / 3);
+        finalRank = RANKS.find(r => finalScore >= r.min);
+     
         const gaps = [];
-        TASKS.forEach((task, idx) => {
-            const grKey = task.gr;
-            const tasksInGr = TASKS.filter(t => t.gr === grKey);
-            const posInGr = tasksInGr.findIndex(t => t === task);
-            if (posInGr !== -1 && scores[grKey][posInGr] === 0) gaps.push(task.gap);
+        ['GR1', 'GR2', 'GR3'].forEach(gr => {
+            const tasks = TASKS.filter(t => t.gr === gr);
+            scores[gr].forEach((s, i) => { if (!s && tasks[i]) gaps.push(tasks[i].gap); });
         });
-
-        const payload = { studentName, studentClass, totalScore:finalScore, scoreGR1:gr1, scoreGR2:gr2, scoreGR3:gr3, gaps, selfEvaluation:selfEval, topic:'obolonka', rank:finalRank.title, timestamp:new Date().toISOString() };
+     
+        const payload = { 
+            studentName, 
+            studentClass, 
+            totalScore: finalScore, 
+            scoreGR1: gr1, 
+            scoreGR2: gr2, 
+            scoreGR3: gr3, 
+            gaps, 
+            selfEvaluation: selfEval, 
+            topic: 'obolonka', 
+            rank: finalRank.title, 
+            timestamp: new Date().toISOString() 
+        };
+     
         showScreen('screen-result');
-        document.getElementById('result-emoji').textContent = finalRank.emoji;
-        document.getElementById('rank-title').textContent = finalRank.title;
-        document.getElementById('rank-title').style.color = finalRank.color;
-        document.getElementById('rank-label').textContent = `Загальний результат: ${finalScore}%`;
-
-        const color = v => v>=75?'#00ff88':v>=50?'#ffb800':'#ff3d5a';
+        const re = document.getElementById('result-emoji');
+        const rt = document.getElementById('rank-title');
+        const rl = document.getElementById('rank-label');
+        re.textContent = finalRank.emoji;
+        rt.textContent = finalRank.title;
+        rt.style.color = finalRank.color;
+        rl.textContent = `Загальний результат: ${finalScore}%`;
+     
+        const color = v => v >= 75 ? '#00ff88' : v >= 50 ? '#ffb800' : '#ff3d5a';
         document.getElementById('result-stats').innerHTML = `
             <div class="stat-box"><div class="value" style="color:${color(gr1)}">${gr1}%</div><div class="label">ГР 1</div></div>
             <div class="stat-box"><div class="value" style="color:${color(gr2)}">${gr2}%</div><div class="label">ГР 2</div></div>
             <div class="stat-box"><div class="value" style="color:${color(gr3)}">${gr3}%</div><div class="label">ГР 3</div></div>`;
-        const gapsHtml = gaps.length ? gaps.map(g=>`<div class="gap-item">⚠ ${g}</div>`).join('') : '<div class="gap-item">✅ Всі теми засвоєно!</div>';
-        document.getElementById('gaps-container').innerHTML = `<h3 style="color:#ff3d5a;">Повторити:</h3>${gapsHtml}`;
-        await drawCertificate({ name:studentName, cls:studentClass, score:finalScore, gr1, gr2, gr3, rank:finalRank, date:new Date(), gaps });
+     
+        const gapsHtml = gaps.length
+            ? gaps.map(g => `<div class="gap-item">⚠ ${g}</div>`).join('')
+            : '<div class="gap-item">✅ Всі теми засвоєно — чудово!</div>';
+        document.getElementById('gaps-container').innerHTML = `<h3 style="color:#ff3d5a;margin-bottom:8px;font-size:0.9rem;">Повторити:</h3>${gapsHtml}`;
+     
+        // Малюємо сертифікат
+        document.getElementById('cert-canvas').style.display = 'block';
+        await drawCertificate({ name: studentName, cls: studentClass, score: finalScore, gr1, gr2, gr3, rank: finalRank, date: new Date(), gaps });
+     
+        // Зберегти сертифікат
         document.getElementById('btn-save-cert').addEventListener('click', saveCert);
-
+     
+        // Відправка
         const saveStatus = document.getElementById('save-status');
         let saved = false;
-        for (let i=1;i<=3 && !saved;i++) {
+        for (let i = 1; i <= 3 && !saved; i++) {
             try {
-                const res = await fetch(SCRIPT_URL, { method:'POST', mode:'cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify(payload) });
+                const res = await fetch(SCRIPT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
                 const data = await res.json();
                 saved = true;
                 saveStatus.textContent = data.result === 'already_exists' ? '✅ Результати вже збережено.' : '✅ Звіт надіслано вчителю!';
-                if (data.result !== 'already_exists') localStorage.setItem('geo_obolonka_submitted','true');
-            } catch(e) {
-                console.error("Помилка надсилання:", e);
-                if (i===3) saveStatus.textContent = '⚠️ Не вдалося надіслати. Скажи вчителю.';
-                else await new Promise(r=>setTimeout(r,1500));
+                if (data.result !== 'already_exists') localStorage.setItem('geo_obolonka_submitted', 'true');
+            } catch (e) {
+                if (i === 3) saveStatus.textContent = '⚠️ Не вдалося надіслати. Скажи вчителю.';
+                else await new Promise(r => setTimeout(r, 1500));
             }
         }
     }
-
+     
+    // ── Сертифікат ────────────────────────────────────────────────────────────────
     async function drawCertificate({ name, cls, score, gr1, gr2, gr3, rank, date, gaps }) {
         const cvs = document.getElementById('cert-canvas');
         const ctx = cvs.getContext('2d');
-        const W=680, H=960;
-        cvs.width=W; cvs.height=H;
-        ctx.fillStyle='#0d1b3e'; ctx.fillRect(0,0,W,H);
-        ctx.fillStyle='rgba(255,255,255,0.7)';
-        for(let i=0;i<120;i++){ ctx.beginPath(); ctx.arc(Math.random()*W,Math.random()*H,Math.random()*1.5+0.3,0,Math.PI*2); ctx.fill(); }
-        ctx.strokeStyle='#FFD700'; ctx.lineWidth=8; roundRect(ctx,12,12,W-24,H-24,24,false,true);
-        ctx.fillStyle='#00d4ff'; ctx.font='bold 26px "Fredoka One"'; ctx.textAlign='center'; ctx.fillText('ГЕО-ДЕТЕКТИВ • СЕКТОР 8', W/2, 80);
-        ctx.fillStyle='white'; ctx.font='bold 34px "Fredoka One"'; ctx.fillText('СЕРТИФІКАТ АГЕНТА', W/2, 140);
-        ctx.font='70px serif'; ctx.fillText(rank.emoji, W/2, 260);
-        ctx.fillStyle=rank.color; ctx.font='bold 42px "Fredoka One"'; ctx.fillText(rank.title, W/2, 340);
-        ctx.fillStyle='white'; ctx.font='bold 30px "Nunito"'; ctx.fillText(name, W/2, 410);
-        ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.font='20px "Nunito"'; ctx.fillText(`Клас: ${cls}`, W/2, 450);
-        const totalY=500;
-        ctx.fillStyle='rgba(0,212,255,0.2)'; roundRect(ctx,100,totalY,W-200,60,16,true,false);
-        ctx.fillStyle='white'; ctx.font='bold 18px monospace'; ctx.fillText('ЗАГАЛЬНИЙ РЕЗУЛЬТАТ', W/2, totalY+28);
-        ctx.fillStyle=rank.color; ctx.font='bold 36px "Fredoka One"'; ctx.fillText(`${score}%`, W/2, totalY+58);
-        ctx.fillStyle='#ff3d5a'; ctx.font='bold 18px "Nunito"'; ctx.fillText('Теми для повторення:', 70, 620);
-        if(gaps.length) gaps.forEach((g,i)=>{ ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.font='14px "Nunito"'; ctx.fillText(`⚠ ${g}`, 80, 655+i*28); });
-        else ctx.fillStyle='#00ff88'; ctx.fillText('✅ Всі теми засвоєно!', 80, 650);
-        const dateStr = `${date.getDate().toString().padStart(2,'0')}.${(date.getMonth()+1).toString().padStart(2,'0')}.${date.getFullYear()}`;
-        ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='12px monospace'; ctx.fillText(dateStr, W/2, H-40);
+        const W = 680, H = 960;
+        cvs.width = W; cvs.height = H;
+     
+        // Фон — яскравий градієнт
+        const bg = ctx.createLinearGradient(0, 0, W, H);
+        bg.addColorStop(0, '#0d1b3e');
+        bg.addColorStop(0.5, '#112244');
+        bg.addColorStop(1, '#0a1628');
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+     
+        // Зоряний фон
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        for (let i = 0; i < 120; i++) {
+            const x = Math.random() * W, y = Math.random() * H;
+            const r = Math.random() * 1.5 + 0.3;
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+        }
+     
+        // Зовнішня рамка
+        const grad = ctx.createLinearGradient(0, 0, W, H);
+        grad.addColorStop(0, '#FFD700'); grad.addColorStop(0.5, '#00d4ff'); grad.addColorStop(1, '#ff88cc');
+        ctx.strokeStyle = grad; ctx.lineWidth = 8;
+        roundRect(ctx, 12, 12, W - 24, H - 24, 24, false, true);
+     
+        // Внутрішня рамка
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 2;
+        roundRect(ctx, 22, 22, W - 44, H - 44, 18, false, true);
+     
+        // Верхній блок — кольоровий банер
+        const topGrad = ctx.createLinearGradient(0, 0, W, 0);
+        topGrad.addColorStop(0, 'rgba(0,212,255,0.25)');
+        topGrad.addColorStop(1, 'rgba(255,136,204,0.15)');
+        ctx.fillStyle = topGrad;
+        roundRect(ctx, 30, 30, W - 60, 160, 16, true, false);
+     
+        // Заголовок
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#00d4ff';
+        ctx.font = 'bold 18px "IBM Plex Mono", monospace';
+        ctx.fillText('ГЕО-ДЕТЕКТИВ • СЕКТОР 8', W / 2, 78);
+     
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 38px "Fredoka One", "Nunito", sans-serif';
+        ctx.fillText('СЕРТИФІКАТ АГЕНТА', W / 2, 130);
+     
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.font = '15px "IBM Plex Mono", monospace';
+        ctx.fillText('ОПЕРАЦІЯ «ГЕО-ОБОЛОНКА»', W / 2, 168);
+     
+        // Великий emoji звання
+        ctx.font = '96px serif';
+        ctx.fillText(rank.emoji, W / 2, 300);
+     
+        // Звання
+        ctx.fillStyle = rank.color;
+        ctx.font = 'bold 46px "Fredoka One", "Nunito", sans-serif';
+        ctx.fillText(rank.title, W / 2, 370);
+     
+        // Ім'я
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 32px "Nunito", sans-serif';
+        ctx.fillText(name, W / 2, 430);
+     
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.font = '18px "Nunito", sans-serif';
+        ctx.fillText(`Клас: ${cls}`, W / 2, 462);
+     
+        // Розділова лінія
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(60, 486); ctx.lineTo(W - 60, 486); ctx.stroke();
+     
+        // Результати по групах
+        const barY = 510, barH = 52, barsX = 60, barsW = W - 120;
+        const grData = [{ label: 'ГР 1', v: gr1 }, { label: 'ГР 2', v: gr2 }, { label: 'ГР 3', v: gr3 }];
+        const barW = Math.floor(barsW / 3) - 16;
+        grData.forEach((g, i) => {
+            const bx = barsX + i * (barW + 24);
+            // Фон бару
+            ctx.fillStyle = 'rgba(255,255,255,0.08)';
+            roundRect(ctx, bx, barY, barW, barH, 10, true, false);
+            // Заповнення
+            const fillW = Math.round(barW * (g.v / 100));
+            const fc = g.v >= 75 ? '#00ff88' : g.v >= 50 ? '#ffb800' : '#ff3d5a';
+            ctx.fillStyle = fc;
+            roundRect(ctx, bx, barY, fillW, barH, 10, true, false);
+            // Текст
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px "Nunito", sans-serif';
+            ctx.fillText(`${g.label}: ${g.v}%`, bx + barW / 2, barY + barH / 2 + 7);
+        });
+     
+        // Загальний бал — велика плашка
+        const totalY = 590;
+        const totalGrad = ctx.createLinearGradient(100, totalY, W - 100, totalY);
+        totalGrad.addColorStop(0, 'rgba(0,212,255,0.2)');
+        totalGrad.addColorStop(1, 'rgba(255,136,204,0.2)');
+        ctx.fillStyle = totalGrad;
+        roundRect(ctx, 100, totalY, W - 200, 72, 16, true, false);
+        ctx.strokeStyle = 'rgba(0,212,255,0.4)'; ctx.lineWidth = 1.5;
+        roundRect(ctx, 100, totalY, W - 200, 72, 16, false, true);
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 17px "IBM Plex Mono",monospace';
+        ctx.fillText('ЗАГАЛЬНИЙ РЕЗУЛЬТАТ', W / 2, totalY+26);
+        ctx.fillStyle = rank.color; ctx.font = 'bold 36px "Fredoka One","Nunito",sans-serif';
+        ctx.fillText(`${score}%`, W / 2, totalY + 60);
+     
+        // Теми для повторення
+        const gapY = 690;
+        ctx.fillStyle = 'rgba(255,61,90,0.12)';
+        roundRect(ctx, 50, gapY, W - 100, gaps.length ? gaps.length * 30 + 48 : 60, 14, true, false);
+        ctx.strokeStyle = 'rgba(255,61,90,0.35)'; ctx.lineWidth = 1;
+        roundRect(ctx, 50, gapY, W - 100, gaps.length ? gaps.length * 30 + 48 : 60, 14, false, true);
+        ctx.fillStyle = '#ff3d5a'; ctx.font = 'bold 15px "Nunito",sans-serif';
+        ctx.textAlign = 'left'; ctx.fillText('Теми для повторення:', 70, gapY + 26);
+        if (gaps.length) {
+            gaps.forEach((g, i) => {
+                ctx.fillStyle = 'rgba(255,255,255,0.65)'; ctx.font = '13px "Nunito",sans-serif';
+                ctx.fillText(`⚠ ${g}`, 80, gapY + 52 + i * 28);
+            });
+        } else {
+            ctx.fillStyle = '#00ff88'; ctx.font = 'bold 14px "Nunito",sans-serif';
+            ctx.fillText('✅ Всі теми засвоєно! Відмінна робота!', 70, gapY + 46);
+        }
+     
+        // ── Печатка розробника / вчителя ───────────────────────────────────────────
+        const stampX = W / 2, stampY = H - 170, stampR = 80;
+        ctx.save();
+        ctx.globalAlpha = 0.88;
+        // Зовнішнє кільце
+        ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(stampX, stampY, stampR, 0, Math.PI * 2); ctx.stroke();
+        // Пунктирне внутрішнє кільце
+        ctx.strokeStyle = 'rgba(0,212,255,0.5)'; ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.arc(stampX, stampY, stampR - 10, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+        // Текст по колу — верх
+        ctx.fillStyle = '#00d4ff'; ctx.font = 'bold 13px "IBM Plex Mono",monospace'; ctx.textAlign = 'center';
+        const topText = 'ВЧИТЕЛЬ ГЕОГРАФІЇ •';
+        const topR = stampR - 22, topStart = -Math.PI * 0.85;
+        drawArcText(ctx, topText, stampX, stampY, topR, topStart, true);
+        // Текст по колу — низ
+        const botText = 'ПЕРЕВІРЕНО ✓';
+        drawArcText(ctx, botText, stampX, stampY, topR, Math.PI * 0.1, true);
+        // Зірка посередині
+        drawStar(ctx, stampX, stampY - 6, 5, 22, 10, '#00d4ff');
+        // Повноважне ім'я
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 13px "Nunito",sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('Олесі Олександрівни', stampX, stampY + 26);
+        ctx.restore();
+     
+        // Дата
+        ctx.textAlign = 'center';
+        const d = date;
+        const dateStr = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+        ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = '14px "IBM Plex Mono",monospace';
+        ctx.fillText(dateStr, W / 2, H - 54);
+        ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '11px "IBM Plex Mono",monospace';
+        ctx.fillText('гра.освіта.ua • ГЕО-ДЕТЕКТИВ 2025', W / 2, H - 34);
     }
-    function roundRect(ctx,x,y,w,h,r,fill,stroke){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r); ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h); ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r); ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath(); if(fill) ctx.fill(); if(stroke) ctx.stroke(); }
-    function saveCert() { const cvs=document.getElementById('cert-canvas'); const link=document.createElement('a'); link.download=`geo-agent-${studentName.replace(/\s+/g,'-')}.png`; link.href=cvs.toDataURL('image/png'); link.click(); }
-    if (localStorage.getItem('geo_obolonka_submitted') === 'true') showScreen('screen-lock');
-</script>
+     
+    // Допоміжні функції canvas
+    function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+        if (fill) ctx.fill();
+        if (stroke) ctx.stroke();
+    }
+     
+    function drawArcText(ctx, text, cx, cy, r, startAngle, clockwise) {
+        const total = text.length;
+        const step = (clockwise ? 1 : -1) * Math.PI * 1.35 / Math.max(total, 1);
+        for (let i = 0; i < total; i++) {
+            const angle = startAngle + i * step;
+            ctx.save();
+            ctx.translate(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+            ctx.rotate(angle + Math.PI / 2);
+            ctx.fillText(text[i], 0, 0);
+            ctx.restore();
+        }
+    }
+     
+    function drawStar(ctx, cx, cy, spikes, outerR, innerR, color) {
+        ctx.beginPath(); ctx.fillStyle = color;
+        let rot = Math.PI / 2 * 3;
+        const step = Math.PI / spikes;
+        ctx.moveTo(cx, cy - outerR);
+        for (let i = 0; i < spikes; i++) {
+            ctx.lineTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR); rot += step;
+            ctx.lineTo(cx + Math.cos(rot) * innerR, cy + Math.sin(rot) * innerR); rot += step;
+        }
+        ctx.lineTo(cx, cy - outerR); ctx.closePath(); ctx.fill();
+    }
+     
+    function saveCert() {
+        const cvs = document.getElementById('cert-canvas');
+        const link = document.createElement('a');
+        link.download = `geo-agent-${studentName.replace(/\s+/g, '-')}.png`;
+        link.href = cvs.toDataURL('image/png');
+        link.click();
+    }
+     
+    // ── Блокування ────────────────────────────────────────────────────────────────
+    if (localStorage.getItem('geo_obolonka_submitted') === 'true') {
+        showScreen('screen-lock');
+    } else {
+        // Запуск логіки (коли ваші моделі завантажено, викликайте buildDots() та startTask(0))
+        buildDots();
+        // Для старту розкоментуйте запуск циклу аналізу:
+        // startTask(0);
+        // rafId = requestAnimationFrame(analyzeFrame);
+    }
+     
+    </script>
 </body>
 </html>
