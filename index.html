@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ГЕО-ДЕТЕКТИВ // Сектор 8: Міміка + Звук + Сердечка</title>
+    <title>ГЕО-ДЕТЕКТИВ // Сектор 8: Кивок + Рот + Сердечка</title>
     <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Rajdhani:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
@@ -147,8 +147,8 @@
         <div style="font-size:4rem">😊😮</div>
         <h1 style="font-family:'Rajdhani';">Операція «ГЕО-ОБОЛОНКА»</h1>
         <p>Відповідай на 12 завдань мімікою:</p>
-        <p style="color:#00ff88;">Посміхнись 😊 = Так (правильно)</p>
-        <p style="color:#ff3d5a;">Відкрий рот 😮 = Ні (неправильно)</p>
+        <p style="color:#00ff88;">Кивок головою 👍 = Так</p>
+        <p style="color:#ff3d5a;">Відкрий рот 😮 = Ні</p>
         <p style="font-size:0.9rem; color:#5a7399;">Утримуй вираз ~1 секунду</p>
         <button class="btn-primary" id="btn-start" onclick="startGame()">ПОЇХАЛИ!</button>
     </div>
@@ -163,7 +163,7 @@
 
     <div id="status-box" style="display:none;">
         <div id="status-text">Завантаження...</div>
-        <div id="instruction">Посміхнись 😊 = Так, Відкрий рот 😮 = Ні</div>
+        <div id="instruction">Кивок 👍 = Так, Рот 😮 = Ні</div>
     </div>
     <div id="feedback"></div>
     <div id="expression-indicator">😐</div>
@@ -220,13 +220,18 @@ let deviceToken = localStorage.getItem('geo_dev_token') || 'dev_' + Math.random(
 localStorage.setItem('geo_dev_token', deviceToken);
 
 let faceLandmarker;
-let expressionBuffer = [];
-let confirmCounter = 0;
+let mouthOpenBuffer = [];
+let mouthConfirmCounter = 0;
+let nodPitchBuffer = [];
+let nodActive = false;
+let nodCooldown = 0;
 let isWaitingForResponse = false;
-const BUFFER_SIZE = 20;
-const CONFIRM_THRESHOLD = 15;
+const MOUTH_BUFFER = 20;
+const MOUTH_CONFIRM = 15;
+const NOD_BUFFER = 30;
+const NOD_THRESHOLD = 0.15; // radians
+let lastPitchBase = 0;
 
-// Audio context for system sounds
 let audioCtx = null;
 function initAudio() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -244,28 +249,51 @@ function playSound(type) {
         osc.frequency.setValueAtTime(1100, now + 0.1);
         gain.gain.setValueAtTime(0.3, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now);
-        osc.stop(now + 0.3);
-    } else if (type === 'wrong') {
+        osc.start(now); osc.stop(now + 0.3);
+    } else {
         osc.type = 'square';
         osc.frequency.setValueAtTime(220, now);
         gain.gain.setValueAtTime(0.2, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-        osc.start(now);
-        osc.stop(now + 0.4);
+        osc.start(now); osc.stop(now + 0.4);
     }
 }
 
-function spawnHearts(x, y) {
-    for (let i = 0; i < 6; i++) {
-        const heart = document.createElement('div');
-        heart.className = 'heart-float';
-        heart.textContent = ['❤️','💖','💕'][Math.floor(Math.random()*3)];
-        heart.style.left = (x + (Math.random() - 0.5) * 80) + 'px';
-        heart.style.top = (y + (Math.random() - 0.5) * 40) + 'px';
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 1500);
-    }
+function getScreenCoords(landmark) {
+    const videoEl = video;
+    const rect = videoEl.getBoundingClientRect();
+    // Normalized coordinates relative to video intrinsic dimensions (but actually to the rendered size?)
+    // Since video is object-fit: cover, we need to map.
+    const videoWidth = videoEl.videoWidth;
+    const videoHeight = videoEl.videoHeight;
+    if (!videoWidth) return { x: 0, y: 0 };
+    const scaleX = rect.width / videoWidth;
+    const scaleY = rect.height / videoHeight;
+    const scale = Math.max(scaleX, scaleY); // cover
+    const offsetX = (rect.width - videoWidth * scale) / 2;
+    const offsetY = (rect.height - videoHeight * scale) / 2;
+    let x = landmark.x * videoWidth * scale + offsetX;
+    let y = landmark.y * videoHeight * scale + offsetY;
+    // mirror x due to video scaleX(-1)
+    x = rect.width - x;
+    return { x, y };
+}
+
+function spawnHeartsOnCheeks(landmarks) {
+    const leftCheek = landmarks[118]; // left cheek
+    const rightCheek = landmarks[347]; // right cheek
+    const positions = [getScreenCoords(leftCheek), getScreenCoords(rightCheek)];
+    positions.forEach(pos => {
+        for (let i = 0; i < 3; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'heart-float';
+            heart.textContent = ['❤️','💖','💕'][Math.floor(Math.random()*3)];
+            heart.style.left = (pos.x + (Math.random() - 0.5) * 40) + 'px';
+            heart.style.top = (pos.y + (Math.random() - 0.5) * 20) + 'px';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 1500);
+        }
+    });
 }
 
 const video = document.getElementById('video');
@@ -324,23 +352,19 @@ async function initFaceAI() {
             delegate: "GPU"
         },
         runningMode: "VIDEO",
-        numFaces: 1
+        numFaces: 1,
+        outputFaceBlendshapes: false,
+        outputFacialTransformationMatrixes: true
     });
     requestAnimationFrame(analyzeFrame);
 }
 
-function detectExpression(landmarks) {
-    const upperLip = landmarks[13];
-    const lowerLip = landmarks[14];
-    const leftCorner = landmarks[61];
-    const rightCorner = landmarks[291];
-
-    const mouthWidth = Math.hypot(rightCorner.x - leftCorner.x, rightCorner.y - leftCorner.y);
-    const mouthHeight = Math.hypot(lowerLip.x - upperLip.x, lowerLip.y - upperLip.y);
-
-    if (mouthHeight > 0.07) return 'open_mouth';
-    if (mouthWidth > 0.30 && mouthHeight < 0.06) return 'smile'; // знижений поріг для посмішки
-    return 'neutral';
+function getPitch(matrix) {
+    // matrix: 16 elements row-major, we need the 3x3 rotation top-left
+    // pitch = asin(-m[8]) where m[8] = row 2 col 0 (index 8)
+    if (!matrix) return 0;
+    const m = matrix;
+    return Math.asin(-m[8]);
 }
 
 function analyzeFrame() {
@@ -350,35 +374,51 @@ function analyzeFrame() {
     }
     const results = faceLandmarker.detectForVideo(video, performance.now());
     if (results.faceLandmarks?.length) {
-        const expr = detectExpression(results.faceLandmarks[0]);
-        exprIndicator.textContent = expr === 'smile' ? '😊' : expr === 'open_mouth' ? '😮' : '😐';
-        updateExpressionBuffer(expr);
+        const face = results.faceLandmarks[0];
+        const mouthHeight = Math.hypot(face[14].x - face[13].x, face[14].y - face[13].y);
+        const isMouthOpen = mouthHeight > 0.07;
+        exprIndicator.textContent = isMouthOpen ? '😮' : '😐';
+
+        // Mouth open detection (for "No")
+        mouthOpenBuffer.push(isMouthOpen);
+        if (mouthOpenBuffer.length > MOUTH_BUFFER) mouthOpenBuffer.shift();
+        const mouthCount = mouthOpenBuffer.filter(v => v).length;
+        if (mouthCount >= MOUTH_CONFIRM && isWaitingForResponse) {
+            handleAnswer(false);
+            isWaitingForResponse = false;
+            mouthOpenBuffer = [];
+            mouthConfirmCounter = 0;
+            return;
+        }
+
+        // Head nod detection (for "Yes")
+        if (results.facialTransformationMatrixes?.length) {
+            const matrix = results.facialTransformationMatrixes[0].data;
+            const pitch = getPitch(matrix);
+            nodPitchBuffer.push(pitch);
+            if (nodPitchBuffer.length > NOD_BUFFER) nodPitchBuffer.shift();
+            if (nodPitchBuffer.length === NOD_BUFFER) {
+                const min = Math.min(...nodPitchBuffer);
+                const max = Math.max(...nodPitchBuffer);
+                const range = max - min;
+                const current = pitch;
+                const base = nodPitchBuffer[0];
+                if (range > NOD_THRESHOLD && Math.abs(current - base) < 0.05 && nodCooldown <= 0 && isWaitingForResponse) {
+                    handleAnswer(true);
+                    isWaitingForResponse = false;
+                    nodPitchBuffer = [];
+                    nodCooldown = 20; // cooldown frames
+                    return;
+                }
+            }
+        }
+        if (nodCooldown > 0) nodCooldown--;
     } else {
-        expressionBuffer = [];
-        confirmCounter = 0;
+        mouthOpenBuffer = [];
+        nodPitchBuffer = [];
         exprIndicator.textContent = '😐';
     }
     requestAnimationFrame(analyzeFrame);
-}
-
-function updateExpressionBuffer(expr) {
-    expressionBuffer.push(expr);
-    if (expressionBuffer.length > BUFFER_SIZE) expressionBuffer.shift();
-    const counts = { neutral: 0, smile: 0, open_mouth: 0 };
-    expressionBuffer.forEach(e => counts[e]++);
-    const dominant = counts.smile > counts.open_mouth ? 'smile' : 
-                     counts.open_mouth > counts.neutral ? 'open_mouth' : 'neutral';
-
-    if (dominant === 'smile' || dominant === 'open_mouth') {
-        confirmCounter++;
-        if (confirmCounter >= CONFIRM_THRESHOLD && isWaitingForResponse) {
-            handleAnswer(dominant === 'smile');
-            isWaitingForResponse = false;
-            confirmCounter = 0;
-        }
-    } else {
-        confirmCounter = 0;
-    }
 }
 
 function startTask(index) {
@@ -389,11 +429,12 @@ function startTask(index) {
     currentTaskIdx = index;
     const task = TASKS[index];
     statusText.textContent = `Твердження: ${task.statement}`;
-    instructionEl.textContent = "Посміхнись 😊 = Так, Відкрий рот 😮 = Ні";
+    instructionEl.textContent = "Кивок 👍 = Так, Рот 😮 = Ні";
     hudGr.textContent = task.gr.replace('GR', 'ГР ');
     isWaitingForResponse = true;
-    expressionBuffer = [];
-    confirmCounter = 0;
+    mouthOpenBuffer = [];
+    nodPitchBuffer = [];
+    nodCooldown = 0;
 }
 
 function handleAnswer(userSaysTrue) {
@@ -401,18 +442,16 @@ function handleAnswer(userSaysTrue) {
     const correct = (userSaysTrue === task.isTrue);
     scores[task.gr].push(correct ? 1 : 0);
 
-    // Звук
     playSound(correct ? 'correct' : 'wrong');
 
-    // Візуальний зворотний зв'язок
     feedbackEl.style.display = 'block';
     feedbackEl.textContent = correct ? '✅' : '❌';
     feedbackEl.style.color = correct ? '#00ff88' : '#ff3d5a';
 
-    // Сердечка при правильній відповіді
-    if (correct) {
-        const rect = exprIndicator.getBoundingClientRect();
-        spawnHearts(rect.left + rect.width/2, rect.top);
+    if (correct && window.results?.faceLandmarks?.length) {
+        // Spawn hearts on cheeks from last known landmarks
+        const lastLandmarks = window.lastFaceLandmarks;
+        if (lastLandmarks) spawnHeartsOnCheeks(lastLandmarks);
     }
 
     setTimeout(() => {
@@ -420,6 +459,25 @@ function handleAnswer(userSaysTrue) {
         startTask(currentTaskIdx + 1);
     }, 1200);
 }
+
+// Store last face landmarks for heart placement
+window.lastFaceLandmarks = null;
+const originalDetect = analyzeFrame;
+// override analyzeFrame to store landmarks
+const analyzeFrameWithStore = function() {
+    if (!faceLandmarker || video.readyState < 2) {
+        requestAnimationFrame(analyzeFrameWithStore);
+        return;
+    }
+    const results = faceLandmarker.detectForVideo(video, performance.now());
+    if (results.faceLandmarks?.length) {
+        window.lastFaceLandmarks = results.faceLandmarks[0];
+    }
+    // call original logic
+    analyzeFrame();
+}.bind(this);
+// replace analyzeFrame with wrapper
+analyzeFrame = analyzeFrameWithStore;
 
 function showEvalScreen() {
     video.pause();
