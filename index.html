@@ -3,46 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ГЕО-ДЕТЕКТИВ // Сектор 8: Кивок + Рот + Сердечка</title>
+    <title>ГЕО-ДЕТЕКТИВ // Сектор 8</title>
     <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Rajdhani:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body { overflow: hidden; background: #060a14; font-family: 'Nunito', sans-serif; }
 
-        #video {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: 0; transform: scaleX(-1);
-        }
-        #canvas {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            z-index: 1; pointer-events: none;
-        }
+        #video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transform: scaleX(-1); }
+        #canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
 
-        /* Hearts floating */
-        .heart-float {
-            position: absolute; z-index: 200; font-size: 2rem;
-            animation: floatUp 1.5s ease-out forwards;
-            pointer-events: none;
-        }
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
-        }
+        .heart-float { position: absolute; z-index: 200; font-size: 2rem; animation: floatUp 1.5s ease-out forwards; pointer-events: none; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(1.5); } }
 
-        #screen-auth {
-            position: fixed; inset: 0; z-index: 4000;
+        /* === OVERLAY SCREENS === */
+        .screen {
+            position: fixed; inset: 0; z-index: 3000;
             background: rgba(6,10,20,0.95); backdrop-filter: blur(12px);
-            display: flex; align-items: center; justify-content: center; padding: 20px;
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; gap: 16px; color: #e2eaff; text-align: center; padding: 20px;
         }
-        .auth-card {
-            background: #111d35; border: 1px solid #1e3a5f; border-radius: 24px;
-            padding: 30px 20px; max-width: 400px; width: 100%; color: #e2eaff; text-align: center;
-        }
+        .screen.active { display: flex; }
+
+        /* Auth */
+        .auth-card { background: #111d35; border: 1px solid #1e3a5f; border-radius: 24px; padding: 30px 20px; max-width: 400px; width: 100%; color: #e2eaff; text-align: center; }
         .auth-title { font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700; color: #00d4ff; margin-bottom: 8px; }
         .auth-sub { font-size: 13px; color: #5a7399; margin-bottom: 20px; }
         .field-label { font-size: 11px; letter-spacing: 1.5px; color: #5a7399; text-transform: uppercase; margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; text-align: left; }
+
         select {
             width: 100%; padding: 12px 14px; background: rgba(255,255,255,.04);
             border: 1px solid #1e3a5f; border-radius: 10px; color: #e2eaff;
@@ -53,139 +41,149 @@
         }
         select:focus { outline: none; border-color: #00d4ff; }
         select option { background-color: #111d35; color: #e2eaff; }
-        .btn-primary {
-            width: 100%; padding: 16px; background: #00d4ff; color: #060a14;
-            border: none; border-radius: 12px; font-family: 'Rajdhani', sans-serif;
-            font-size: 17px; font-weight: 700; letter-spacing: 1px;
-            text-transform: uppercase; cursor: pointer; transition: transform 0.15s;
-        }
+
+        .btn-primary { width: 100%; padding: 16px; background: #00d4ff; color: #060a14; border: none; border-radius: 12px; font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: transform 0.15s, opacity 0.15s; }
         .btn-primary:active { transform: scale(0.97); }
-        .btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+        .btn-primary:disabled { opacity: 0.4; pointer-events: none; }
 
-        #screen-start {
-            position: fixed; inset: 0; z-index: 3000;
-            background: rgba(6,10,20,0.95); backdrop-filter: blur(10px);
-            display: none; flex-direction: column; align-items: center;
-            justify-content: center; gap: 16px; color: #e2eaff; text-align: center; padding: 20px;
-        }
-
-        .hud {
-            position: absolute; top: 16px; left: 16px; right: 16px; z-index: 150;
-            display: flex; justify-content: space-between; align-items: center; pointer-events: none;
-        }
+        /* HUD */
+        .hud { position: absolute; top: 16px; left: 16px; right: 16px; z-index: 150; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
         .hud-logo { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: #00d4ff; text-shadow: 0 0 15px rgba(0,212,255,0.5); }
         .hud-badge { background: rgba(0,212,255,0.12); border: 1px solid rgba(0,212,255,0.25); color: #00d4ff; padding: 6px 14px; border-radius: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
 
-        #status-box {
-            position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
-            z-index: 100; width: 88%; max-width: 480px;
-            background: rgba(6,10,20,0.9); border: 1px solid #1e3a5f;
-            border-radius: 24px; padding: 18px; text-align: center; backdrop-filter: blur(12px);
-        }
+        /* Status box */
+        #status-box { position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); z-index: 100; width: 88%; max-width: 480px; background: rgba(6,10,20,0.9); border: 1px solid #1e3a5f; border-radius: 24px; padding: 18px; text-align: center; backdrop-filter: blur(12px); }
         #status-text { font-size: 1.3rem; font-weight: 700; color: #e2eaff; margin-bottom: 8px; }
         #instruction { font-size: 0.9rem; color: #ffb800; font-weight: 600; }
 
-        #feedback {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 4rem; z-index: 200; display: none; text-shadow: 0 0 20px currentColor;
-        }
-        #expression-indicator {
-            position: absolute; top: 80px; right: 20px; z-index: 200;
-            font-size: 2.5rem; background: rgba(0,0,0,0.5); border-radius: 16px;
-            padding: 8px 12px; display: none;
-        }
+        /* Timeout bar */
+        #timeout-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: #00d4ff; border-radius: 0 0 24px 24px; transition: width 0.1s linear; width: 100%; }
 
-        #screen-eval, #screen-result {
-            position: fixed; inset: 0; z-index: 3000;
-            background: rgba(6,10,20,0.95); backdrop-filter: blur(10px);
-            display: none; flex-direction: column; align-items: center;
-            justify-content: center; gap: 16px; color: #e2eaff; text-align: center; padding: 20px;
-        }
-        .eval-option {
-            background: rgba(255,255,255,0.05); border: 1px solid #1e3a5f;
-            border-radius: 12px; padding: 14px 20px; width: 80%; max-width: 320px;
-            cursor: pointer; text-align: left; font-size: 1rem;
-        }
+        /* Error toast */
+        #error-toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9000; background: #ff3d5a; color: #fff; padding: 14px 24px; border-radius: 14px; font-weight: 700; font-size: 15px; display: none; max-width: 90vw; text-align: center; }
+        #error-toast.show { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(-8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+        /* Feedback */
+        #feedback { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; z-index: 200; display: none; }
+        #expression-indicator { position: absolute; top: 80px; right: 20px; z-index: 200; font-size: 2.5rem; background: rgba(0,0,0,0.5); border-radius: 16px; padding: 8px 12px; display: none; }
+
+        /* Eval */
+        .eval-option { background: rgba(255,255,255,0.05); border: 2px solid #1e3a5f; border-radius: 12px; padding: 14px 20px; width: 80%; max-width: 320px; cursor: pointer; text-align: left; font-size: 1rem; transition: border-color 0.2s, background 0.2s; }
+        .eval-option:hover { border-color: rgba(0,212,255,0.4); }
         .eval-option.selected { border-color: #00d4ff; background: rgba(0,212,255,0.1); }
 
+        /* Result */
         .result-stat { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; width: 80%; }
         .stat-box { background: rgba(17,29,53,0.8); border: 1px solid #1e3a5f; border-radius: 12px; padding: 12px; text-align: center; }
         .stat-box .value { font-size: 2rem; font-weight: 700; }
         .stat-box .label { font-size: 0.75rem; color: #5a7399; }
-
         .gaps-box { background: rgba(255,61,90,0.1); border: 1px solid rgba(255,61,90,0.3); border-radius: 14px; padding: 16px; text-align: left; width: 90%; max-width: 400px; }
         .gap-item { padding: 6px 0; border-bottom: 1px solid #1e3a5f; color: #d0a0a8; font-size: 0.9rem; }
         .gap-item:last-child { border-bottom: none; }
 
-        #screen-lock { position: fixed; inset: 0; z-index: 5000; background: #060a14; display: none; align-items: center; justify-content: center; flex-direction: column; color: #e2eaff; text-align: center; }
+        /* Lock */
+        #screen-lock { z-index: 5000; background: #060a14; }
         .lock-icon { font-size: 4rem; margin-bottom: 20px; }
+
+        /* No-face warning */
+        #no-face-warning { position: absolute; top: 140px; left: 50%; transform: translateX(-50%); z-index: 200; background: rgba(255,184,0,0.15); border: 1px solid #ffb800; border-radius: 12px; padding: 10px 18px; color: #ffb800; font-size: 0.85rem; display: none; }
+
+        /* Progress dots */
+        #progress-dots { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); z-index: 150; display: none; gap: 6px; }
+        .pdot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.3s; }
+        .pdot.done-correct { background: #00ff88; }
+        .pdot.done-wrong { background: #ff3d5a; }
+        .pdot.current { background: #00d4ff; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
     </style>
 </head>
 <body>
-    <div id="screen-lock">
-        <div class="lock-icon">🔐</div>
-        <h2>ДОСТУП ОБМЕЖЕНО</h2>
-        <p>Твій пристрій вже надіслав звіт у штаб.</p>
-    </div>
 
-    <div id="screen-auth">
-        <div class="auth-card">
-            <div class="auth-title">🔍 АВТОРИЗАЦІЯ</div>
-            <div class="auth-sub">Введи дані агента для доступу до оперативної справи</div>
-            <div class="field-label">Підрозділ (клас)</div>
-            <select id="sel-class" onchange="loadNames()">
-                <option value="">— Оберіть клас —</option>
-                <option>7-А</option><option>7-Б</option><option>7-В</option><option>7-Г</option><option>7-Д</option>
-            </select>
-            <div class="field-label">Позивний (прізвище)</div>
-            <select id="sel-name"><option value="">— Спочатку оберіть клас —</option></select>
-            <button class="btn-primary" id="btn-auth" onclick="authenticate()" disabled>ПРОДОВЖИТИ</button>
-        </div>
-    </div>
+<div id="error-toast"></div>
 
-    <div id="screen-start">
-        <div style="font-size:4rem">😊😮</div>
-        <h1 style="font-family:'Rajdhani';">Операція «ГЕО-ОБОЛОНКА»</h1>
-        <p>Відповідай на 12 завдань мімікою:</p>
-        <p style="color:#00ff88;">Кивок головою 👍 = Так</p>
-        <p style="color:#ff3d5a;">Відкрий рот 😮 = Ні</p>
-        <p style="font-size:0.9rem; color:#5a7399;">Утримуй вираз ~1 секунду</p>
-        <button class="btn-primary" id="btn-start" onclick="startGame()">ПОЇХАЛИ!</button>
-    </div>
+<!-- LOCK -->
+<div id="screen-lock" class="screen">
+    <div class="lock-icon">🔐</div>
+    <h2>ДОСТУП ОБМЕЖЕНО</h2>
+    <p style="color:#5a7399; margin-top:8px;">Твій звіт вже надіслано у штаб.</p>
+    <button class="btn-primary" style="max-width:280px; margin-top:16px;" onclick="resetAndReload()">Пройти ще раз</button>
+</div>
 
-    <video id="video" autoplay playsinline muted></video>
-    <canvas id="canvas"></canvas>
-
-    <div class="hud" id="game-hud" style="display:none;">
-        <div class="hud-logo">ГЕО-ДЕТЕКТИВ</div>
-        <div class="hud-badge" id="hud-gr">СЕКТОР 8</div>
+<!-- AUTH -->
+<div id="screen-auth" class="screen active">
+    <div class="auth-card">
+        <div class="auth-title">🔍 АВТОРИЗАЦІЯ</div>
+        <div class="auth-sub">Введи дані агента для доступу до оперативної справи</div>
+        <div class="field-label">Підрозділ (клас)</div>
+        <select id="sel-class">
+            <option value="">— Оберіть клас —</option>
+            <option>7-А</option><option>7-Б</option><option>7-В</option><option>7-Г</option><option>7-Д</option>
+        </select>
+        <div class="field-label">Позивний (прізвище)</div>
+        <select id="sel-name"><option value="">— Спочатку оберіть клас —</option></select>
+        <button class="btn-primary" id="btn-auth" disabled>ПРОДОВЖИТИ</button>
     </div>
+</div>
 
-    <div id="status-box" style="display:none;">
-        <div id="status-text">Завантаження...</div>
-        <div id="instruction">Кивок 👍 = Так, Рот 😮 = Ні</div>
+<!-- START -->
+<div id="screen-start" class="screen">
+    <div style="font-size:4rem">😊😮</div>
+    <h1 style="font-family:'Rajdhani'; font-size:2rem;">Операція «ГЕО-ОБОЛОНКА»</h1>
+    <p style="color:#aac4e8;">Відповідай на 12 завдань мімікою:</p>
+    <div style="background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.3); border-radius:14px; padding:14px 24px;">
+        <p style="color:#00ff88; font-weight:700;">Кивок головою 👍 = ТАК</p>
     </div>
-    <div id="feedback"></div>
-    <div id="expression-indicator">😐</div>
+    <div style="background:rgba(255,61,90,0.08); border:1px solid rgba(255,61,90,0.3); border-radius:14px; padding:14px 24px;">
+        <p style="color:#ff3d5a; font-weight:700;">Відкрий рот 😮 = НІ</p>
+    </div>
+    <p style="font-size:0.85rem; color:#5a7399;">Утримуй вираз ~1 секунду • Є 15 секунд на кожне питання</p>
+    <button class="btn-primary" id="btn-start" style="max-width:280px;">ПОЇХАЛИ!</button>
+</div>
 
-    <div id="screen-eval">
-        <h2 style="font-family:'Rajdhani';">ЗВІТ АГЕНТА</h2>
-        <p>12 завдань виконано. Оціни свій рівень:</p>
-        <div class="eval-option" onclick="selectEval(this, 'Впевнено')">Впевнено</div>
-        <div class="eval-option" onclick="selectEval(this, 'Частково')">Частково</div>
-        <div class="eval-option" onclick="selectEval(this, 'Потребую підтримки')">Потребую підтримки</div>
-        <button class="btn-primary" id="btn-submit" disabled onclick="submitData()">НАДІСЛАТИ ЗВІТ</button>
-    </div>
+<!-- GAME -->
+<video id="video" autoplay playsinline muted></video>
+<canvas id="canvas"></canvas>
 
-    <div id="screen-result">
-        <div class="result-stat" id="result-stats"></div>
-        <div class="gaps-box" id="gaps-container"></div>
-        <button class="btn-primary" onclick="location.reload()">ЗАВЕРШИТИ</button>
-    </div>
+<div class="hud" id="game-hud" style="display:none;">
+    <div class="hud-logo">ГЕО-ДЕТЕКТИВ</div>
+    <div class="hud-badge" id="hud-gr">СЕКТОР 8</div>
+</div>
+
+<div id="progress-dots"></div>
+
+<div id="status-box" style="display:none;">
+    <div id="status-text">Завантаження...</div>
+    <div id="instruction">Кивок 👍 = Так &nbsp;•&nbsp; Рот 😮 = Ні</div>
+    <div id="timeout-bar"></div>
+</div>
+<div id="feedback"></div>
+<div id="expression-indicator">😐</div>
+<div id="no-face-warning">⚠️ Покажи обличчя в камеру</div>
+
+<!-- EVAL -->
+<div id="screen-eval" class="screen">
+    <h2 style="font-family:'Rajdhani'; font-size:1.8rem;">ЗВІТ АГЕНТА</h2>
+    <p style="color:#aac4e8;">12 завдань виконано! Оціни свій рівень:</p>
+    <div class="eval-option" id="eval-1">Впевнено 💪</div>
+    <div class="eval-option" id="eval-2">Частково 🤔</div>
+    <div class="eval-option" id="eval-3">Потребую підтримки 🆘</div>
+    <button class="btn-primary" id="btn-submit" style="max-width:280px;" disabled>НАДІСЛАТИ ЗВІТ</button>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result" class="screen">
+    <h2 style="font-family:'Rajdhani'; font-size:1.8rem;">МІСІЯ ВИКОНАНА! 🎉</h2>
+    <div class="result-stat" id="result-stats"></div>
+    <div class="gaps-box" id="gaps-container"></div>
+    <p style="font-size:0.8rem; color:#5a7399;" id="save-status">Зберігаємо результати...</p>
+    <button class="btn-primary" style="max-width:280px;" onclick="location.reload()">ЗАВЕРШИТИ</button>
+</div>
 
 <script type="module">
 import { FaceLandmarker, FilesetResolver } from "https://cdn.skypack.dev/@mediapipe/tasks-vision@0.10.3";
 
+// ── База учнів ──────────────────────────────────────────────────────────────
 const DB = {
     "7-А":["Ашихмін Ярослав","Внуков Веніамін","Волков Давид","Вулєр Іван","Дабіжа Марія","Димитров Дмитро","Кирилюк Артем","Косар Нікіта","Кравчук Мілана","Кривенок Ілля","Лазаревич Георгій","Лазаревич Ніколь","Лісіцина Дар'я","Нестерова Varvara","Перванчук Марк","Полуянов Семен","Попков Андрій","Савченко Наталія","Скопенко Ніка","Усольцева Аріна","Халабура Вікторія","Химич Артем","Якутенко Володимир","Ященко Анастасія","Бохонок Олеся"],
     "7-Б":["Алєксєюк Ірина","Андрусік Ул'яна","Болясна Аріна","Войтех Богдан","Голімбовська Єлизавета","Гуляєва Марія","Зєнов Геннадій","Кожухар Злата","Колесниченко Артем","Коростельова Анфіса","Кузьмін Дмитро","Левченко Тимур","Литовченко Кіра","Михайлова Ксенія","Ніколаєв Ілля","Ніща Дар'я","Переберін Артем","Сич Кіріл","Сташко Кароліна","Стерпул Олександр","Харченко Гліб","Хомутова Анна","Чернюк Андрій","Шаріпова Анастасія","Штурхаль Марія","Яремчук Єгор","Бохонок Олеся"],
@@ -195,116 +193,133 @@ const DB = {
 };
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUCjrOlZuUGPrGzauifB6v-qoVT9arKkCKlXZxiQSgYvDlFJyO7jg0BEe_OtHrKfEDXg/exec";
+const TASK_TIMEOUT_MS = 15000;
 
 const TASKS = [
-    { statement: "Літосфера — це тверда оболонка Землі.", isTrue: true, gr: "GR1", gap: "ГР1_Поняття_географічної_оболонки" },
-    { statement: "Цілісність означає, що природа — єдиний організм.", isTrue: true, gr: "GR1", gap: "ГР1_Цілісність_ГО" },
-    { statement: "Ритмічність — це закономірність, яка пов'язує всі сфери.", isTrue: false, gr: "GR1", gap: "ГР1_Закономірності_ГО" },
-    { statement: "До природного комплексу входять гірські породи, клімат, води, ґрунти і живі організми.", isTrue: true, gr: "GR1", gap: "ГР1_Компоненти_ПК" },
-    { statement: "Материк Євразія — це найменший природний комплекс.", isTrue: false, gr: "GR1", gap: "ГР1_Зміна_ПК" },
-    { statement: "Головна причина природних зон — зміна співвідношення тепла і вологи.", isTrue: true, gr: "GR2", gap: "ГР2_Причина_зональності" },
-    { statement: "В Африці зони змінюються від екватора на північ і південь — це прояв висотної поясності.", isTrue: false, gr: "GR2", gap: "ГР2_Аналіз_карти_зон" },
-    { statement: "Правильний порядок зон від полюса до екватора: Арктичні пустелі → Тундра → Тайга → Степи → Тропічні пустелі → Екваторіальні ліси.", isTrue: true, gr: "GR2", gap: "ГР2_Читання_карти_зон" },
-    { statement: "Океанічні течії та гори не впливають на природні зони.", isTrue: false, gr: "GR2", gap: "ГР2_Порушення_зональності" },
-    { statement: "Зміна природи в горах із висотою називається широтною зональністю.", isTrue: false, gr: "GR3", gap: "ГР3_Висотна_поясність" },
-    { statement: "Кількість висотних поясів залежить від висоти гори та її близькості до екватора.", isTrue: true, gr: "GR3", gap: "ГР3_Залежність_висотної_поясності" },
-    { statement: "Осушення боліт на Поліссі призведе до зниження ґрунтових вод, зникнення птахів і посух.", isTrue: true, gr: "GR3", gap: "ГР3_Трансформація_комплексів" }
+    { statement: "Природний комплекс – це ділянка земної поверхні, що вирізняється поєднанням певних природних компонентів, які нероздільно пов'язані між собою.", isTrue: true, gr: "GR1", gap: "Поняття_ПК" },
+    { statement: "Географічна оболонка є найбільшим природним комплексом на Землі.", isTrue: true, gr: "GR1", gap: "ГО_найбільший_ПК" },
+    { statement: "Цілісність географічної оболонки полягає у взаємозв'язках та взаємозалежностях її компонентів.", isTrue: true, gr: "GR1", gap: "Цілісність_ГО" },
+    { statement: "Ритмічність – це періодичність і повторюваність природних процесів у часі, прикладом є зміна дня і ночі.", isTrue: true, gr: "GR1", gap: "Ритмічність" },
+    { statement: "Широтна зональність – це закономірна зміна природних комплексів від екватора до полюсів.", isTrue: true, gr: "GR2", gap: "Широтна_зональність" },
+    { statement: "Природна секторність – це зміна природних зон від узбережжя вглиб материка.", isTrue: true, gr: "GR2", gap: "Секторність" },
+    { statement: "Азональні природні комплекси формуються через відмінності будови земної кори та рельєфу.", isTrue: true, gr: "GR2", gap: "Азональні_ПК" },
+    { statement: "Природні зони – це великі зональні природні комплекси, що вирізняються подібністю клімату, ґрунтів, рослинності, тваринного світу.", isTrue: true, gr: "GR2", gap: "Природні_зони" },
+    { statement: "Висотна поясність – це зміна природних комплексів у горах з висотою.", isTrue: true, gr: "GR3", gap: "Висотна_поясність" },
+    { statement: "Кількість висотних поясів залежить від висоти гір і близькості до екватора.", isTrue: true, gr: "GR3", gap: "Кількість_поясів" },
+    { statement: "Осушення боліт і вирубка лісів не впливають на інші компоненти природного комплексу.", isTrue: false, gr: "GR3", gap: "Вплив_людини" },
+    { statement: "Антропогенні комплекси займають близько 85% території України.", isTrue: true, gr: "GR3", gap: "Антропогенні_ПК" }
 ];
 
-let studentName = "";
-let studentClass = "";
+// ── Стан ────────────────────────────────────────────────────────────────────
+let studentName = "", studentClass = "";
 let currentTaskIdx = 0;
 let scores = { GR1: [], GR2: [], GR3: [] };
 let selfEval = "";
-let deviceToken = localStorage.getItem('geo_dev_token') || 'dev_' + Math.random().toString(36).substr(2,9);
-localStorage.setItem('geo_dev_token', deviceToken);
+let mediaStream = null;
+let faceLandmarker = null;
+let rafId = null;
 
-let faceLandmarker;
+// Буфери детекції
 let mouthOpenBuffer = [];
-let mouthConfirmCounter = 0;
 let nodPitchBuffer = [];
-let nodActive = false;
 let nodCooldown = 0;
 let isWaitingForResponse = false;
+let noFaceFrames = 0;
+let lastFaceLandmarks = null;
+
+// Таймаут завдання
+let taskTimeoutId = null;
+let taskStartTime = 0;
+
 const MOUTH_BUFFER = 20;
 const MOUTH_CONFIRM = 15;
 const NOD_BUFFER = 30;
-const NOD_THRESHOLD = 0.15; // radians
-let lastPitchBase = 0;
+const NOD_THRESHOLD = 0.15;
 
+// ── DOM ──────────────────────────────────────────────────────────────────────
+const video = document.getElementById('video');
+const statusText = document.getElementById('status-text');
+const feedbackEl = document.getElementById('feedback');
+const exprIndicator = document.getElementById('expression-indicator');
+const hudGr = document.getElementById('hud-gr');
+const noFaceWarn = document.getElementById('no-face-warning');
+const timeoutBar = document.getElementById('timeout-bar');
+const progressDots = document.getElementById('progress-dots');
+
+// ── Утиліти ──────────────────────────────────────────────────────────────────
+function showError(msg, durationMs = 3000) {
+    const t = document.getElementById('error-toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), durationMs);
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+}
+
+// Скидання локального блокування (для повторного проходження)
+window.resetAndReload = function() {
+    localStorage.removeItem('geo_obolonka_submitted');
+    location.reload();
+};
+
+// ── Звук ──────────────────────────────────────────────────────────────────────
 let audioCtx = null;
-function initAudio() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-}
+function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 function playSound(type) {
-    if (!audioCtx) initAudio();
-    const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    if (type === 'correct') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, now);
-        osc.frequency.setValueAtTime(1100, now + 0.1);
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now); osc.stop(now + 0.3);
-    } else {
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(220, now);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-        osc.start(now); osc.stop(now + 0.4);
-    }
+    try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        if (type === 'correct') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, now); osc.frequency.setValueAtTime(1100, now + 0.1);
+            gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(220, now);
+            gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+            osc.start(now); osc.stop(now + 0.4);
+        }
+    } catch(e) { /* silent fail */ }
 }
 
-function getScreenCoords(landmark) {
-    const videoEl = video;
-    const rect = videoEl.getBoundingClientRect();
-    // Normalized coordinates relative to video intrinsic dimensions (but actually to the rendered size?)
-    // Since video is object-fit: cover, we need to map.
-    const videoWidth = videoEl.videoWidth;
-    const videoHeight = videoEl.videoHeight;
-    if (!videoWidth) return { x: 0, y: 0 };
-    const scaleX = rect.width / videoWidth;
-    const scaleY = rect.height / videoHeight;
-    const scale = Math.max(scaleX, scaleY); // cover
-    const offsetX = (rect.width - videoWidth * scale) / 2;
-    const offsetY = (rect.height - videoHeight * scale) / 2;
-    let x = landmark.x * videoWidth * scale + offsetX;
-    let y = landmark.y * videoHeight * scale + offsetY;
-    // mirror x due to video scaleX(-1)
-    x = rect.width - x;
-    return { x, y };
-}
-
+// ── Сердечка ──────────────────────────────────────────────────────────────────
 function spawnHeartsOnCheeks(landmarks) {
-    const leftCheek = landmarks[118]; // left cheek
-    const rightCheek = landmarks[347]; // right cheek
-    const positions = [getScreenCoords(leftCheek), getScreenCoords(rightCheek)];
-    positions.forEach(pos => {
+    const leftCheek = landmarks[118];
+    const rightCheek = landmarks[347];
+    const rect = video.getBoundingClientRect();
+    const vW = video.videoWidth || 640;
+    const vH = video.videoHeight || 480;
+    const scale = Math.max(rect.width / vW, rect.height / vH);
+    const offsetX = (rect.width - vW * scale) / 2;
+    const offsetY = (rect.height - vH * scale) / 2;
+
+    [leftCheek, rightCheek].forEach(pos => {
+        let x = pos.x * vW * scale + offsetX;
+        let y = pos.y * vH * scale + offsetY;
+        x = rect.width - x; // дзеркало
         for (let i = 0; i < 3; i++) {
             const heart = document.createElement('div');
             heart.className = 'heart-float';
             heart.textContent = ['❤️','💖','💕'][Math.floor(Math.random()*3)];
-            heart.style.left = (pos.x + (Math.random() - 0.5) * 40) + 'px';
-            heart.style.top = (pos.y + (Math.random() - 0.5) * 20) + 'px';
+            heart.style.left = (rect.left + x + (Math.random()-0.5)*40) + 'px';
+            heart.style.top  = (rect.top  + y + (Math.random()-0.5)*20) + 'px';
             document.body.appendChild(heart);
             setTimeout(() => heart.remove(), 1500);
         }
     });
 }
 
-const video = document.getElementById('video');
-const statusText = document.getElementById('status-text');
-const instructionEl = document.getElementById('instruction');
-const feedbackEl = document.getElementById('feedback');
-const exprIndicator = document.getElementById('expression-indicator');
-const hudGr = document.getElementById('hud-gr');
-
-window.loadNames = function() {
-    const c = document.getElementById('sel-class').value;
+// ── Auth ──────────────────────────────────────────────────────────────────────
+document.getElementById('sel-class').addEventListener('change', function() {
+    const c = this.value;
     const s = document.getElementById('sel-name');
     s.innerHTML = '<option value="">— Знайди себе —</option>';
     if (c && DB[c]) {
@@ -313,39 +328,73 @@ window.loadNames = function() {
             o.value = o.text = n;
             s.appendChild(o);
         });
-        document.getElementById('btn-auth').disabled = false;
-    } else {
-        document.getElementById('btn-auth').disabled = true;
     }
-};
+    document.getElementById('btn-auth').disabled = !c;
+});
 
-window.authenticate = function() {
+document.getElementById('sel-name').addEventListener('change', function() {
+    document.getElementById('btn-auth').disabled = !this.value;
+});
+
+document.getElementById('btn-auth').addEventListener('click', function() {
     const c = document.getElementById('sel-class').value;
     const n = document.getElementById('sel-name').value;
-    if (!c || !n) return alert('Оберіть клас і прізвище!');
-    studentClass = c;
-    studentName = n;
-    document.getElementById('screen-auth').style.display = 'none';
-    document.getElementById('screen-start').style.display = 'flex';
-};
+    if (!c || !n) { showError('Оберіть клас і прізвище!'); return; }
+    studentClass = c; studentName = n;
+    showScreen('screen-start');
+});
 
-window.startGame = async function() {
-    document.getElementById('screen-start').style.display = 'none';
+// ── Старт гри ─────────────────────────────────────────────────────────────────
+document.getElementById('btn-start').addEventListener('click', startGame);
+
+async function startGame() {
+    document.getElementById('btn-start').disabled = true;
+    document.getElementById('btn-start').textContent = 'Завантаження...';
+
+    try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        video.srcObject = mediaStream;
+        await new Promise(resolve => video.onloadedmetadata = resolve);
+    } catch(e) {
+        showError('Потрібен доступ до камери! Перевір налаштування браузера.', 5000);
+        document.getElementById('btn-start').disabled = false;
+        document.getElementById('btn-start').textContent = 'ПОЇХАЛИ!';
+        return;
+    }
+
+    try {
+        await initFaceAI();
+    } catch(e) {
+        showError('Не вдалося завантажити ШІ. Перевір інтернет-з\'єднання.', 5000);
+        stopCamera();
+        document.getElementById('btn-start').disabled = false;
+        document.getElementById('btn-start').textContent = 'ПОЇХАЛИ!';
+        return;
+    }
+
+    // Ховаємо стартовий екран, показуємо гру
+    showScreen(null);
     document.getElementById('game-hud').style.display = 'flex';
     document.getElementById('status-box').style.display = 'block';
     exprIndicator.style.display = 'block';
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-        video.srcObject = stream;
-        await initFaceAI();
-        startTask(0);
-    } catch (e) {
-        alert("Потрібен доступ до камери! " + e.message);
-    }
-};
+    progressDots.style.display = 'flex';
+    buildProgressDots();
+    startTask(0);
+}
 
+function stopCamera() {
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(t => t.stop());
+        mediaStream = null;
+    }
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+}
+
+// ── MediaPipe ─────────────────────────────────────────────────────────────────
 async function initFaceAI() {
-    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
+    const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+    );
     faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
         baseOptions: {
             modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
@@ -356,103 +405,155 @@ async function initFaceAI() {
         outputFaceBlendshapes: false,
         outputFacialTransformationMatrixes: true
     });
-    requestAnimationFrame(analyzeFrame);
+    rafId = requestAnimationFrame(analyzeFrame);
 }
 
 function getPitch(matrix) {
-    // matrix: 16 elements row-major, we need the 3x3 rotation top-left
-    // pitch = asin(-m[8]) where m[8] = row 2 col 0 (index 8)
     if (!matrix) return 0;
-    const m = matrix;
-    return Math.asin(-m[8]);
+    return Math.asin(Math.max(-1, Math.min(1, -matrix[8])));
 }
 
 function analyzeFrame() {
     if (!faceLandmarker || video.readyState < 2) {
-        requestAnimationFrame(analyzeFrame);
+        rafId = requestAnimationFrame(analyzeFrame);
         return;
     }
+
     const results = faceLandmarker.detectForVideo(video, performance.now());
+
     if (results.faceLandmarks?.length) {
         const face = results.faceLandmarks[0];
+        lastFaceLandmarks = face;
+        noFaceFrames = 0;
+        noFaceWarn.style.display = 'none';
+
+        // Рот
         const mouthHeight = Math.hypot(face[14].x - face[13].x, face[14].y - face[13].y);
         const isMouthOpen = mouthHeight > 0.07;
         exprIndicator.textContent = isMouthOpen ? '😮' : '😐';
 
-        // Mouth open detection (for "No")
         mouthOpenBuffer.push(isMouthOpen);
         if (mouthOpenBuffer.length > MOUTH_BUFFER) mouthOpenBuffer.shift();
-        const mouthCount = mouthOpenBuffer.filter(v => v).length;
-        if (mouthCount >= MOUTH_CONFIRM && isWaitingForResponse) {
-            handleAnswer(false);
-            isWaitingForResponse = false;
-            mouthOpenBuffer = [];
-            mouthConfirmCounter = 0;
+
+        if (mouthOpenBuffer.filter(v=>v).length >= MOUTH_CONFIRM && isWaitingForResponse) {
+            triggerAnswer(false);
+            rafId = requestAnimationFrame(analyzeFrame);  // BUG FIX: продовжуємо цикл
             return;
         }
 
-        // Head nod detection (for "Yes")
+        // Кивок (pitch)
         if (results.facialTransformationMatrixes?.length) {
             const matrix = results.facialTransformationMatrixes[0].data;
             const pitch = getPitch(matrix);
             nodPitchBuffer.push(pitch);
             if (nodPitchBuffer.length > NOD_BUFFER) nodPitchBuffer.shift();
-            if (nodPitchBuffer.length === NOD_BUFFER) {
-                const min = Math.min(...nodPitchBuffer);
-                const max = Math.max(...nodPitchBuffer);
-                const range = max - min;
+
+            // BUG FIX: >= замість ===
+            if (nodPitchBuffer.length >= NOD_BUFFER) {
+                const range = Math.max(...nodPitchBuffer) - Math.min(...nodPitchBuffer);
                 const current = pitch;
                 const base = nodPitchBuffer[0];
-                if (range > NOD_THRESHOLD && Math.abs(current - base) < 0.05 && nodCooldown <= 0 && isWaitingForResponse) {
-                    handleAnswer(true);
-                    isWaitingForResponse = false;
+                if (range > NOD_THRESHOLD && Math.abs(current - base) < 0.05
+                    && nodCooldown <= 0 && isWaitingForResponse) {
+                    triggerAnswer(true);
                     nodPitchBuffer = [];
-                    nodCooldown = 20; // cooldown frames
+                    nodCooldown = 30;
+                    rafId = requestAnimationFrame(analyzeFrame);  // BUG FIX
                     return;
                 }
             }
         }
         if (nodCooldown > 0) nodCooldown--;
     } else {
+        // Обличчя не знайдено
         mouthOpenBuffer = [];
         nodPitchBuffer = [];
-        exprIndicator.textContent = '😐';
+        exprIndicator.textContent = '❓';
+        noFaceFrames++;
+        if (noFaceFrames > 30) noFaceWarn.style.display = 'block';
     }
-    requestAnimationFrame(analyzeFrame);
+
+    rafId = requestAnimationFrame(analyzeFrame);
+}
+
+// ── Завдання ──────────────────────────────────────────────────────────────────
+function buildProgressDots() {
+    progressDots.innerHTML = '';
+    TASKS.forEach((_, i) => {
+        const d = document.createElement('div');
+        d.className = 'pdot';
+        d.id = `dot-${i}`;
+        progressDots.appendChild(d);
+    });
+}
+
+function updateDot(idx, result) {
+    const dot = document.getElementById(`dot-${idx}`);
+    if (dot) dot.className = `pdot ${result}`;
 }
 
 function startTask(index) {
     if (index >= TASKS.length) {
+        clearTaskTimeout();
+        stopCamera();
         showEvalScreen();
         return;
     }
+
     currentTaskIdx = index;
     const task = TASKS[index];
-    statusText.textContent = `Твердження: ${task.statement}`;
-    instructionEl.textContent = "Кивок 👍 = Так, Рот 😮 = Ні";
+    statusText.textContent = `${index+1}/12 · ${task.statement}`;
     hudGr.textContent = task.gr.replace('GR', 'ГР ');
     isWaitingForResponse = true;
     mouthOpenBuffer = [];
     nodPitchBuffer = [];
     nodCooldown = 0;
+
+    // Оновлення dot
+    updateDot(index, 'current');
+
+    // Таймаут
+    clearTaskTimeout();
+    taskStartTime = Date.now();
+    taskTimeoutId = setInterval(updateTimeoutBar, 100);
+    setTimeout(() => {
+        if (isWaitingForResponse) {
+            clearTaskTimeout();
+            isWaitingForResponse = false;
+            scores[task.gr].push(0); // вважаємо пропуск як неправильно
+            updateDot(index, 'done-wrong');
+            showFeedback('⏱️', '#ffb800');
+            setTimeout(() => startTask(index + 1), 1000);
+        }
+    }, TASK_TIMEOUT_MS);
 }
 
-function handleAnswer(userSaysTrue) {
+function clearTaskTimeout() {
+    if (taskTimeoutId) { clearInterval(taskTimeoutId); taskTimeoutId = null; }
+    timeoutBar.style.width = '100%';
+}
+
+function updateTimeoutBar() {
+    const elapsed = Date.now() - taskStartTime;
+    const pct = Math.max(0, 100 - (elapsed / TASK_TIMEOUT_MS) * 100);
+    timeoutBar.style.width = pct + '%';
+    timeoutBar.style.background = pct > 40 ? '#00d4ff' : pct > 15 ? '#ffb800' : '#ff3d5a';
+}
+
+function triggerAnswer(userSaysTrue) {
+    if (!isWaitingForResponse) return;
+    isWaitingForResponse = false;
+    clearTaskTimeout();
+
     const task = TASKS[currentTaskIdx];
     const correct = (userSaysTrue === task.isTrue);
     scores[task.gr].push(correct ? 1 : 0);
+    updateDot(currentTaskIdx, correct ? 'done-correct' : 'done-wrong');
 
     playSound(correct ? 'correct' : 'wrong');
+    showFeedback(correct ? '✅' : '❌', correct ? '#00ff88' : '#ff3d5a');
 
-    feedbackEl.style.display = 'block';
-    feedbackEl.textContent = correct ? '✅' : '❌';
-    feedbackEl.style.color = correct ? '#00ff88' : '#ff3d5a';
-
-    if (correct && window.results?.faceLandmarks?.length) {
-        // Spawn hearts on cheeks from last known landmarks
-        const lastLandmarks = window.lastFaceLandmarks;
-        if (lastLandmarks) spawnHeartsOnCheeks(lastLandmarks);
-    }
+    if (correct && lastFaceLandmarks) spawnHeartsOnCheeks(lastFaceLandmarks);
 
     setTimeout(() => {
         feedbackEl.style.display = 'none';
@@ -460,104 +561,105 @@ function handleAnswer(userSaysTrue) {
     }, 1200);
 }
 
-// Store last face landmarks for heart placement
-window.lastFaceLandmarks = null;
-const originalDetect = analyzeFrame;
-// override analyzeFrame to store landmarks
-const analyzeFrameWithStore = function() {
-    if (!faceLandmarker || video.readyState < 2) {
-        requestAnimationFrame(analyzeFrameWithStore);
-        return;
-    }
-    const results = faceLandmarker.detectForVideo(video, performance.now());
-    if (results.faceLandmarks?.length) {
-        window.lastFaceLandmarks = results.faceLandmarks[0];
-    }
-    // call original logic
-    analyzeFrame();
-}.bind(this);
-// replace analyzeFrame with wrapper
-analyzeFrame = analyzeFrameWithStore;
-
-function showEvalScreen() {
-    video.pause();
-    document.getElementById('status-box').style.display = 'none';
-    exprIndicator.style.display = 'none';
-    document.getElementById('game-hud').style.display = 'none';
-    document.getElementById('screen-eval').style.display = 'flex';
-    window.selectEval = function(el, val) {
-        document.querySelectorAll('.eval-option').forEach(o => o.classList.remove('selected'));
-        el.classList.add('selected');
-        selfEval = val;
-        document.getElementById('btn-submit').disabled = false;
-    };
+function showFeedback(emoji, color) {
+    feedbackEl.textContent = emoji;
+    feedbackEl.style.color = color;
+    feedbackEl.style.display = 'block';
 }
 
-window.submitData = async function() {
+// ── Оцінка ────────────────────────────────────────────────────────────────────
+function showEvalScreen() {
+    document.getElementById('game-hud').style.display = 'none';
+    document.getElementById('status-box').style.display = 'none';
+    exprIndicator.style.display = 'none';
+    progressDots.style.display = 'none';
+    showScreen('screen-eval');
+}
+
+// BUG FIX: визначаємо обробники поза showEvalScreen, один раз
+document.querySelectorAll('.eval-option').forEach(el => {
+    el.addEventListener('click', function() {
+        document.querySelectorAll('.eval-option').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+        selfEval = this.textContent.replace(/[💪🤔🆘]/g, '').trim();
+        document.getElementById('btn-submit').disabled = false;
+    });
+});
+
+document.getElementById('btn-submit').addEventListener('click', submitData);
+
+// ── Відправка ─────────────────────────────────────────────────────────────────
+async function submitData() {
     if (!selfEval) return;
+    document.getElementById('btn-submit').disabled = true;
+
     const gr1pct = Math.round(avg(scores.GR1) * 100);
     const gr2pct = Math.round(avg(scores.GR2) * 100);
     const gr3pct = Math.round(avg(scores.GR3) * 100);
-    const totalPct = Math.round((gr1pct + gr2pct + gr3pct) / 3);
 
     const gaps = [];
-    const gapMap = {
-        GR1: scores.GR1.map((v,i) => ({ s: v, g: TASKS[i].gap })),
-        GR2: scores.GR2.map((v,i) => ({ s: v, g: TASKS[i+5].gap })),
-        GR3: scores.GR3.map((v,i) => ({ s: v, g: TASKS[i+9].gap }))
-    };
-    [...gapMap.GR1, ...gapMap.GR2, ...gapMap.GR3].forEach(e => { if (!e.s) gaps.push(e.g); });
+    ['GR1','GR2','GR3'].forEach(gr => {
+        const tasks = TASKS.filter(t => t.gr === gr);
+        scores[gr].forEach((s, i) => { if (!s && tasks[i]) gaps.push(tasks[i].gap); });
+    });
 
     const payload = {
-        studentName,
-        studentClass,
-        totalScore: totalPct,
-        scoreGR1: gr1pct,
-        scoreGR2: gr2pct,
-        scoreGR3: gr3pct,
-        gaps,
-        selfEvaluation: selfEval,
-        deviceToken,
-        topic: 'obolonka'
+        studentName, studentClass,
+        totalScore: Math.round((gr1pct+gr2pct+gr3pct)/3),
+        scoreGR1: gr1pct, scoreGR2: gr2pct, scoreGR3: gr3pct,
+        gaps, selfEvaluation: selfEval, topic: 'obolonka',
+        timestamp: new Date().toISOString()
     };
 
-    document.getElementById('screen-eval').style.display = 'none';
-    document.getElementById('screen-result').style.display = 'flex';
+    // Показуємо результат одразу
+    showScreen('screen-result');
     const color = v => v >= 75 ? '#00ff88' : v >= 50 ? '#ffb800' : '#ff3d5a';
     document.getElementById('result-stats').innerHTML = `
         <div class="stat-box"><div class="value" style="color:${color(gr1pct)}">${gr1pct}%</div><div class="label">ГР 1</div></div>
         <div class="stat-box"><div class="value" style="color:${color(gr2pct)}">${gr2pct}%</div><div class="label">ГР 2</div></div>
         <div class="stat-box"><div class="value" style="color:${color(gr3pct)}">${gr3pct}%</div><div class="label">ГР 3</div></div>
     `;
-    const gapsHtml = gaps.length ? gaps.map(g => `<div class="gap-item">⚠ ${g}</div>`).join('') : '<div class="gap-item">Всі теми засвоєно!</div>';
-    document.getElementById('gaps-container').innerHTML = `<h3 style="color:#ff3d5a; margin-bottom:8px;">Прогалини:</h3>${gapsHtml}`;
+    const gapsHtml = gaps.length
+        ? gaps.map(g => `<div class="gap-item">⚠ ${g.replace(/_/g,' ')}</div>`).join('')
+        : '<div class="gap-item">✅ Всі теми засвоєно!</div>';
+    document.getElementById('gaps-container').innerHTML =
+        `<h3 style="color:#ff3d5a; margin-bottom:8px; font-size:0.95rem;">Теми для повторення:</h3>${gapsHtml}`;
 
-    try {
-        const res = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (data.result === 'already_exists') {
-            alert('Ваші результати вже збережено.');
-        } else {
-            localStorage.setItem('geo_obolonka_submitted', 'true');
+    // BUG FIX: retry-логіка та feedback для дитини
+    const saveStatus = document.getElementById('save-status');
+    let saved = false;
+    for (let attempt = 1; attempt <= 3 && !saved; attempt++) {
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: 'POST', mode: 'cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            saved = true;
+            if (data.result === 'already_exists') {
+                saveStatus.textContent = '✅ Результати вже збережено раніше.';
+            } else {
+                saveStatus.textContent = '✅ Звіт надіслано вчителю!';
+                localStorage.setItem('geo_obolonka_submitted', 'true');
+            }
+        } catch(e) {
+            if (attempt === 3) {
+                saveStatus.textContent = '⚠️ Не вдалося надіслати. Скажи вчителю.';
+            } else {
+                await new Promise(r => setTimeout(r, 1500));
+            }
         }
-    } catch (e) {
-        console.error(e);
     }
-};
+}
 
-function avg(arr) { return arr.length ? arr.reduce((a,b) => a + b, 0) / arr.length : 0; }
+function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
 
-(function() {
-    if (localStorage.getItem('geo_obolonka_submitted') === 'true') {
-        document.getElementById('screen-auth').style.display = 'none';
-        document.getElementById('screen-lock').style.display = 'flex';
-    }
-})();
+// ── Перевірка блокування (але з кнопкою скидання) ──────────────────────────
+if (localStorage.getItem('geo_obolonka_submitted') === 'true') {
+    showScreen('screen-lock');
+}
+
 </script>
 </body>
 </html>
