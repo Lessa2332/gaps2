@@ -133,7 +133,8 @@ select option {background-color: var(--card); color: var(--text);}
 .eval-card{max-width:440px;width:100%;margin:auto;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px}
 .eval-title{font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:6px}
 .eval-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
-.eval-opts">div.eval-opt{padding:14px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:border-color .2s,background .2s;font-size:14px;line-height:1.5;display:flex;align-items:flex-start;gap:12px}
+.eval-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.eval-opt{padding:14px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:border-color .2s,background .2s;font-size:14px;line-height:1.5;display:flex;align-items:flex-start;gap:12px}
 .eval-opt.sel{border-color:var(--cyan);background:var(--cyan-dim)}
 .eval-dot{width:18px;height:18px;min-width:18px;border-radius:50%;border:2px solid var(--muted);margin-top:2px;transition:all .2s;display:flex;align-items:center;justify-content:center}
 .eval-opt.sel .eval-dot{border-color:var(--cyan);background:var(--cyan)}
@@ -162,11 +163,6 @@ select option {background-color: var(--card); color: var(--text);}
 .gaps-title{font-family:var(--font-mono);font-size:10px;color:var(--red);letter-spacing:1.5px;margin-bottom:8px}
 .gap-item{font-size:13px;color:#d0a0a8;padding:5px 0;border-bottom:1px solid var(--border);line-height:1.5}
 .gap-item:last-child{border-bottom:none}
-
-/* RESTART BUTTON */
-.btn-retry-mission {width:100%;padding:14px;background:rgba(167,139,250,.1);border:1.5px dashed var(--purple);border-radius:12px;font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--purple);cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .15s}
-.btn-retry-mission:active{transform:scale(.97)}
-.btn-retry-mission:hover{background:var(--purple);color:#060a14;border-style:solid}
 
 /* LOCK */
 .lock-wrap{max-width:360px;margin:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;padding:40px 20px}
@@ -202,8 +198,7 @@ select option {background-color: var(--card); color: var(--text);}
   <div class="lock-wrap">
     <div class="lock-icon">🔐</div>
     <div class="lock-title">ДОСТУП ОБМЕЖЕНО</div>
-    <div class="lock-text">Твій пристрій вже надіслав офіційний звіт у штаб. Проте ти можеш запустити симулятор повторно.</div>
-    <button class="btn-retry-mission" id="btn-lock-retry" style="margin-top:10px;">ЗАПУСТИТИ СИМУЛЯТОР ↻</button>
+    <div class="lock-text">Твій пристрій вже надіслав звіт у штаб. Повторне проходження неможливе.</div>
   </div>
 </div>
 
@@ -215,7 +210,7 @@ select option {background-color: var(--card); color: var(--text);}
     </div>
     <div>
       <div class="field-label">Підрозділ (клас)</div>
-      <select id="sel-class">
+      <select id="sel-class" onchange="loadNames()">
         <option value="">— Оберіть клас —</option>
         <option>7-А</option><option>7-Б</option><option>7-В</option><option>7-Г</option><option>7-Д</option>
       </select>
@@ -224,7 +219,7 @@ select option {background-color: var(--card); color: var(--text);}
       <div class="field-label">Позивний (прізвище)</div>
       <select id="sel-name"><option value="">— Спочатку оберіть клас —</option></select>
     </div>
-    <button class="btn-start" id="btn-start-mission">РОЗПОЧАТИ МІСІЮ ▶</button>
+    <button class="btn-start" onclick="startGame()">РОЗПОЧАТИ МІСІЮ ▶</button>
   </div>
 </div>
 
@@ -243,7 +238,7 @@ select option {background-color: var(--card); color: var(--text);}
       <div class="brief-num" style="color:var(--amber)">// ТИПИ ЗАВДАНЬ</div>
       <div class="brief-text" style="color:#d4ae70">Вибір однієї відповіді, множинний вибір, просторове сортування та встановлення логічних пар. Використовуй оперативні підказки штабу.</div>
     </div>
-    <button class="btn-go" id="btn-accept-mission">ПРИЙНЯТИ МІСІЮ →</button>
+    <button class="btn-go" onclick="startMission()">ПРИЙНЯТИ МІСІЮ →</button>
   </div>
 </div>
 
@@ -264,20 +259,20 @@ select option {background-color: var(--card); color: var(--text);}
     <div class="eval-title">🗂 ЗВІТ АГЕНТА</div>
     <div class="eval-sub">12 завдань виконано. Оціни чесно свій рівень впевненості у темі «Географічна оболонка»:</div>
     <div class="eval-opts">
-      <div class="eval-opt" data-value="Впевнено">
+      <div class="eval-opt" onclick="selEval(this,'Впевнено')">
         <div class="eval-dot"></div>
         <div><strong>Впевнено</strong><br><span style="font-size:12px;color:var(--muted)">Розумію закономірності природи та аналізую карти без проблем</span></div>
       </div>
-      <div class="eval-opt" data-value="Частково">
+      <div class="eval-opt" onclick="selEval(this,'Частково')">
         <div class="eval-dot"></div>
         <div><strong>Частково</strong><br><span style="font-size:12px;color:var(--muted)">Загалом зрозуміло, але плутаюсь у висотній поясності чи картах</span></div>
       </div>
-      <div class="eval-opt" data-value="Потребую підтримки">
+      <div class="eval-opt" onclick="selEval(this,'Потребую підтримки')">
         <div class="eval-dot"></div>
         <div><strong>Потребую підтримки</strong><br><span style="font-size:12px;color:var(--muted)">Закономірності геооболонки складні, потрібні додаткові роз'яснення</span></div>
       </div>
     </div>
-    <button class="btn-submit" id="btn-submit-report">НАДІСЛАТИ ЗВІТ У ШТАБ →</button>
+    <button class="btn-submit" onclick="submitData()">НАДІСЛАТИ ЗВІТ У ШТАБ →</button>
   </div>
 </div>
 
@@ -300,8 +295,6 @@ select option {background-color: var(--card); color: var(--text);}
     <div id="gaps-section"></div>
     <div class="res-sub" id="res-sub"></div>
     <div class="sent-ok" id="sent-ok" style="display:none"><span class="pulse-dot"></span> &nbsp;Звіт надіслано в штаб</div>
-    
-    <button class="btn-retry-mission" id="btn-restart" style="margin-top:10px;">ПРОЙТИ ЗНОВУ (ТРЕНУВАННЯ) ↻</button>
   </div>
 </div>
 
@@ -320,6 +313,7 @@ select option {background-color: var(--card); color: var(--text);}
 </div>
 
 <script>
+// ⚡️ НОВИЙ URL для Сектора 8
 const SCRIPT_URL="https://script.google.com/macros/s/AKfycbwUCjrOlZuUGPrGzauifB6v-qoVT9arKkCKlXZxiQSgYvDlFJyO7jg0BEe_OtHrKfEDXg/exec";
 
 const DB={
@@ -331,6 +325,7 @@ const DB={
 };
 
 const CASES=[
+  // ── ГР 1 ──
   {
     id:1,gr:"GR1",gap:"ГР1_Поняття_географічної_оболонки",
     tag:"ЗАВДАННЯ 1 — ГР 1",type:"choice",
@@ -370,7 +365,7 @@ const CASES=[
     hint:"Природний комплекс утворюється поєднанням усіх природних сфер: гірські породи, вода, повітря, життя.",
     opts:["Гірські породи та рельєф","Клімат (повітря)","Будівлі та дороги","Вода (внутрішні води)","Ґрунт, рослини і тварини","Автомобілі"],
     correctSet:[0,1,3,4],
-    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Компоненти ландшафту зібрано!",fact:"<strong>Природний комплекс</strong> — це єдність 5 компоненти: гірських порід, повітря (клімату), вод, ґрунтів і живих організмів на певній території."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Будівлі та авто — це антропогенне.",fact:"Правильні відповіді: <strong>гірські породи, клімат, вода, ґрунти і життя</strong>. Об'єкти створені людиною не є первинними компонентами природи."}}
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Компоненти ландшафту зібрано!",fact:"<strong>Природний комплекс</strong> — це єдність 5 компонентів: гірських порід, повітря (клімату), вод, ґрунтів і живих організмів на певній території."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Будівлі та авто — це антропогенне.",fact:"Правильні відповіді: <strong>гірські породи, клімат, вода, ґрунти і життя</strong>. Об'єкти створені людиною не є первинними компонентами природи."}}
   },
   {
     id:5,gr:"GR1",gap:"ГР1_Зміна_ПК",
@@ -381,6 +376,7 @@ const CASES=[
     correct:2,
     fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Локальні комплекси знайдено!",fact:"<strong>Яр, балка, галявина чи невелике озеро</strong> — це дрібні (локальні) природні комплекси, які людина здатна швидко знищити або змінити своєю діяльністю."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Зверни увагу на масштаб.",fact:"Правильна відповідь: <strong>Місцевий яр або озеро</strong>. Материки і природні зони — це глобальні та регіональні комплекси величезних масштабів."}}
   },
+  // ── ГР 2 ──
   {
     id:6,gr:"GR2",gap:"ГР2_Причина_зональності",
     tag:"ЗАВДАННЯ 6 — ГР 2",type:"choice",
@@ -417,6 +413,7 @@ const CASES=[
     correct:1,
     fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Аномалії пояснено правильно!",fact:"<strong>Океанічні течії та рельєф</strong> порушують ідеальні смуги природних зон. Холодні течії 'затягують' пустелі далеко на північ або південь вздовж берегів."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Що впливає на клімат берегів?",fact:"Правильна відповідь: <strong>Теплі та холодні океанічні течії, а також гори</strong>. Вони перерозподіляють тепло і вологу, деформуючи природні зони."}}
   },
+  // ── ГР 3 ──
   {
     id:10,gr:"GR3",gap:"ГР3_Висотна_поясність",
     tag:"ЗАВДАННЯ 10 — ГР 3",type:"choice",
@@ -440,7 +437,7 @@ const CASES=[
     tag:"ЗАВДАННЯ 12 — ГР 3",type:"multichoice",
     text:"Проєкт екологічного прогнозу. Обери ВСІ можливі негативні наслідки масштабного осушення боліт та вирубки лісів на Поліссі:",
     hint:"Згадай закон цілісності. Якщо знищити один компонент (воду/ліс), постраждають абсолютно всі інші.",
-    opts:["Зниження рівня ґрунтових вод та обміління колодязів","Збільшення кількості риби у місцевих річках","Зникнення вологолюбних рослин і птахів","Погіршення мікроклімату (частіші пилові бурі та посухи)","Зростання площей льодовиків"],
+    opts:["Зниження рівня ґрунтових вод та обміління колодязів","Збільшення кількості риби у місцевих річках","Зникнення вологолюбних рослин і птахів","Погіршення мікроклімату (частіші пилові бурі та посухи)","Зростання площі льодовиків"],
     correctSet:[0,2,3],
     fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Прогноз трансформації точний!",fact:"Втручання людини руйнує <strong>цілісність комплексу</strong>. Знищення лісів і боліт призводить до катастрофічного падіння рівня води, зміни клімату та втрати біорізноманіття."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Визнач лише логічні негативні наслідки.",fact:"Правильні відповіді: <strong>Зниження вод, зникнення флори/фауни, погіршення мікроклімату (1, 3, 4)</strong>. Риби не побільшає без води, а льодовики тут ні до чого."}}
   }
@@ -449,53 +446,31 @@ const CASES=[
 let S={
   name:'',cls:'',cur:0,
   scores:{GR1:[],GR2:[],GR3:[]},
-  selfEval:'',deviceToken:'',
-  multiSelected:new Set(),matchState:{},matchSelected:null,sortOrder:[]
+  selfEval:'',
+  deviceToken:'',
+  multiSelected:new Set(),
+  matchState:{},
+  matchSelected:null,
+  sortOrder:[],
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  if(!localStorage.getItem('geo_dev_token')) {
+(function init(){
+  if(!localStorage.getItem('geo_dev_token'))
     localStorage.setItem('geo_dev_token','dev_'+Math.random().toString(36).substr(2,9));
-  }
   S.deviceToken=localStorage.getItem('geo_dev_token');
   if(localStorage.getItem('geo_obolonka_submitted')==='true') showSc('sc-lock');
-
-  document.getElementById('sel-class').addEventListener('change', loadNames);
-  document.getElementById('btn-start-mission').addEventListener('click', startGame);
-  document.getElementById('btn-accept-mission').addEventListener('click', startMission);
-  document.getElementById('btn-submit-report').addEventListener('click', submitData);
-  
-  // Кнопки скидання для повторного проходження (тренування)
-  document.getElementById('btn-restart').addEventListener('click', resetAndGoToLogin);
-  document.getElementById('btn-lock-retry').addEventListener('click', resetAndGoToLogin);
-  
-  document.querySelectorAll('.eval-opt').forEach(opt => {
-    opt.addEventListener('click', function() {
-      document.querySelectorAll('.eval-opt').forEach(o=>o.classList.remove('sel'));
-      this.classList.add('sel');
-      S.selfEval = this.dataset.value;
-    });
-  });
-});
+})();
 
 function showSc(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
-
 function loadNames(){
   const c=document.getElementById('sel-class').value;
   const s=document.getElementById('sel-name');
   s.innerHTML='<option value="">— Знайди себе —</option>';
-  if(c&&DB[c]) {
-    DB[c].forEach(n=>{
-      const o=document.createElement('option');
-      o.value=o.text=n;
-      s.appendChild(o);
-    });
-  }
+  if(c&&DB[c]) DB[c].forEach(n=>{const o=document.createElement('option');o.value=o.text=n;s.appendChild(o)});
 }
-
 function startGame(){
   const c=document.getElementById('sel-class').value;
   const n=document.getElementById('sel-name').value;
@@ -504,25 +479,7 @@ function startGame(){
   document.getElementById('hdr-status').textContent=c;
   showSc('sc-brief');
 }
-
 function startMission(){S.cur=0;renderQ();showSc('sc-game');}
-
-function resetAndGoToLogin(){
-  localStorage.removeItem('geo_obolonka_submitted');
-  S.cur=0;
-  S.scores={GR1:[],GR2:[],GR3:[]};
-  S.selfEval='';
-  document.querySelectorAll('.eval-opt').forEach(o=>o.classList.remove('sel'));
-  document.getElementById('ring-fill').style.strokeDashoffset=326;
-  document.getElementById('sent-ok').style.display='none';
-  
-  // Повертаємо селектори у базовий стан
-  document.getElementById('sel-class').value='';
-  document.getElementById('sel-name').innerHTML='<option value="">— Спочатку оберіть клас —</option>';
-  document.getElementById('hdr-status').textContent='СЕКТОР 8';
-  
-  showSc('sc-login');
-}
 
 function renderQ(){
   const q=CASES[S.cur];
@@ -535,203 +492,173 @@ function renderQ(){
   grEl.className='hud-gr '+(q.gr==='GR1'?'gr1':q.gr==='GR2'?'gr2':'gr3');
 
   const area=document.getElementById('q-area');
-  area.innerHTML = '';
+  if(q.type==='choice') area.innerHTML=renderChoice(q);
+  else if(q.type==='multichoice') area.innerHTML=renderMulti(q);
+  else if(q.type==='match') {
+    area.innerHTML=renderMatch(q);
+    attachMatchListeners(q);
+  }
+  else if(q.type==='sort') area.innerHTML=renderSort(q);
   
   S.multiSelected=new Set();
   S.matchState={};S.matchSelected=null;
   S.sortOrder=[];
-
-  if(q.type==='choice') renderChoice(q, area);
-  else if(q.type==='multichoice') renderMulti(q, area);
-  else if(q.type==='match') renderMatch(q, area);
-  else if(q.type==='sort') renderSort(q, area);
 }
 
-function createQCard(q) {
-  const card = document.createElement('div');
-  card.className = 'q-card';
-  card.innerHTML = `<div class="q-tag">${q.tag}</div><div class="q-text"></div><div class="q-hint"></div>`;
-  card.querySelector('.q-text').textContent = q.text;
-  card.querySelector('.q-hint').textContent = q.hint;
-  return card;
+function renderChoice(q){
+  const optsHtml=q.opts.map((o,i)=>`<button class="opt" onclick="pickChoice(${i})">${o}</button>`).join('');
+  return `<div class="q-card">
+    <div class="q-tag">${q.tag}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-hint">${q.hint}</div>
+  </div>
+  <div class="opts-grid">${optsHtml}</div>`;
+}
+function pickChoice(i){
+  const q=CASES[S.cur];
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  const btns=document.querySelectorAll('.opt');
+  const correct=(i===q.correct);
+  btns[i].classList.add(correct?'correct':'wrong');
+  if(!correct) btns[q.correct].classList.add('reveal');
+  recordAndFeedback(correct,q);
 }
 
-function renderChoice(q, area){
-  area.appendChild(createQCard(q));
-  const grid = document.createElement('div');
-  grid.className = 'opts-grid';
-  q.opts.forEach((o,i)=>{
-    const b = document.createElement('button');
-    b.className = 'opt';
-    b.textContent = o;
-    b.addEventListener('click', () => {
-      document.querySelectorAll('.opt').forEach(btn=>btn.disabled=true);
-      const correct=(i===q.correct);
-      b.classList.add(correct?'correct':'wrong');
-      if(!correct) document.querySelectorAll('.opt')[q.correct].classList.add('reveal');
-      recordAndFeedback(correct,q);
-    });
-    grid.appendChild(b);
+function renderMulti(q){
+  const optsHtml=q.opts.map((o,i)=>`<button class="opt" onclick="toggleMulti(this,${i})">${o}</button>`).join('');
+  return `<div class="q-card">
+    <div class="q-tag">${q.tag}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-hint">${q.hint}</div>
+  </div>
+  <div class="multi-hint">Обери всі правильні варіанти, потім натисни «Підтвердити»</div>
+  <div class="opts-grid">${optsHtml}</div>
+  <button class="btn-confirm" onclick="confirmMulti()">ПІДТВЕРДИТИ ВИБІР ✓</button>`;
+}
+function toggleMulti(btn,i){
+  if(S.multiSelected.has(i)){S.multiSelected.delete(i);btn.classList.remove('selected');}
+  else{S.multiSelected.add(i);btn.classList.add('selected');}
+}
+function confirmMulti(){
+  const q=CASES[S.cur];
+  const sel=[...S.multiSelected].sort();
+  const cor=[...q.correctSet].sort();
+  const correct=JSON.stringify(sel)===JSON.stringify(cor);
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  document.querySelector('.btn-confirm').disabled=true;
+  document.querySelectorAll('.opt').forEach((b,i)=>{
+    if(q.correctSet.includes(i)) b.classList.add('reveal');
+    else if(S.multiSelected.has(i)&&!q.correctSet.includes(i)) b.classList.add('wrong');
   });
-  area.appendChild(grid);
+  recordAndFeedback(correct,q);
 }
 
-function renderMulti(q, area){
-  area.appendChild(createQCard(q));
-  const hint = document.createElement('div');
-  hint.className = 'multi-hint';
-  hint.textContent = 'Обери всі правильні варіанти, потім натисни «Підтвердити»';
-  area.appendChild(hint);
-
-  const grid = document.createElement('div');
-  grid.className = 'opts-grid';
-  q.opts.forEach((o,i)=>{
-    const b = document.createElement('button');
-    b.className = 'opt';
-    b.textContent = o;
-    b.addEventListener('click', () => {
-      if(S.multiSelected.has(i)){S.multiSelected.delete(i);b.classList.remove('selected');}
-      else{S.multiSelected.add(i);b.classList.add('selected');}
-    });
-    grid.appendChild(b);
-  });
-  area.appendChild(grid);
-
-  const conf = document.createElement('button');
-  conf.className = 'btn-confirm';
-  conf.textContent = 'ПІДТВЕРДИТИ ВИБІР ✓';
-  conf.addEventListener('click', () => {
-    const sel=[...S.multiSelected].sort();
-    const cor=[...q.correctSet].sort();
-    const correct=JSON.stringify(sel)===JSON.stringify(cor);
-    document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
-    conf.disabled=true;
-    document.querySelectorAll('.opt').forEach((b,idx)=>{
-      if(q.correctSet.includes(idx)) b.classList.add('reveal');
-      else if(S.multiSelected.has(idx)) b.classList.add('wrong');
-    });
-    recordAndFeedback(correct,q);
-  });
-  area.appendChild(conf);
+function renderMatch(q){
+  // Використовуємо data-атрибути замість inline onclick для уникнення проблем із апострофами
+  const slotsHtml=q.pairs.map((p,i)=>`
+    <div class="drag-row">
+      <div class="drag-label">${p.label}</div>
+      <div class="drag-arrow">→</div>
+      <div class="drag-slot" id="slot-${i}" onclick="placeChip(${i})">${'?'}</div>
+    </div>`).join('');
+  const chipsHtml=q.chips.map((c,i)=>`<div class="chip" id="chip-${i}" data-idx="${i}" data-val="${c.replace(/"/g,'&quot;')}">${c}</div>`).join('');
+  return `<div class="q-card">
+    <div class="q-tag">${q.tag}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-hint">${q.hint}</div>
+  </div>
+  <div class="drag-area">${slotsHtml}</div>
+  <div style="font-size:12px;color:var(--amber);font-family:var(--font-mono);margin-bottom:8px">① Натисни картку → ② Натисни клітинку</div>
+  <div class="chips-pool">${chipsHtml}</div>
+  <button class="btn-confirm" onclick="confirmMatch()">ПІДТВЕРДИТИ ✓</button>`;
 }
 
-function renderMatch(q, area){
-  area.appendChild(createQCard(q));
-  const dArea = document.createElement('div');
-  dArea.className = 'drag-area';
-  
-  q.pairs.forEach((p,i)=>{
-    const row = document.createElement('div');
-    row.className = 'drag-row';
-    row.innerHTML = `<div class="drag-label"></div><div class="drag-arrow">→</div><div class="drag-slot" id="slot-${i}">?</div>`;
-    row.querySelector('.drag-label').textContent = p.label;
-    row.querySelector('.drag-slot').addEventListener('click', () => placeChip(i, q));
-    dArea.appendChild(row);
-  });
-  area.appendChild(dArea);
-
-  const info = document.createElement('div');
-  info.style.cssText = "font-size:12px;color:var(--amber);font-family:var(--font-mono);margin-bottom:8px";
-  info.textContent = "① Натисни картку → ② Натисни клітинку";
-  area.appendChild(info);
-
-  const pool = document.createElement('div');
-  pool.className = 'chips-pool';
-  q.chips.forEach((c,i)=>{
-    const chip = document.createElement('div');
-    chip.className = 'chip';
-    chip.id = `chip-${i}`;
-    chip.textContent = c;
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('.chip').forEach(ch=>ch.classList.remove('chip-selected'));
-      S.matchSelected = {i, val:c};
-      chip.classList.add('chip-selected');
+function attachMatchListeners(q){
+  // Додаємо обробники кліку на фішки після вставки HTML
+  document.querySelectorAll('.chip').forEach(chip=>{
+    chip.addEventListener('click', function(){
+      const idx = parseInt(this.dataset.idx);
+      const val = this.dataset.val;
+      selectChip(idx, val);
     });
-    pool.appendChild(chip);
   });
-  area.appendChild(pool);
-
-  const conf = document.createElement('button');
-  conf.className = 'btn-confirm';
-  conf.textContent = 'ПІДТВЕРДИТИ ✓';
-  conf.addEventListener('click', () => {
-    let correct=true;
-    q.pairs.forEach((p,i)=>{if(S.matchState[i]!==p.answer) correct=false;});
-    q.pairs.forEach((p,i)=>{
-      const sl=document.getElementById('slot-'+i);
-      if(S.matchState[i]===p.answer) sl.classList.add('correct-slot');
-      else{sl.classList.add('wrong-slot');sl.textContent=(S.matchState[i]||'—')+' ✗';}
-    });
-    conf.disabled=true;
-    document.querySelectorAll('.chip').forEach(c=>{c.style.pointerEvents='none';});
-    recordAndFeedback(correct,q);
-  });
-  area.appendChild(conf);
 }
 
-function placeChip(slotIdx, q){
+function selectChip(i,val){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('chip-selected'));
+  S.matchSelected={i,val};
+  document.getElementById('chip-'+i).classList.add('chip-selected');
+}
+function placeChip(slotIdx){
   if(!S.matchSelected) return;
-  const {val}=S.matchSelected;
+  const {i,val}=S.matchSelected;
   Object.keys(S.matchState).forEach(k=>{if(S.matchState[k]===val) delete S.matchState[k];});
   S.matchState[slotIdx]=val;
   Object.keys(S.matchState).forEach(k=>{
     const sl=document.getElementById('slot-'+k);
     if(sl){sl.textContent=S.matchState[k];sl.classList.add('filled');}
   });
-  for(let k=0;k<q.pairs.length;k++){
+  for(let k=0;k<CASES[S.cur].pairs.length;k++){
     if(!S.matchState[k]){const sl=document.getElementById('slot-'+k);sl.textContent='?';sl.classList.remove('filled');}
   }
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('chip-selected','chip-used'));
   Object.values(S.matchState).forEach(v=>{
-    q.chips.forEach((c,ci)=>{
+    CASES[S.cur].chips.forEach((c,ci)=>{
       if(c===v) document.getElementById('chip-'+ci).classList.add('chip-used');
     });
   });
   S.matchSelected=null;
 }
-
-function renderSort(q, area){
-  area.appendChild(createQCard(q));
-  const inst = document.createElement('div');
-  inst.className = 'sort-instruction';
-  inst.textContent = 'Натискай по одному у потрібному порядку (1→6)';
-  area.appendChild(inst);
-
-  const list = document.createElement('div');
-  list.className = 'sort-list';
-  q.items.forEach((item,i)=>{
-    const row = document.createElement('div');
-    row.className = 'sort-item';
-    row.id = `si-${i}`;
-    row.innerHTML = `<span></span><span class="sort-rank" id="sr-${i}"></span>`;
-    row.querySelector('span').textContent = item;
-    row.addEventListener('click', () => {
-      if(S.sortOrder.includes(i)) return;
-      S.sortOrder.push(i);
-      row.classList.add('sort-selected');
-      const sr=document.getElementById('sr-'+i);
-      sr.textContent='#'+S.sortOrder.length;
-      sr.classList.add('filled');
-    });
-    list.appendChild(row);
+function confirmMatch(){
+  const q=CASES[S.cur];
+  let correct=true;
+  q.pairs.forEach((p,i)=>{if(S.matchState[i]!==p.answer) correct=false;});
+  q.pairs.forEach((p,i)=>{
+    const sl=document.getElementById('slot-'+i);
+    if(S.matchState[i]===p.answer) sl.classList.add('correct-slot');
+    else{sl.classList.add('wrong-slot');sl.textContent=(S.matchState[i]||'—')+' ✗';}
   });
-  area.appendChild(list);
+  document.querySelector('.btn-confirm').disabled=true;
+  document.querySelectorAll('.chip').forEach(c=>{c.style.pointerEvents='none';});
+  recordAndFeedback(correct,q);
+}
 
-  const conf = document.createElement('button');
-  conf.className = 'btn-confirm';
-  conf.textContent = 'ПІДТВЕРДИТИ ✓';
-  conf.addEventListener('click', () => {
-    const correct=JSON.stringify(S.sortOrder)===JSON.stringify(q.correctOrder);
-    q.items.forEach((_,i)=>{
-      const el=document.getElementById('si-'+i);
-      if(S.sortOrder.indexOf(i)===q.correctOrder.indexOf(i)) el.classList.add('sort-correct');
-      else el.classList.add('sort-wrong');
-    });
-    conf.disabled=true;
-    document.querySelectorAll('.sort-item').forEach(s=>{s.style.pointerEvents='none';});
-    recordAndFeedback(correct,q);
+function renderSort(q){
+  const itemsHtml=q.items.map((item,i)=>`
+    <div class="sort-item" id="si-${i}" onclick="pickSort(${i})">
+      <span>${item}</span>
+      <span class="sort-rank" id="sr-${i}"></span>
+    </div>`).join('');
+  return `<div class="q-card">
+    <div class="q-tag">${q.tag}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-hint">${q.hint}</div>
+  </div>
+  <div class="sort-instruction">Натискай по одному у потрібному порядку (1→6)</div>
+  <div class="sort-list">${itemsHtml}</div>
+  <button class="btn-confirm" onclick="confirmSort()">ПІДТВЕРДИТИ ✓</button>`;
+}
+function pickSort(i){
+  if(S.sortOrder.includes(i)) return;
+  S.sortOrder.push(i);
+  const rank=S.sortOrder.length;
+  document.getElementById('si-'+i).classList.add('sort-selected');
+  const sr=document.getElementById('sr-'+i);
+  sr.textContent='#'+rank;sr.classList.add('filled');
+}
+function confirmSort(){
+  const q=CASES[S.cur];
+  const correct=JSON.stringify(S.sortOrder)===JSON.stringify(q.correctOrder);
+  q.items.forEach((_,i)=>{
+    const el=document.getElementById('si-'+i);
+    const pos=S.sortOrder.indexOf(i);
+    const expectedPos=q.correctOrder.indexOf(i);
+    if(pos===expectedPos) el.classList.add('sort-correct');
+    else el.classList.add('sort-wrong');
   });
-  area.appendChild(conf);
+  document.querySelector('.btn-confirm').disabled=true;
+  document.querySelectorAll('.sort-item').forEach(s=>{s.style.pointerEvents='none';});
+  recordAndFeedback(correct,q);
 }
 
 function recordAndFeedback(correct,q){
@@ -753,8 +680,13 @@ function recordAndFeedback(correct,q){
   overlay.style.display='flex';
 }
 
+let evalSel='';
+function selEval(el,v){
+  document.querySelectorAll('.eval-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');evalSel=v;
+}
 function submitData(){
-  if(!S.selfEval){alert('Будь ласка, оціни свій рівень.');return;}
+  if(!evalSel){alert('Будь ласка, оціни свій рівень.');return;}
   
   const gr1pct=Math.round(avg(S.scores.GR1)*100);
   const gr2pct=Math.round(avg(S.scores.GR2)*100);
@@ -788,8 +720,8 @@ function submitData(){
     studentName:S.name,studentClass:S.cls,
     totalScore:totalPct,
     scoreGR1:gr1pct,scoreGR2:gr2pct,scoreGR3:gr3pct,
-    gaps,selfEvaluation:S.selfEval,deviceToken:S.deviceToken,
-    topic:'obolonka'
+    gaps,selfEvaluation:evalSel,deviceToken:S.deviceToken,
+    topic:'obolonka'  // ⚡️ Додаємо тему, щоб сервер міг розрізняти тести
   };
   
   showSc('sc-result');
@@ -802,9 +734,10 @@ function submitData(){
     .then(d=>{
       document.getElementById('loader').style.display='none';
       const n=document.getElementById('sent-ok');
+      
       if (d.result === 'already_exists') {
-        n.style.borderColor = 'var(--purple)';
-        n.innerHTML = '<div style="color:var(--purple); text-align:center;">🔮 РЕЖИМ ТРЕНУВАННЯ<br><span style="font-size:12px; color:var(--muted)">Результати оновлено локально. Офіційний перший звіт збережено раніше.</span></div>';
+        n.style.borderColor = 'var(--red)';
+        n.innerHTML = '<div style="color:var(--red); text-align:center; font-weight:600;">⚠ ДОСТУП ОБМЕЖЕНО<br><span style="font-size:13px; color:#a0aec0; font-weight:400;">Твої результати для цієї теми вже зафіксовані в базі.</span></div>';
         n.style.display = 'block';
       } else {
         n.style.display = 'block';
@@ -816,12 +749,16 @@ function submitData(){
       document.getElementById('sent-ok').style.display='block';
     });
 }
-
 function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;}
 
 function buildResult(p,gr1,gr2,gr3,total,gaps){
-  const titles={high:'АНАЛІЗ ОБОЛОНКИ ЗАВЕРШЕНО',mid:'СТАЖУВАННЯ АГЕНТА ТРИВАЄ',low:'СПРАВА НА ДОВИВЧЕННІ'};
-  document.getElementById('res-title').textContent=total>=75?titles.high:total>=50?titles.mid:titles.low;
+  const titles={
+    high:'АНАЛІЗ ОБОЛОНКИ ЗАВЕРШЕНО',
+    mid:'СТАЖУВАННЯ АГЕНТА ТРИВАЄ',
+    low:'СПРАВА НА ДОВИВЧЕННІ'
+  };
+  const t=total>=75?titles.high:total>=50?titles.mid:titles.low;
+  document.getElementById('res-title').textContent=t;
   document.getElementById('res-name').textContent=p.studentName+' • '+p.studentClass;
   
   const clr=(v)=>v>=75?'var(--green)':v>=50?'var(--amber)':'var(--red)';
@@ -846,8 +783,6 @@ function buildResult(p,gr1,gr2,gr3,total,gaps){
     };
     const items=gaps.map(g=>`<div class="gap-item">⚠ ${gapLabels[g]||g}</div>`).join('');
     document.getElementById('gaps-section').innerHTML=`<div class="gaps-box"><div class="gaps-title">ТЕМИ ДЛЯ ПОВТОРЕННЯ</div>${items}</div>`;
-  } else {
-    document.getElementById('gaps-section').innerHTML = '';
   }
   
   const subs={high:"Відмінний результат! Ти — провідний дослідник Географічного Відомства.",mid:"Гарна робота! Повтори відмічені прогалини про закономірності оболонки і результат покращиться.",low:"Потрібно відкрити атлас і повторити закономірності зміни природних зон. Спробуй ще!"};
