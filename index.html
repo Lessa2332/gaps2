@@ -313,7 +313,8 @@ select option {background-color: var(--card); color: var(--text);}
 </div>
 
 <script>
-const SCRIPT_URL="https://script.google.com/macros/s/AKfycbwSs8W9HKolC2aAP8zIvfMtjRc4iVi6nf-sRxow1B5ov-uU23xlU2aW_zi3UxkXaU93/exec";
+// ⚡️ НОВИЙ URL для Сектора 8
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycbwUCjrOlZuUGPrGzauifB6v-qoVT9arKkCKlXZxiQSgYvDlFJyO7jg0BEe_OtHrKfEDXg/exec";
 
 const DB={
   "7-А":["Ашихмін Ярослав","Внуков Веніамін","Волков Давид","Вулєр Іван","Дабіжа Марія","Димитров Дмитро","Кирилюк Артем","Косар Нікіта","Кравчук Мілана","Кривенок Ілля","Лазаревич Георгій","Лазаревич Ніколь","Лісіцина Дар'я","Нестерова Varvara","Перванчук Марк","Полуянов Семен","Попков Андрій","Савченко Наталія","Скопенко Ніка","Усольцева Аріна","Халабура Вікторія","Химич Артем","Якутенко Володимир","Ященко Анастасія","Бохонок Олеся"],
@@ -457,7 +458,6 @@ let S={
   if(!localStorage.getItem('geo_dev_token'))
     localStorage.setItem('geo_dev_token','dev_'+Math.random().toString(36).substr(2,9));
   S.deviceToken=localStorage.getItem('geo_dev_token');
-  // Використовуємо новий ключ для цієї теми
   if(localStorage.getItem('geo_obolonka_submitted')==='true') showSc('sc-lock');
 })();
 
@@ -494,7 +494,10 @@ function renderQ(){
   const area=document.getElementById('q-area');
   if(q.type==='choice') area.innerHTML=renderChoice(q);
   else if(q.type==='multichoice') area.innerHTML=renderMulti(q);
-  else if(q.type==='match') area.innerHTML=renderMatch(q);
+  else if(q.type==='match') {
+    area.innerHTML=renderMatch(q);
+    attachMatchListeners(q);
+  }
   else if(q.type==='sort') area.innerHTML=renderSort(q);
   
   S.multiSelected=new Set();
@@ -551,13 +554,14 @@ function confirmMulti(){
 }
 
 function renderMatch(q){
+  // Використовуємо data-атрибути замість inline onclick для уникнення проблем із апострофами
   const slotsHtml=q.pairs.map((p,i)=>`
     <div class="drag-row">
       <div class="drag-label">${p.label}</div>
       <div class="drag-arrow">→</div>
       <div class="drag-slot" id="slot-${i}" onclick="placeChip(${i})">${'?'}</div>
     </div>`).join('');
-  const chipsHtml=q.chips.map((c,i)=>`<div class="chip" id="chip-${i}" onclick="selectChip(${i},'${c.replace(/'/g,"\\'")}')"> ${c}</div>`).join('');
+  const chipsHtml=q.chips.map((c,i)=>`<div class="chip" id="chip-${i}" data-idx="${i}" data-val="${c.replace(/"/g,'&quot;')}">${c}</div>`).join('');
   return `<div class="q-card">
     <div class="q-tag">${q.tag}</div>
     <div class="q-text">${q.text}</div>
@@ -566,9 +570,20 @@ function renderMatch(q){
   <div class="drag-area">${slotsHtml}</div>
   <div style="font-size:12px;color:var(--amber);font-family:var(--font-mono);margin-bottom:8px">① Натисни картку → ② Натисни клітинку</div>
   <div class="chips-pool">${chipsHtml}</div>
-  <div style="margin-top:10px"></div>
   <button class="btn-confirm" onclick="confirmMatch()">ПІДТВЕРДИТИ ✓</button>`;
 }
+
+function attachMatchListeners(q){
+  // Додаємо обробники кліку на фішки після вставки HTML
+  document.querySelectorAll('.chip').forEach(chip=>{
+    chip.addEventListener('click', function(){
+      const idx = parseInt(this.dataset.idx);
+      const val = this.dataset.val;
+      selectChip(idx, val);
+    });
+  });
+}
+
 function selectChip(i,val){
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('chip-selected'));
   S.matchSelected={i,val};
@@ -705,7 +720,8 @@ function submitData(){
     studentName:S.name,studentClass:S.cls,
     totalScore:totalPct,
     scoreGR1:gr1pct,scoreGR2:gr2pct,scoreGR3:gr3pct,
-    gaps,selfEvaluation:evalSel,deviceToken:S.deviceToken
+    gaps,selfEvaluation:evalSel,deviceToken:S.deviceToken,
+    topic:'obolonka'  // ⚡️ Додаємо тему, щоб сервер міг розрізняти тести
   };
   
   showSc('sc-result');
@@ -713,7 +729,6 @@ function submitData(){
   
   document.getElementById('loader').style.display='flex';
   
-  // Той самий надійний text/plain fetch для обходу CORS
   fetch(SCRIPT_URL,{method:'POST',mode:'cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
     .then(r=>r.json())
     .then(d=>{
