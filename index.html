@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГЕО-ДЕТЕКТИВ // Сектор 8: Оболонка (Оновлено)</title>
+    <title>ГЕО-ДЕТЕКТИВ // Сектор 8: Оболонка (Гейміфіковано)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -38,10 +38,10 @@
         .login-title{font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--cyan);letter-spacing:1px}
         .login-sub{font-size:13px;color:var(--muted);line-height:1.5}
         .field-label{font-size:11px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;font-family:var(--font-mono)}
-        select{width:100%;padding:12px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:var(--font-body);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7399' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;transition:border-color .2s}
+        select{width:100%;padding:12px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:var(--font-body);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7399' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
         select:focus{outline:none;border-color:var(--cyan)}
-        select option {background-color: var(--card); color: var(--text);}
-        .btn-start{width:100%;padding:16px;background:var(--cyan);color:#060a14;border:none;border-radius:12px;font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:transform .15s,box-shadow .15s;text-transform:uppercase}
+        select option{background-color:var(--card);color:var(--text)}
+        .btn-start{width:100%;padding:16px;background:var(--cyan);color:#060a14;border:none;border-radius:12px;font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:transform .15s}
         .btn-start:active{transform:scale(.97)}
 
         .brief-wrap{display:flex;flex-direction:column;gap:16px;max-width:460px;width:100%;margin:auto}
@@ -72,7 +72,7 @@
         .q-hint{font-size:13px;color:var(--muted);line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
 
         .opts-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
-        .opt{padding:13px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;font-size:14px;line-height:1.5;transition:border-color .15s,background .15s;user-select:none;text-align:left;color:var(--text);width:100%;font-family:var(--font-body)}
+        .opt{padding:13px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;font-size:14px;line-height:1.5;transition:all .2s;user-select:none;text-align:left;color:var(--text);width:100%;font-family:var(--font-body)}
         .opt:active{transform:scale(.98)}
         .opt.selected{border-color:var(--cyan);background:var(--cyan-dim)}
         .opt.correct{border-color:var(--green)!important;background:var(--green-dim)!important;color:var(--green)}
@@ -80,16 +80,19 @@
         .opt.reveal{border-color:var(--green)!important;background:var(--green-dim)!important;color:var(--green)}
         .opt:disabled{cursor:default;pointer-events:none}
 
-        .multi-hint{font-size:12px;color:var(--amber);font-family:var(--font-mono);margin-bottom:10px}
         .btn-confirm{width:100%;padding:13px;background:var(--amber-dim);border:1.5px solid rgba(255,184,0,.35);border-radius:12px;font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--amber);cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .15s;margin-top:4px}
         .btn-confirm:active{transform:scale(.97)}
+
+        .timer-container{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+        .timer-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+        .timer-fill{height:100%;background:var(--amber);width:100%;transition:width 0.1s linear}
+        .timer-text{font-family:var(--font-mono);font-size:14px;color:var(--amber);min-width:40px;text-align:right}
 
         .drone-scale{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 8px}
         .drone-step{width:30px;height:30px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-family:var(--font-mono);color:var(--muted);background:#0a101f}
         .drone-step.filled{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
-        .drone-step.error{border-color:var(--red);background:var(--red-dim);color:var(--red)}
         .sort-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
-        .sort-item{padding:12px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;font-size:14px;cursor:pointer;transition:border-color .15s,background .15s;user-select:none}
+        .sort-item{padding:12px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;font-size:14px;cursor:pointer;transition:all .2s;user-select:none}
         .sort-item.sort-selected{border-color:var(--cyan);background:var(--cyan-dim)}
         .sort-item.sort-correct{border-color:var(--green);background:var(--green-dim);color:var(--green)}
         .sort-item.sort-wrong{border-color:var(--red);background:var(--red-dim);color:var(--red)}
@@ -105,19 +108,58 @@
         .fb-status{font-family:var(--font-head);font-size:26px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
         .fb-msg{font-size:13px;color:var(--muted);text-align:center;max-width:320px;line-height:1.6;margin-bottom:18px}
         .fb-fact{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;font-size:13px;color:#b0c4de;max-width:380px;width:100%;line-height:1.65;margin-bottom:20px}
+        .fb-fact strong{color:var(--cyan)}
         .btn-next{padding:13px 34px;background:var(--cyan);color:#060a14;border:none;border-radius:12px;font-family:var(--font-head);font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:transform .15s}
         .btn-next:active{transform:scale(.97)}
 
-        .timer-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:8px;overflow:hidden}
-        .timer-fill{height:100%;background:var(--amber);width:100%;transition:width 0.1s linear}
+        .eval-card{max-width:440px;width:100%;margin:auto;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px}
+        .eval-title{font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:6px}
+        .eval-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+        .eval-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+        .eval-opt{padding:14px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:all .2s;font-size:14px;display:flex;align-items:flex-start;gap:12px}
+        .eval-opt.sel{border-color:var(--cyan);background:var(--cyan-dim)}
+        .eval-dot{width:18px;height:18px;min-width:18px;border-radius:50%;border:2px solid var(--muted);margin-top:2px;transition:all .2s;display:flex;align-items:center;justify-content:center}
+        .eval-opt.sel .eval-dot{border-color:var(--cyan);background:var(--cyan)}
+        .eval-opt.sel .eval-dot::after{content:'';display:block;width:6px;height:6px;border-radius:50%;background:#060a14}
+        .btn-submit{width:100%;padding:15px;background:var(--green);color:#060a14;border:none;border-radius:12px;font-family:var(--font-head);font-size:16px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:transform .15s}
+        .btn-submit:active{transform:scale(.97)}
 
-        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-        @keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+        .result-wrap{max-width:440px;width:100%;margin:auto;display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center}
+        .score-ring{width:140px;height:140px;position:relative;margin:6px auto}
+        .score-ring svg{transform:rotate(-90deg)}
+        .ring-bg{fill:none;stroke:var(--border);stroke-width:10}
+        .ring-fill{fill:none;stroke:var(--cyan);stroke-width:10;stroke-linecap:round;stroke-dasharray:326;stroke-dashoffset:326;transition:stroke-dashoffset 1.2s ease;filter:drop-shadow(0 0 6px var(--cyan))}
+        .ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+        .ring-pct{font-family:var(--font-head);font-size:30px;font-weight:700;color:var(--cyan)}
+        .ring-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:1px}
+        .res-title{font-family:var(--font-head);font-size:22px;font-weight:700}
+        .res-name{background:var(--cyan-dim);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:11px 18px;font-family:var(--font-mono);font-size:13px;color:var(--cyan);width:100%}
+        .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+        .stat-c{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center}
+        .stat-v{font-family:var(--font-head);font-size:20px;font-weight:700}
+        .stat-l{font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-top:2px}
+        .res-sub{font-size:13px;color:var(--muted);line-height:1.6;max-width:340px}
+        .sent-ok{font-size:12px;color:var(--green);background:var(--green-dim);border:1px solid rgba(0,255,136,.2);border-radius:8px;padding:8px 14px;font-family:var(--font-mono)}
+        .gaps-box{width:100%;background:var(--card);border:1px solid rgba(255,61,90,.2);border-radius:14px;padding:16px;text-align:left}
+        .gaps-title{font-family:var(--font-mono);font-size:10px;color:var(--red);letter-spacing:1.5px;margin-bottom:8px}
+        .gap-item{font-size:13px;color:#d0a0a8;padding:5px 0;border-bottom:1px solid var(--border);line-height:1.5}
+        .gap-item:last-child{border-bottom:none}
+
+        .lock-wrap{max-width:360px;margin:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;padding:40px 20px}
+        .lock-icon{font-size:54px}
+        .lock-title{font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--red)}
+        .lock-text{font-size:14px;color:var(--muted);line-height:1.6}
+
+        .loader-sc{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+        .loader-spin{width:38px;height:38px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--cyan);animation:spin .8s linear infinite}
+        .loader-txt{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:1px}
         @keyframes spin{to{transform:rotate(360deg)}}
         .pulse-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);animation:pring 1.5s infinite}
         @keyframes pring{0%{box-shadow:0 0 0 0 rgba(0,255,136,.4)}70%{box-shadow:0 0 0 7px rgba(0,255,136,0)}100%{box-shadow:0 0 0 0 rgba(0,255,136,0)}}
         .particle{position:fixed;pointer-events:none;z-index:300;border-radius:50%;animation:pfly .75s ease-out forwards}
         @keyframes pfly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
     </style>
 </head>
 <body>
@@ -163,7 +205,7 @@
             <div class="brief-card">
                 <div class="brief-num">// БРИФІНГ МІСІЇ</div>
                 <div class="brief-title">Операція «ГЕО-ОБОЛОНКА»</div>
-                <div class="brief-text">Ти — спеціальний агент. Попереду <strong>12 завдань</strong> та бонусні випробування.<br><br>
+                <div class="brief-text">Ти — спеціальний агент Географічного Відомства. Попереду <strong style="color:var(--cyan)">12 оперативних завдань</strong> з трьох секцій:<br><br>
                 <span style="color:var(--purple)">◆ ГР 1</span> — закономірності оболонки<br>
                 <span style="color:var(--amber)">◆ ГР 2</span> — природні зони та карти<br>
                 <span style="color:var(--cyan)">◆ ГР 3</span> — висотна поясність, екологія
@@ -188,11 +230,20 @@
     <div id="sc-eval" class="screen">
         <div class="eval-card">
             <div class="eval-title">🗂 ЗВІТ АГЕНТА</div>
-            <div class="eval-sub">12 завдань виконано. Оціни чесно свій рівень впевненості:</div>
+            <div class="eval-sub">12 завдань виконано. Оціни чесно свій рівень впевненості у темі «Географічна оболонка»:</div>
             <div class="eval-opts">
-                <div class="eval-opt" onclick="selEval(this,'Впевнено')"><div class="eval-dot"></div><div><strong>Впевнено</strong><br><span style="font-size:12px;color:var(--muted)">Розумію закономірності природи</span></div></div>
-                <div class="eval-opt" onclick="selEval(this,'Частково')"><div class="eval-dot"></div><div><strong>Частково</strong><br><span style="font-size:12px;color:var(--muted)">Деякі теми треба повторити</span></div></div>
-                <div class="eval-opt" onclick="selEval(this,'Потребую підтримки')"><div class="eval-dot"></div><div><strong>Потребую підтримки</strong><br><span style="font-size:12px;color:var(--muted)">Матеріал складний</span></div></div>
+                <div class="eval-opt" onclick="selEval(this,'Впевнено')">
+                    <div class="eval-dot"></div>
+                    <div><strong>Впевнено</strong><br><span style="font-size:12px;color:var(--muted)">Розумію закономірності природи</span></div>
+                </div>
+                <div class="eval-opt" onclick="selEval(this,'Частково')">
+                    <div class="eval-dot"></div>
+                    <div><strong>Частково</strong><br><span style="font-size:12px;color:var(--muted)">Загалом зрозуміло, але плутаюсь</span></div>
+                </div>
+                <div class="eval-opt" onclick="selEval(this,'Потребую підтримки')">
+                    <div class="eval-dot"></div>
+                    <div><strong>Потребую підтримки</strong><br><span style="font-size:12px;color:var(--muted)">Матеріал складний</span></div>
+                </div>
             </div>
             <button class="btn-submit" onclick="submitData()">НАДІСЛАТИ ЗВІТ У ШТАБ →</button>
         </div>
@@ -228,14 +279,6 @@
         <button class="btn-next" id="fb-btn">ДАЛІ →</button>
     </div>
 
-    <div id="bonus-overlay" class="fb-overlay" style="display:none">
-        <div class="fb-icon">🛡️</div>
-        <div class="fb-status" style="color:var(--amber)">БОНУСНИЙ ВИКЛИК</div>
-        <div class="fb-msg" id="bonus-msg"></div>
-        <div id="bonus-content"></div>
-        <button class="btn-next" id="bonus-btn" style="background:var(--amber);color:#000">ПЕРЕВІРИТИ</button>
-    </div>
-
     <div id="loader" class="loader-sc" style="display:none">
         <div class="loader-spin"></div>
         <div class="loader-txt">ШИФРУВАННЯ ДАНИХ...</div>
@@ -254,102 +297,92 @@
     };
 
     const CASES = [
-        {
-            id:1,gr:"GR1",gap:"ГР1_Поняття_географічної_оболонки",
-            tag:"ЗАВДАННЯ 1",type:"choice",
-            text:"Що таке географічна оболонка Землі?",
-            hint:"Це глобальна екосистема, де взаємодіють нижні шари атмосфери, верхня частина літосфери, вся гідросфера та біосфера.",
-            opts:["Тверда кам'яна оболонка планети","Найбільший природний комплекс Землі, утворений взаємодією всіх оболонок","Повітряна оболонка, що захищає Землю від метеоритів","Штучно створене середовище для життя людини"],
-            correct:1
+        // ГР1
+        { id:1, gr:"GR1", gap:"ГР1_Поняття_географічної_оболонки", tag:"ЗАВДАННЯ 1", type:"choice",
+          text:"Що таке географічна оболонка Землі?",
+          hint:"Це глобальна екосистема, де взаємодіють нижні шари атмосфери, верхня частина літосфери, вся гідросфера та біосфера.",
+          opts:["Тверда кам'яна оболонка","Найбільший природний комплекс, утворений взаємодією всіх оболонок","Повітряна оболонка","Штучне середовище"],
+          correct:1,
+          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Базове поняття засвоєно!",fact:"<strong>Географічна оболонка</strong> — це найбільший природний комплекс, де всі сфери проникають одна в одну."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Це лише одна зі сфер.",fact:"Правильна відповідь: <strong>Найбільший природний комплекс Землі</strong>."}}
         },
-        {
-            id:2,gr:"GR1",gap:"ГР1_Цілісність_ГО",
-            tag:"ЗАВДАННЯ 2",type:"choice",
-            text:"Якщо в горах вирубати ліс, це призведе до змивання ґрунтів і пересихання річок. Яку закономірність це ілюструє?",
-            hint:"Усі компоненти природи міцно пов'язані.",
-            opts:["Ритмічність","Кругообіг речовин","Широтна зональність","Цілісність"],
-            correct:3
+        { id:2, gr:"GR1", gap:"ГР1_Цілісність_ГО", tag:"ЗАВДАННЯ 2", type:"choice",
+          text:"Якщо в горах вирубати ліс, це призведе до змивання ґрунтів і пересихання річок. Яку закономірність це ілюструє?",
+          hint:"Усі компоненти природи міцно пов'язані.",
+          opts:["Ритмічність","Кругообіг речовин","Широтна зональність","Цілісність"],
+          correct:3,
+          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Закон цілісності виявлено!",fact:"<strong>Цілісність</strong> означає, що природа — єдиний організм."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Зверни увагу на зв'язок компонентів.",fact:"Правильна відповідь: <strong>Цілісність</strong>."}}
         },
-        {
-            id:3,gr:"GR1",gap:"ГР1_Закономірності_ГО",
-            tag:"ДЕТЕКТОР АНОМАЛІЙ",type:"anomalyDetector",
-            scenario:"Вирубка лісу в горах спричинила зсуви та пересихання струмків. Яка закономірність порушена?",
-            hint:"Подумай, який закон пов'язує всі компоненти природи воєдино.",
-            opts:["Ритмічність","Кругообіг речовин","Цілісність","Зональність"],
-            correct:2,
-            timer:15
+        { id:3, gr:"GR1", gap:"ГР1_Закономірності_ГО", tag:"ДЕТЕКТОР АНОМАЛІЙ", type:"anomaly",
+          scenario:"Вирубка лісу в горах спричинила зсуви та пересихання струмків. Яка закономірність порушена?",
+          hint:"Подумай, який закон пов'язує всі компоненти природи воєдино.",
+          opts:["Ритмічність","Кругообіг речовин","Цілісність","Зональність"],
+          correct:2, timer:15,
+          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Аномалію виявлено!",fact:"<strong>Цілісність</strong> — ключовий закон."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Час вийшов або помилка.",fact:"Це <strong>Цілісність</strong>."}}
         },
-        {
-            id:4,gr:"GR1",gap:"ГР1_Компоненти_ПК",
-            tag:"ЗАВДАННЯ 4",type:"multichoice",
-            text:"Обери ВСІ природні компоненти, які обов'язково входять до складу будь-якого природного комплексу:",
-            hint:"Природний комплекс — це поєднання гірських порід, повітря, води, ґрунтів і життя.",
-            opts:["Гірські породи та рельєф","Клімат (повітря)","Будівлі та дороги","Вода (внутрішні води)","Ґрунт, рослини і тварини","Автомобілі"],
-            correctSet:[0,1,3,4]
+        { id:4, gr:"GR1", gap:"ГР1_Компоненти_ПК", tag:"ПРИРОДНИЙ ПАЗЛ", type:"multichoice",
+          text:"Обери ВСІ природні компоненти, які входять до складу будь-якого природного комплексу:",
+          hint:"5 компонентів, без антропогену.",
+          opts:["Гірські породи та рельєф","Клімат (повітря)","Будівлі та дороги","Вода (внутрішні води)","Ґрунт, рослини і тварини","Автомобілі"],
+          correctSet:[0,1,3,4],
+          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Пазл складено!",fact:"<strong>5 компонентів:</strong> гірські породи, клімат, води, ґрунти, живі організми."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Будівлі та авто — антропогенне.",fact:"Правильні: <strong>гірські породи, клімат, вода, ґрунти і життя</strong>."}}
         },
-        {
-            id:5,gr:"GR1",gap:"ГР1_Зміна_ПК",
-            tag:"ЗАВДАННЯ 5",type:"choice",
-            text:"Який із природних комплексів є найменшим і може бути змінений людиною найшвидше?",
-            hint:"Океани та материки змінити важко. Шукай локальний об'єкт.",
-            opts:["Материк Євразія","Світовий океан","Місцевий яр, балка або невелике озеро","Природна зона пустель"],
-            correct:2
+        { id:5, gr:"GR1", gap:"ГР1_Зміна_ПК", tag:"ЗАВДАННЯ 5", type:"choice",
+          text:"Який із природних комплексів є найменшим і може бути змінений людиною найшвидше?",
+          hint:"Океани та материки змінити важко.",
+          opts:["Материк Євразія","Світовий океан","Місцевий яр або озеро","Природна зона пустель"],
+          correct:2,
+          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Локальний комплекс знайдено!",fact:"<strong>Яр, озеро</strong> — дрібний локальний комплекс."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Зверни увагу на масштаб.",fact:"Правильно: <strong>Місцевий яр або озеро</strong>."}}
         },
-        {
-            id:6,gr:"GR2",gap:"ГР2_Причина_зональності",
-            tag:"ЗАВДАННЯ 6",type:"choice",
-            text:"Що є ГОЛОВНОЮ причиною формування різних природних зон на рівнинах?",
-            hint:"Природна зона визначається кліматом.",
-            opts:["Геологічна будова","Зміна співвідношення тепла і вологи залежно від широти","Урагани","Напрямок течії річок"],
-            correct:1
+        // ГР2
+        { id:6, gr:"GR2", gap:"ГР2_Причина_зональності", tag:"ЗАВДАННЯ 6", type:"choice",
+          text:"Що є ГОЛОВНОЮ причиною формування різних природних зон на рівнинах?",
+          hint:"Природна зона визначається кліматом.",
+          opts:["Геологічна будова","Зміна співвідношення тепла і вологи залежно від широти","Урагани","Напрямок течії річок"],
+          correct:1,
+          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Причину зональності встановлено!",fact:"<strong>Співвідношення тепла і вологи</strong> — ключ."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Клімат формує зони.",fact:"Правильно: <strong>Зміна співвідношення тепла і вологи</strong>."}}
         },
-        {
-            id:7,gr:"GR2",gap:"ГР2_Аналіз_карти_зон",
-            tag:"ЗАВДАННЯ 7",type:"choice",
-            text:"На карті Африки навколо екватора — ліси, далі савани. Про що це свідчить?",
-            hint:"Це класичний прояв головного географічного закону.",
-            opts:["Широтна зональність","Висотна поясність","Випадковість","Вирубка лісів"],
-            correct:0
+        { id:7, gr:"GR2", gap:"ГР2_Аналіз_карти_зон", tag:"ЗАВДАННЯ 7", type:"choice",
+          text:"На карті Африки навколо екватора — ліси, далі савани. Про що це свідчить?",
+          hint:"Це класичний прояв головного географічного закону.",
+          opts:["Широтна зональність","Висотна поясність","Випадковість","Вирубка лісів"],
+          correct:0,
+          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Закономірність на карті виявлено!",fact:"<strong>Широтна зональність</strong> в Африці ідеальна."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Поглянь на рух від екватора.",fact:"Правильно: <strong>Широтна зональність</strong>."}}
         },
-        {
-            id:8,gr:"GR2",gap:"ГР2_Читання_карти_зон",
-            tag:"МАРШРУТ ДРОНА",type:"droneRoute",
-            text:"Проклади маршрут дрона від полюса до екватора, розставивши природні зони по порядку:",
-            hint:"Від найхолоднішої до найтеплішої.",
-            items:["Арктичні пустелі","Тундра","Тайга","Степи","Тропічні пустелі","Екваторіальні ліси"],
-            correctOrder:[0,1,2,3,4,5]
+        { id:8, gr:"GR2", gap:"ГР2_Читання_карти_зон", tag:"МАРШРУТ ДРОНА", type:"drone",
+          text:"Проклади маршрут дрона від полюса до екватора, розставивши природні зони по порядку:",
+          hint:"Від найхолоднішої до найтеплішої.",
+          items:["Арктичні пустелі","Тундра","Тайга","Степи","Тропічні пустелі","Екваторіальні ліси"],
+          correctOrder:[0,1,2,3,4,5],
+          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Дрон долетів!",fact:"<strong>Послідовність:</strong> Арктика → Тундра → Тайга → Степи → Пустелі → Екваторіальні ліси."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Буря! Спробуй ще.",fact:"Правильний порядок: від льоду до вічного літа."}}
         },
-        {
-            id:9,gr:"GR2",gap:"ГР2_Порушення_зональності",
-            tag:"ЗАВДАННЯ 9",type:"choice",
-            text:"Що найчастіше порушує ідеальну широтну зональність?",
-            hint:"Причина — у тому, що може принести холод або вологу вздовж берегів.",
-            opts:["Тварини","Океанічні течії та гори","Фази Місяця","Танення снігів"],
-            correct:1
+        { id:9, gr:"GR2", gap:"ГР2_Порушення_зональності", tag:"ЗАВДАННЯ 9", type:"choice",
+          text:"Що найчастіше порушує ідеальну широтну зональність?",
+          hint:"Причина — у тому, що приносить холод або вологу вздовж берегів.",
+          opts:["Тварини","Океанічні течії та гори","Фази Місяця","Танення снігів"],
+          correct:1,
+          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Аномалії пояснено!",fact:"<strong>Океанічні течії та рельєф</strong> деформують зони."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Що впливає на клімат берегів?",fact:"Правильно: <strong>Океанічні течії та гори</strong>."}}
         },
-        {
-            id:10,gr:"GR3",gap:"ГР3_Висотна_поясність",
-            tag:"ЗАВДАННЯ 10",type:"choice",
-            text:"У Гімалаях біля підніжжя джунглі, а на вершині сніг. Це прояв:",
-            hint:"Зміна природи з висотою.",
-            opts:["Широтна зональність","Висотна поясність","Кругообіг води","Тектонічний розлом"],
-            correct:1
+        // ГР3
+        { id:10, gr:"GR3", gap:"ГР3_Висотна_поясність", tag:"ЗАВДАННЯ 10", type:"choice",
+          text:"У Гімалаях біля підніжжя джунглі, а на вершині сніг. Це прояв:",
+          hint:"Зміна природи з висотою.",
+          opts:["Широтна зональність","Висотна поясність","Кругообіг води","Тектонічний розлом"],
+          correct:1,
+          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Гірська закономірність підтверджена!",fact:"<strong>Висотна поясність</strong> — зміна природи з висотою."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Зональність — це для рівнин.",fact:"Правильно: <strong>Висотна поясність</strong>."}}
         },
-        {
-            id:11,gr:"GR3",gap:"ГР3_Залежність_висотної_поясності",
-            tag:"ЗАВДАННЯ 11",type:"choice",
-            text:"Кількість висотних поясів залежить від:",
-            hint:"Чим вища гора і ближче до екватора, тим більше поясів.",
-            opts:["Віку гір","Висоти гір та близькості до екватора","Наявності річок","Кількості хижаків"],
-            correct:1
+        { id:11, gr:"GR3", gap:"ГР3_Залежність_висотної_поясності", tag:"ЗАВДАННЯ 11", type:"choice",
+          text:"Кількість висотних поясів залежить від:",
+          hint:"Чим вища гора і ближче до екватора, тим більше поясів.",
+          opts:["Віку гір","Висоти гір та близькості до екватора","Наявності річок","Кількості хижаків"],
+          correct:1,
+          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Фактори визначено!",fact:"Максимум поясів — у високих горах на екваторі."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Згадай про стартову температуру.",fact:"Правильно: <strong>Висота та близькість до екватора</strong>."}}
         },
-        {
-            id:12,gr:"GR3",gap:"ГР3_Трансформація_комплексів",
-            tag:"ЕКО-ПРОГНОЗ",type:"ecofuture",
-            scenario:"Масштабне осушення боліт та вирубка лісів на Поліссі.",
-            hint:"Обери картки з реальними негативними наслідками.",
-            opts:["Зниження рівня ґрунтових вод","Збільшення риби","Зникнення рослин і птахів","Погіршення мікроклімату (посухи)","Зростання льодовиків"],
-            correctSet:[0,2,3]
+        { id:12, gr:"GR3", gap:"ГР3_Трансформація_комплексів", tag:"ЕКО-ПРОГНОЗ", type:"ecofuture",
+          scenario:"Масштабне осушення боліт та вирубка лісів на Поліссі. Які наслідки?",
+          hint:"Обери картки з реальними негативними наслідками.",
+          opts:["Зниження рівня ґрунтових вод","Збільшення риби","Зникнення рослин і птахів","Погіршення мікроклімату (посухи)","Зростання льодовиків"],
+          correctSet:[0,2,3],
+          fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Прогноз точний!",fact:"Втручання руйнує цілісність: зниження вод, зникнення видів, посухи."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Не всі наслідки вірні.",fact:"Правильні: <strong>зниження вод, зникнення флори/фауни, погіршення мікроклімату</strong>."}}
         }
     ];
 
@@ -359,10 +392,10 @@
         selfEval:'',
         deviceToken:'',
         multiSelected:new Set(),
-        anomalyTimer:null,
         droneOrder:[],
         ecoSelected:new Set(),
-        bonusActive:false
+        timerInterval:null,
+        timeLeft:0
     };
 
     (function init(){
@@ -403,16 +436,17 @@
         grEl.className = 'hud-gr '+(q.gr==='GR1'?'gr1':q.gr==='GR2'?'gr2':'gr3');
 
         const area = document.getElementById('q-area');
-        if(q.type==='choice') area.innerHTML = renderChoice(q);
-        else if(q.type==='multichoice') area.innerHTML = renderMulti(q);
-        else if(q.type==='anomalyDetector') area.innerHTML = renderAnomaly(q);
-        else if(q.type==='droneRoute') area.innerHTML = renderDroneRoute(q);
-        else if(q.type==='ecofuture') area.innerHTML = renderEcofuture(q);
-
+        switch(q.type){
+            case 'choice': area.innerHTML = renderChoice(q); break;
+            case 'multichoice': area.innerHTML = renderMulti(q); break;
+            case 'anomaly': area.innerHTML = renderAnomaly(q); startTimer(q.timer); break;
+            case 'drone': area.innerHTML = renderDrone(q); break;
+            case 'ecofuture': area.innerHTML = renderEcofuture(q); break;
+        }
         S.multiSelected = new Set();
         S.droneOrder = [];
         S.ecoSelected = new Set();
-        if(q.type==='anomalyDetector') startAnomalyTimer(q);
+        if(S.timerInterval) clearInterval(S.timerInterval);
     }
 
     function renderChoice(q){
@@ -431,7 +465,10 @@
 
     function renderMulti(q){
         const optsHtml = q.opts.map((o,i)=>`<button class="opt" onclick="toggleMulti(this,${i})">${o}</button>`).join('');
-        return `<div class="q-card"><div class="q-tag">${q.tag}</div><div class="q-text">${q.text}</div><div class="q-hint">${q.hint}</div></div><div class="multi-hint">Обери всі правильні, потім «Підтвердити»</div><div class="opts-grid">${optsHtml}</div><button class="btn-confirm" onclick="confirmMulti()">ПІДТВЕРДИТИ ✓</button>`;
+        return `<div class="q-card"><div class="q-tag">${q.tag}</div><div class="q-text">${q.text}</div><div class="q-hint">${q.hint}</div></div>
+        <div class="multi-hint">Обери всі правильні, потім «Підтвердити»</div>
+        <div class="opts-grid">${optsHtml}</div>
+        <button class="btn-confirm" onclick="confirmMulti()">ПІДТВЕРДИТИ ✓</button>`;
     }
     function toggleMulti(btn,i){
         if(S.multiSelected.has(i)){ S.multiSelected.delete(i); btn.classList.remove('selected'); }
@@ -454,29 +491,33 @@
     function renderAnomaly(q){
         const optsHtml = q.opts.map((o,i)=>`<button class="opt" onclick="pickAnomaly(${i})">${o}</button>`).join('');
         return `<div class="q-card"><div class="q-tag">${q.tag}</div><div class="q-text">⚠️ ${q.scenario}</div><div class="q-hint">${q.hint}</div></div>
-        <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+        <div class="timer-container">
+            <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+            <div class="timer-text" id="timer-text">${q.timer}с</div>
+        </div>
         <div class="opts-grid">${optsHtml}</div>`;
     }
-    function startAnomalyTimer(q){
-        if(S.anomalyTimer) clearInterval(S.anomalyTimer);
-        let timeLeft = q.timer;
+    function startTimer(seconds){
+        S.timeLeft = seconds;
         const timerFill = document.getElementById('timer-fill');
-        S.anomalyTimer = setInterval(()=>{
-            timeLeft -= 0.1;
-            timerFill.style.width = (timeLeft/q.timer*100)+'%';
-            if(timeLeft <= 0){
-                clearInterval(S.anomalyTimer);
+        const timerText = document.getElementById('timer-text');
+        S.timerInterval = setInterval(()=>{
+            S.timeLeft -= 0.1;
+            timerFill.style.width = (S.timeLeft/seconds*100)+'%';
+            timerText.textContent = Math.ceil(S.timeLeft)+'с';
+            if(S.timeLeft <= 0){
+                clearInterval(S.timerInterval);
                 if(!document.querySelector('.opt:disabled')){
                     document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
-                    const correctBtn = document.querySelectorAll('.opt')[q.correct];
-                    correctBtn.classList.add('reveal');
+                    const q = CASES[S.cur];
+                    document.querySelectorAll('.opt')[q.correct].classList.add('reveal');
                     recordAndFeedback(false, q);
                 }
             }
         }, 100);
     }
     function pickAnomaly(i){
-        if(S.anomalyTimer) clearInterval(S.anomalyTimer);
+        clearInterval(S.timerInterval);
         const q = CASES[S.cur];
         document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
         const btns = document.querySelectorAll('.opt');
@@ -486,7 +527,7 @@
         recordAndFeedback(correct, q);
     }
 
-    function renderDroneRoute(q){
+    function renderDrone(q){
         const itemsHtml = q.items.map((item,i)=>`<div class="sort-item" id="si-${i}" onclick="pickDroneStep(${i})">${item}</div>`).join('');
         return `<div class="q-card"><div class="q-tag">${q.tag}</div><div class="q-text">🚁 ${q.text}</div><div class="q-hint">${q.hint}</div></div>
         <div class="drone-scale">${q.items.map((_,i)=>`<div class="drone-step" id="ds-${i}">${i+1}</div>`).join('')}</div>
@@ -506,7 +547,6 @@
         const q = CASES[S.cur];
         const correct = JSON.stringify(S.droneOrder) === JSON.stringify(q.correctOrder);
         if(!correct){
-            // Помилка: показати бурю та скинути
             document.querySelectorAll('.sort-item').forEach(el=>el.classList.remove('sort-selected'));
             document.querySelectorAll('.drone-step').forEach(el=>el.classList.remove('filled'));
             S.droneOrder = [];
@@ -547,20 +587,20 @@
         S.scores[q.gr].push(correct?1:0);
         if(correct) spawnParticles();
 
-        // Перевірка на бонусний рівень після завершення блоку
+        // Перевірка на бонусний раунд після завершення блоку
         const blockEnd = (q.gr==='GR1' && S.cur===4) || (q.gr==='GR2' && S.cur===8) || (q.gr==='GR3' && S.cur===11);
         if(blockEnd && hasMistakes(q.gr)){
             showBonusRound(q.gr);
             return;
         }
 
-        const fb = correct ? {icon:"🎯",st:"ПРАВИЛЬНО",msg:"Так тримати!",fact:""} : {icon:"❌",st:"ПОМИЛКА",msg:"Нічого, запам'ятай правильну відповідь.",fact:""};
+        const fb = correct ? q.fb.c : q.fb.w;
         const overlay = document.getElementById('fb-overlay');
         document.getElementById('fb-icon').textContent = fb.icon;
         document.getElementById('fb-status').textContent = fb.st;
         document.getElementById('fb-status').style.color = correct?'var(--green)':'var(--red)';
         document.getElementById('fb-msg').textContent = fb.msg;
-        document.getElementById('fb-fact').innerHTML = q.fb ? (correct ? q.fb.c.fact : q.fb.w.fact) : '';
+        document.getElementById('fb-fact').innerHTML = fb.fact;
         document.getElementById('fb-btn').onclick = ()=>{
             overlay.style.display = 'none';
             S.cur++;
@@ -571,72 +611,144 @@
     }
 
     function hasMistakes(gr){
-        const scores = S.scores[gr];
-        return scores.includes(0);
+        return S.scores[gr].includes(0);
     }
 
     function showBonusRound(gr){
-        S.bonusActive = true;
         const mistakes = [];
         S.scores[gr].forEach((v,i)=>{ if(v===0) mistakes.push(i); });
         const randIdx = mistakes[Math.floor(Math.random()*mistakes.length)];
-        const baseQ = CASES.find(c=>c.gr===gr && c.id === (gr==='GR1'? randIdx+1 : gr==='GR2'? randIdx+6 : randIdx+10));
-        const bonusQ = {
-            text: "Бонус! Давай перевіримо ще раз:",
-            scenario: baseQ.scenario || baseQ.text,
-            opts: baseQ.opts,
-            correct: baseQ.correct || baseQ.correctSet?.[0],
-            type: baseQ.type
+        const bonusCase = CASES.filter(c=>c.gr===gr)[randIdx];
+        const overlay = document.getElementById('fb-overlay');
+        document.getElementById('fb-icon').textContent = '🛡️';
+        document.getElementById('fb-status').textContent = 'БОНУСНИЙ ВИКЛИК';
+        document.getElementById('fb-status').style.color = 'var(--amber)';
+        document.getElementById('fb-msg').textContent = `Давай перевіримо ще раз тему "${bonusCase.tag}"!`;
+        // Рендеримо те саме завдання, але без збереження бала
+        const area = document.getElementById('q-area');
+        if(bonusCase.type==='choice') area.innerHTML = renderChoice(bonusCase);
+        else if(bonusCase.type==='multichoice') area.innerHTML = renderMulti(bonusCase);
+        else if(bonusCase.type==='anomaly') { area.innerHTML = renderAnomaly(bonusCase); startTimer(bonusCase.timer); }
+        else if(bonusCase.type==='drone') area.innerHTML = renderDrone(bonusCase);
+        else if(bonusCase.type==='ecofuture') area.innerHTML = renderEcofuture(bonusCase);
+        // Змінюємо поведінку кнопок, щоб не викликати recordAndFeedback повторно
+        // Для простоти покажемо повідомлення і перейдемо далі
+        document.getElementById('fb-btn').textContent = 'ПРОДОВЖИТИ';
+        document.getElementById('fb-btn').onclick = ()=>{
+            overlay.style.display = 'none';
+            S.cur++;
+            if(S.cur < 12) renderQ();
+            else showSc('sc-eval');
         };
-        document.getElementById('bonus-msg').textContent = bonusQ.text;
-        const content = document.getElementById('bonus-content');
-        if(baseQ.type==='choice' || baseQ.type==='anomalyDetector'){
-            content.innerHTML = `<div class="q-text" style="margin-bottom:16px">${bonusQ.scenario}</div>
-            <div class="opts-grid">${bonusQ.opts.map((o,i)=>`<button class="opt" onclick="answerBonus(${i},${bonusQ.correct})">${o}</button>`).join('')}</div>`;
-        } else if(baseQ.type==='multichoice'){
-            content.innerHTML = `<div class="q-text" style="margin-bottom:16px">${bonusQ.scenario}</div>
-            <div class="opts-grid">${bonusQ.opts.map((o,i)=>`<button class="opt" onclick="toggleBonus(this,${i})">${o}</button>`).join('')}</div>
-            <button class="btn-confirm" onclick="confirmBonus()">ПЕРЕВІРИТИ</button>`;
-            window.bonusCorrectSet = baseQ.correctSet;
-            window.bonusSelected = new Set();
-        }
-        document.getElementById('bonus-overlay').style.display = 'flex';
-        document.getElementById('bonus-btn').style.display = 'none';
+        overlay.style.display = 'flex';
     }
 
-    window.answerBonus = function(i, correct){
-        const opts = document.querySelectorAll('#bonus-content .opt');
-        opts.forEach(o=>o.disabled=true);
-        opts[i].classList.add(i===correct?'correct':'wrong');
-        if(i!==correct) opts[correct].classList.add('reveal');
-        endBonus();
-    };
-    window.toggleBonus = function(btn,i){
-        if(window.bonusSelected.has(i)){ window.bonusSelected.delete(i); btn.classList.remove('selected'); }
-        else{ window.bonusSelected.add(i); btn.classList.add('selected'); }
-    };
-    window.confirmBonus = function(){
-        const sel = [...window.bonusSelected].sort();
-        const cor = [...window.bonusCorrectSet].sort();
-        const correct = JSON.stringify(sel)===JSON.stringify(cor);
-        document.querySelectorAll('#bonus-content .opt').forEach((b,i)=>{
-            if(window.bonusCorrectSet.includes(i)) b.classList.add('reveal');
-            else if(window.bonusSelected.has(i)) b.classList.add('wrong');
-            b.disabled=true;
-        });
-        endBonus();
-    };
-    function endBonus(){
-        document.getElementById('bonus-overlay').style.display = 'none';
-        S.bonusActive = false;
-        S.cur++;
-        if(S.cur < 12) renderQ();
-        else showSc('sc-eval');
+    let evalSel='';
+    function selEval(el,v){
+        document.querySelectorAll('.eval-opt').forEach(o=>o.classList.remove('sel'));
+        el.classList.add('sel');evalSel=v;
     }
+    function submitData(){
+        if(!evalSel){alert('Будь ласка, оціни свій рівень.');return;}
 
-    function submitData(){ /* залишається без змін */ }
+        const gr1pct=Math.round(avg(S.scores.GR1)*100);
+        const gr2pct=Math.round(avg(S.scores.GR2)*100);
+        const gr3pct=Math.round(avg(S.scores.GR3)*100);
+        const totalPct=Math.round((gr1pct+gr2pct+gr3pct)/3);
+
+        const gapMap={
+            GR1:[
+                {s:S.scores.GR1[0],g:"ГР1_Поняття_географічної_оболонки"},
+                {s:S.scores.GR1[1],g:"ГР1_Цілісність_ГО"},
+                {s:S.scores.GR1[2],g:"ГР1_Закономірності_ГО"},
+                {s:S.scores.GR1[3],g:"ГР1_Компоненти_ПК"},
+                {s:S.scores.GR1[4],g:"ГР1_Зміна_ПК"}
+            ],
+            GR2:[
+                {s:S.scores.GR2[0],g:"ГР2_Причина_зональності"},
+                {s:S.scores.GR2[1],g:"ГР2_Аналіз_карти_зон"},
+                {s:S.scores.GR2[2],g:"ГР2_Читання_карти_зон"},
+                {s:S.scores.GR2[3],g:"ГР2_Порушення_зональності"}
+            ],
+            GR3:[
+                {s:S.scores.GR3[0],g:"ГР3_Висотна_поясність"},
+                {s:S.scores.GR3[1],g:"ГР3_Залежність_висотної_поясності"},
+                {s:S.scores.GR3[2],g:"ГР3_Трансформація_комплексів"}
+            ]
+        };
+        const gaps=[];
+        [...gapMap.GR1,...gapMap.GR2,...gapMap.GR3].forEach(e=>{if(!e.s) gaps.push(e.g);});
+
+        const payload={
+            studentName:S.name,studentClass:S.cls,
+            totalScore:totalPct,
+            scoreGR1:gr1pct,scoreGR2:gr2pct,scoreGR3:gr3pct,
+            gaps,selfEvaluation:evalSel,deviceToken:S.deviceToken,
+            topic:'obolonka'
+        };
+
+        showSc('sc-result');
+        buildResult(payload,gr1pct,gr2pct,gr3pct,totalPct,gaps);
+
+        document.getElementById('loader').style.display='flex';
+        fetch(SCRIPT_URL,{method:'POST',mode:'cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
+            .then(r=>r.json())
+            .then(d=>{
+                document.getElementById('loader').style.display='none';
+                const n=document.getElementById('sent-ok');
+                if (d.result === 'already_exists') {
+                    n.style.borderColor = 'var(--red)';
+                    n.innerHTML = '<div style="color:var(--red); text-align:center; font-weight:600;">⚠ ДОСТУП ОБМЕЖЕНО<br><span style="font-size:13px; color:#a0aec0; font-weight:400;">Твої результати для цієї теми вже зафіксовані в базі.</span></div>';
+                    n.style.display = 'block';
+                } else {
+                    n.style.display = 'block';
+                    localStorage.setItem('geo_obolonka_submitted','true');
+                }
+            })
+            .catch(()=>{
+                document.getElementById('loader').style.display='none';
+                document.getElementById('sent-ok').style.display='block';
+            });
+    }
     function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;}
-    function buildResult(p,gr1,gr2,gr3,total,gaps){ /* оригінальна функція */ }
+
+    function buildResult(p,gr1,gr2,gr3,total,gaps){
+        const titles={ high:'АНАЛІЗ ОБОЛОНКИ ЗАВЕРШЕНО', mid:'СТАЖУВАННЯ АГЕНТА ТРИВАЄ', low:'СПРАВА НА ДОВИВЧЕННІ' };
+        const t=total>=75?titles.high:total>=50?titles.mid:titles.low;
+        document.getElementById('res-title').textContent=t;
+        document.getElementById('res-name').textContent=p.studentName+' • '+p.studentClass;
+        const clr=(v)=>v>=75?'var(--green)':v>=50?'var(--amber)':'var(--red)';
+        document.getElementById('s-gr1').textContent=gr1+'%';document.getElementById('s-gr1').style.color=clr(gr1);
+        document.getElementById('s-gr2').textContent=gr2+'%';document.getElementById('s-gr2').style.color=clr(gr2);
+        document.getElementById('s-gr3').textContent=gr3+'%';document.getElementById('s-gr3').style.color=clr(gr3);
+        if(gaps.length){
+            const gapLabels={
+                "ГР1_Поняття_географічної_оболонки":"Поняття геооболонки",
+                "ГР1_Цілісність_ГО":"Цілісність",
+                "ГР1_Закономірності_ГО":"Закономірності",
+                "ГР1_Компоненти_ПК":"Компоненти ПК",
+                "ГР1_Зміна_ПК":"Зміна ПК",
+                "ГР2_Причина_зональності":"Причина зональності",
+                "ГР2_Аналіз_карти_зон":"Аналіз карти зон",
+                "ГР2_Читання_карти_зон":"Читання карти зон",
+                "ГР2_Порушення_зональності":"Порушення зональності",
+                "ГР3_Висотна_поясність":"Висотна поясність",
+                "ГР3_Залежність_висотної_поясності":"Залежність поясності",
+                "ГР3_Трансформація_комплексів":"Трансформація комплексів"
+            };
+            const items=gaps.map(g=>`<div class="gap-item">⚠ ${gapLabels[g]||g}</div>`).join('');
+            document.getElementById('gaps-section').innerHTML=`<div class="gaps-box"><div class="gaps-title">ТЕМИ ДЛЯ ПОВТОРЕННЯ</div>${items}</div>`;
+        }
+        const subs={high:"Відмінно! Ти — провідний дослідник.",mid:"Гарна робота! Повтори відмічені теми.",low:"Відкрий атлас і повтори закономірності."};
+        document.getElementById('res-sub').textContent=total>=75?subs.high:total>=50?subs.mid:subs.low;
+        setTimeout(()=>{
+            const circ=326;
+            document.getElementById('ring-fill').style.strokeDashoffset=circ-(circ*total/100);
+            document.getElementById('ring-pct').textContent=total+'%';
+            document.getElementById('ring-fill').style.stroke=clr(total);
+        },200);
+    }
+
     function spawnParticles(){
         const colors=['var(--cyan)','var(--green)','var(--amber)','var(--purple)'];
         for(let i=0;i<12;i++){
