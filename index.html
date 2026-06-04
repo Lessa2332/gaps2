@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ГЕО-ДЕТЕКТИВ // Сектор 7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#060a14;--panel:#0d1526;--card:#111d35;--border:#1e3a5f;
+  --cyan:#00d4ff;--cyan-dim:rgba(0,212,255,.12);
+  --green:#00ff88;--green-dim:rgba(0,255,136,.1);
+  --red:#ff3d5a;--red-dim:rgba(255,61,90,.1);
+  --amber:#ffb800;--amber-dim:rgba(255,184,0,.1);
+  --purple:#a78bfa;--purple-dim:rgba(167,139,250,.1);
+  --text:#e2eaff;--muted:#5a7399;
+  --font-head:'Rajdhani',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+  --font-body:'Inter',sans-serif;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100dvh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+#app{position:relative;z-index:1;min-height:100dvh;display:flex;flex-direction:column}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border);background:rgba(13,21,38,.95);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+.hdr-logo{font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:2px;color:var(--cyan);text-shadow:0 0 20px rgba(0,212,255,.4)}
+.hdr-logo span{color:var(--muted);font-weight:400}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.hdr-badge{font-family:var(--font-mono);font-size:10px;background:var(--cyan-dim);border:1px solid rgba(0,212,255,.25);color:var(--cyan);padding:4px 10px;border-radius:20px}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;flex:1;padding:16px;animation:fadeUp .3s ease}
+.screen.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* LOGIN */
+.login-wrap{display:flex;flex-direction:column;gap:16px;max-width:420px;width:100%;margin:auto;padding:24px 20px;background:var(--card);border:1px solid var(--border);border-radius:20px}
+.login-title{font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--cyan);letter-spacing:1px}
+.login-sub{font-size:13px;color:var(--muted);line-height:1.5}
+.field-label{font-size:11px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;font-family:var(--font-mono)}
+select{width:100%;padding:12px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:var(--font-body);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7399' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;transition:border-color .2s}
+select:focus{outline:none;border-color:var(--cyan)}
+
+select option {
+  background-color: var(--card);
+  color: var(--text);
+}
+.btn-start{width:100%;padding:16px;background:var(--cyan);color:#060a14;border:none;border-radius:12px;font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:transform .15s,box-shadow .15s;text-transform:uppercase}
+.btn-start:active{transform:scale(.97)}
+.btn-start:hover{box-shadow:0 0 28px rgba(0,212,255,.35)}
+
+/* BRIEF */
+.brief-wrap{display:flex;flex-direction:column;gap:16px;max-width:460px;width:100%;margin:auto}
+.brief-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px}
+.brief-num{font-family:var(--font-mono);font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:8px}
+.brief-title{font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:6px}
+.brief-text{font-size:14px;color:var(--muted);line-height:1.65}
+.btn-go{padding:15px 24px;background:var(--cyan);color:#060a14;border:none;border-radius:12px;font-family:var(--font-head);font-size:16px;font-weight:700;letter-spacing:1px;cursor:pointer;width:100%;text-transform:uppercase;transition:transform .15s}
+.btn-go:active{transform:scale(.97)}
+
+/* PROGRESS */
+.prog-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:14px;overflow:hidden}
+.prog-fill{height:100%;background:var(--cyan);transition:width .5s ease;box-shadow:0 0 8px var(--cyan)}
+.game-hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.hud-left{display:flex;flex-direction:column;gap:2px}
+.hud-case{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+.hud-case span{color:var(--text)}
+.hud-gr{font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid}
+.gr1{color:var(--purple);border-color:rgba(167,139,250,.3);background:var(--purple-dim)}
+.gr2{color:var(--amber);border-color:rgba(255,184,0,.3);background:var(--amber-dim)}
+.gr3{color:var(--cyan);border-color:rgba(0,212,255,.3);background:var(--cyan-dim)}
+.hud-score{font-family:var(--font-mono);font-size:13px;background:var(--cyan-dim);border:1px solid rgba(0,212,255,.25);color:var(--cyan);padding:4px 12px;border-radius:20px}
+
+/* QUESTION CARD */
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;animation:cardDrop .35s cubic-bezier(.17,.84,.44,1)}
+.q-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+@keyframes cardDrop{from{opacity:0;transform:translateY(-16px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.q-tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:10px;letter-spacing:1.5px;color:var(--amber);background:var(--amber-dim);border:1px solid rgba(255,184,0,.2);padding:3px 10px;border-radius:20px;margin-bottom:12px}
+.q-text{font-family:var(--font-head);font-size:17px;font-weight:600;line-height:1.4;margin-bottom:4px}
+.q-hint{font-size:13px;color:var(--muted);line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+
+/* CHOICE OPTIONS */
+.opts-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.opt{padding:13px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;font-size:14px;line-height:1.5;transition:border-color .15s,background .15s;-webkit-touch-callout:none;user-select:none;text-align:left;color:var(--text);width:100%;font-family:var(--font-body)}
+.opt:active{transform:scale(.98)}
+.opt.selected{border-color:var(--cyan);background:var(--cyan-dim)}
+.opt.correct{border-color:var(--green)!important;background:var(--green-dim)!important;color:var(--green)}
+.opt.wrong{border-color:var(--red)!important;background:var(--red-dim)!important;color:var(--red)}
+.opt.reveal{border-color:var(--green)!important;background:var(--green-dim)!important;color:var(--green)}
+.opt:disabled{cursor:default;pointer-events:none}
+
+/* MULTI-SELECT */
+.multi-hint{font-size:12px;color:var(--amber);font-family:var(--font-mono);margin-bottom:10px;letter-spacing:.5px}
+.btn-confirm{width:100%;padding:13px;background:var(--amber-dim);border:1.5px solid rgba(255,184,0,.35);border-radius:12px;font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--amber);cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .15s;margin-top:4px}
+.btn-confirm:active{transform:scale(.97)}
+.btn-confirm:hover{background:var(--amber);color:#060a14}
+
+/* DRAG MATCH */
+.drag-area{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
+.drag-row{display:flex;align-items:center;gap:10px}
+.drag-label{min-width:0;flex:1;padding:11px 14px;background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.2);border-radius:10px;font-size:14px;color:var(--text)}
+.drag-arrow{color:var(--muted);font-size:18px;flex-shrink:0}
+.drag-slot{flex:1;min-height:44px;border:1.5px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);cursor:pointer;transition:border-color .2s,background .2s;padding:8px;text-align:center}
+.drag-slot.filled{border-style:solid;border-color:var(--cyan);color:var(--text);background:var(--cyan-dim)}
+.drag-slot.correct-slot{border-color:var(--green)!important;background:var(--green-dim)!important;color:var(--green)!important}
+.drag-slot.wrong-slot{border-color:var(--red)!important;background:var(--red-dim)!important;color:var(--red)!important}
+.chips-pool{display:flex;flex-wrap:wrap;gap:8px;padding:14px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:12px;min-height:52px;margin-bottom:12px}
+.chip{padding:8px 14px;background:rgba(255,255,255,.05);border:1.5px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;transition:all .15s;-webkit-touch-callout:none;user-select:none;color:var(--text)}
+.chip:active{transform:scale(.95)}
+.chip.chip-selected{border-color:var(--cyan);background:var(--cyan-dim);color:var(--cyan)}
+.chip.chip-used{opacity:.3;pointer-events:none}
+
+/* SORT */
+.sort-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.sort-item{padding:12px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;font-size:14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .15s,background .15s;user-select:none;-webkit-touch-callout:none}
+.sort-item.sort-selected{border-color:var(--cyan);background:var(--cyan-dim)}
+.sort-item.sort-correct{border-color:var(--green);background:var(--green-dim);color:var(--green)}
+.sort-item.sort-wrong{border-color:var(--red);background:var(--red-dim);color:var(--red)}
+.sort-rank{font-family:var(--font-mono);font-size:12px;color:var(--muted);width:22px;text-align:right}
+.sort-rank.filled{color:var(--cyan)}
+.sort-instruction{font-size:12px;color:var(--amber);font-family:var(--font-mono);margin-bottom:10px}
+
+/* FEEDBACK OVERLAY */
+.fb-overlay{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(6,10,20,.9);backdrop-filter:blur(10px);padding:24px;animation:fadeIn .2s ease}
+.fb-icon{font-size:58px;animation:popIn .3s cubic-bezier(.17,.84,.44,1);margin-bottom:14px}
+.fb-status{font-family:var(--font-head);font-size:26px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.fb-msg{font-size:13px;color:var(--muted);text-align:center;max-width:320px;line-height:1.6;margin-bottom:18px}
+.fb-fact{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;font-size:13px;color:#b0c4de;max-width:380px;width:100%;line-height:1.65;margin-bottom:20px}
+.fb-fact strong{color:var(--cyan)}
+.btn-next{padding:13px 34px;background:var(--cyan);color:#060a14;border:none;border-radius:12px;font-family:var(--font-head);font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:transform .15s}
+.btn-next:active{transform:scale(.97)}
+
+/* EVAL */
+.eval-card{max-width:440px;width:100%;margin:auto;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px}
+.eval-title{font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:6px}
+.eval-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.eval-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.eval-opt{padding:14px 16px;background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:border-color .2s,background .2s;font-size:14px;line-height:1.5;display:flex;align-items:flex-start;gap:12px}
+.eval-opt.sel{border-color:var(--cyan);background:var(--cyan-dim)}
+.eval-dot{width:18px;height:18px;min-width:18px;border-radius:50%;border:2px solid var(--muted);margin-top:2px;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.eval-opt.sel .eval-dot{border-color:var(--cyan);background:var(--cyan)}
+.eval-opt.sel .eval-dot::after{content:'';display:block;width:6px;height:6px;border-radius:50%;background:#060a14}
+.btn-submit{width:100%;padding:15px;background:var(--green);color:#060a14;border:none;border-radius:12px;font-family:var(--font-head);font-size:16px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:transform .15s}
+.btn-submit:active{transform:scale(.97)}
+
+/* RESULT */
+.result-wrap{max-width:440px;width:100%;margin:auto;display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center}
+.score-ring{width:140px;height:140px;position:relative;margin:6px auto}
+.score-ring svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:10}
+.ring-fill{fill:none;stroke:var(--cyan);stroke-width:10;stroke-linecap:round;stroke-dasharray:326;stroke-dashoffset:326;transition:stroke-dashoffset 1.2s ease;filter:drop-shadow(0 0 6px var(--cyan))}
+.ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-pct{font-family:var(--font-head);font-size:30px;font-weight:700;color:var(--cyan)}
+.ring-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:1px}
+.res-title{font-family:var(--font-head);font-size:22px;font-weight:700}
+.res-name{background:var(--cyan-dim);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:11px 18px;font-family:var(--font-mono);font-size:13px;color:var(--cyan);width:100%}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.stat-c{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center}
+.stat-v{font-family:var(--font-head);font-size:20px;font-weight:700}
+.stat-l{font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-top:2px}
+.res-sub{font-size:13px;color:var(--muted);line-height:1.6;max-width:340px}
+.sent-ok{font-size:12px;color:var(--green);background:var(--green-dim);border:1px solid rgba(0,255,136,.2);border-radius:8px;padding:8px 14px;font-family:var(--font-mono)}
+.gaps-box{width:100%;background:var(--card);border:1px solid rgba(255,61,90,.2);border-radius:14px;padding:16px;text-align:left}
+.gaps-title{font-family:var(--font-mono);font-size:10px;color:var(--red);letter-spacing:1.5px;margin-bottom:8px}
+.gap-item{font-size:13px;color:#d0a0a8;padding:5px 0;border-bottom:1px solid var(--border);line-height:1.5}
+.gap-item:last-child{border-bottom:none}
+
+/* LOCK */
+.lock-wrap{max-width:360px;margin:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;padding:40px 20px}
+.lock-icon{font-size:54px}
+.lock-title{font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--red)}
+.lock-text{font-size:14px;color:var(--muted);line-height:1.6}
+
+/* LOADER */
+.loader-sc{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.loader-spin{width:38px;height:38px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--cyan);animation:spin .8s linear infinite}
+.loader-txt{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:1px}
+
+/* PARTICLES */
+.particle{position:fixed;pointer-events:none;z-index:300;border-radius:50%;animation:pfly .75s ease-out forwards}
+@keyframes pfly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pulse-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);animation:pring 1.5s infinite}
+@keyframes pring{0%{box-shadow:0 0 0 0 rgba(0,255,136,.4)}70%{box-shadow:0 0 0 7px rgba(0,255,136,0)}100%{box-shadow:0 0 0 0 rgba(0,255,136,0)}}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="hdr">
+  <div class="hdr-logo">ГЕО<span>—</span>ДЕТЕКТИВ</div>
+  <div class="hdr-right">
+    <div class="hdr-badge" id="hdr-status">СЕКТОР 7</div>
+  </div>
+</div>
+
+<div id="sc-lock" class="screen">
+  <div class="lock-wrap">
+    <div class="lock-icon">🔐</div>
+    <div class="lock-title">ДОСТУП ОБМЕЖЕНО</div>
+    <div class="lock-text">Твій пристрій вже надіслав звіт у штаб. Повторне проходження неможливе.</div>
+  </div>
+</div>
+
+<div id="sc-login" class="screen active">
+  <div class="login-wrap">
+    <div>
+      <div class="login-title">🔍 АВТОРИЗАЦІЯ</div>
+      <div class="login-sub">Введи дані агента для доступу до оперативної справи</div>
+    </div>
+    <div>
+      <div class="field-label">Підрозділ (клас)</div>
+      <select id="sel-class" onchange="loadNames()">
+        <option value="">— Оберіть клас —</option>
+        <option>7-А</option><option>7-Б</option><option>7-В</option><option>7-Г</option><option>7-Д</option>
+      </select>
+    </div>
+    <div>
+      <div class="field-label">Позивний (прізвище)</div>
+      <select id="sel-name"><option value="">— Спочатку оберіть клас —</option></select>
+    </div>
+    <button class="btn-start" onclick="startGame()">РОЗПОЧАТИ МІСІЮ ▶</button>
+  </div>
+</div>
+
+<div id="sc-brief" class="screen">
+  <div class="brief-wrap">
+    <div class="brief-card">
+      <div class="brief-num">// БРИФІНГ МІСІЇ</div>
+      <div class="brief-title">Операція «КЛІМАТ-КОНТРОЛЬ»</div>
+      <div class="brief-text">Ти — спеціальний агент Географічного Відомства. Попереду <strong style="color:var(--cyan)">12 оперативних завдань</strong> з трьох секцій оцінювання кліматичних систем планети:<br><br>
+      <span style="color:var(--purple)">◆ ГР 1</span> — Кліматотвірні чинники, радіація та циркуляція ПМ<br>
+      <span style="color:var(--amber)">◆ ГР 2</span> — Аналіз кліматичних карт, поясів та показників<br>
+      <span style="color:var(--cyan)">◆ ГР 3</span> — Кліматичні дослідження, прогнози та глобальні зміни
+      </div>
+    </div>
+    <div class="brief-card" style="border-color:rgba(255,184,0,.2);background:rgba(255,184,0,.04)">
+      <div class="brief-num" style="color:var(--amber)">// ТИПИ ЗАВДАНЬ</div>
+      <div class="brief-text" style="color:#d4ae70">Вибір однієї відповіді, множинний вибір, просторове сортування та встановлення логічних пар. Використовуй оперативні підказки штабу.</div>
+    </div>
+    <button class="btn-go" onclick="startMission()">ПРИЙНЯТИ МІСІЮ →</button>
+  </div>
+</div>
+
+<div id="sc-game" class="screen">
+  <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="game-hud">
+    <div class="hud-left">
+      <div class="hud-case">ЗАВДАННЯ <span id="case-num">1</span>/12</div>
+      <div id="hud-gr" class="hud-gr gr1">ГР 1</div>
+    </div>
+    <div class="hud-score" id="hud-score">0 ОЧОК</div>
+  </div>
+  <div id="q-area"></div>
+</div>
+
+<div id="sc-eval" class="screen">
+  <div class="eval-card">
+    <div class="eval-title">🗂 ЗВІТ АГЕНТА</div>
+    <div class="eval-sub">Аналіз завершено. Оціни чесно свій рівень впевненості у вивченій темі кліматології:</div>
+    <div class="eval-opts">
+      <div class="eval-opt" onclick="selEval(this,'Впевнено')">
+        <div class="eval-dot"></div>
+        <div><strong>Впевнено</strong><br><span style="font-size:12px;color:var(--muted)">Розумію чинники, аналізую кліматограми та карти без проблем</span></div>
+      </div>
+      <div class="eval-opt" onclick="selEval(this,'Частково')">
+        <div class="eval-dot"></div>
+        <div><strong>Частково</strong><br><span style="font-size:12px;color:var(--muted)">Розумію загальні процеси, але плутаюсь у перехідних поясах чи течіях</span></div>
+      </div>
+      <div class="eval-opt" onclick="selEval(this,'Потребую підтримки')">
+        <div class="eval-dot"></div>
+        <div><strong>Потребую підтримки</strong><br><span style="font-size:12px;color:var(--muted)">Тема циркуляції та поясів складна, потрібні додаткові роз'яснення</span></div>
+      </div>
+    </div>
+    <button class="btn-submit" onclick="submitData()">НАДІСЛАТИ ЗВІТ У ШТАБ →</button>
+  </div>
+</div>
+
+<div id="sc-result" class="screen">
+  <div class="result-wrap">
+    <div class="res-title" id="res-title">МІСІЮ ВИКОНАНО</div>
+    <div class="res-name" id="res-name"></div>
+    <div class="score-ring">
+      <svg viewBox="0 0 110 110" width="140" height="140">
+        <circle class="ring-bg" cx="55" cy="55" r="52"/>
+        <circle class="ring-fill" id="ring-fill" cx="55" cy="55" r="52"/>
+      </svg>
+      <div class="ring-text"><div class="ring-pct" id="ring-pct">0%</div><div class="ring-label">ТОЧНІСТЬ</div></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-c"><div class="stat-v" id="s-gr1">—</div><div class="stat-l">ГР 1</div></div>
+      <div class="stat-c"><div class="stat-v" id="s-gr2">—</div><div class="stat-l">ГР 2</div></div>
+      <div class="stat-c"><div class="stat-v" id="s-gr3">—</div><div class="stat-l">ГР 3</div></div>
+    </div>
+    <div id="gaps-section"></div>
+    <div class="res-sub" id="res-sub"></div>
+    <div class="sent-ok" id="sent-ok" style="display:none"><span class="pulse-dot"></span> &nbsp;Звіт надіслано в штаб</div>
+  </div>
+</div>
+
+<div id="fb-overlay" class="fb-overlay" style="display:none">
+  <div class="fb-icon" id="fb-icon"></div>
+  <div class="fb-status" id="fb-status"></div>
+  <div class="fb-msg" id="fb-msg"></div>
+  <div class="fb-fact" id="fb-fact"></div>
+  <button class="btn-next" id="fb-btn">ДАЛІ →</button>
+</div>
+
+<div id="loader" class="loader-sc" style="display:none">
+  <div class="loader-spin"></div>
+  <div class="loader-txt">ШИФРУВАННЯ ДАНИХ...</div>
+</div>
+</div>
+
+<script>
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycbwSs8W9HKolC2aAP8zIvfMtjRc4iVi6nf-sRxow1B5ov-uU23xlU2aW_zi3UxkXaU93/exec";
+
+const DB={
+  "7-А":["Ашихмін Ярослав","Внуков Веніамін","Волков Давид","Вулєр Іван","Дабіжа Марія","Димитров Дмитро","Кирилюк Артем","Косар Нікіта","Кравчук Мілана","Кривенок Ілля","Лазаревич Георгій","Лазаревич Ніколь","Лісіцина Дар'я","Нестерова Varvara","Перванчук Марк","Полуянов Семен","Попков Андрій","Савченко Наталія","Скопенко Ніка","Усольцева Аріна","Халабура Вікторія","Химич Артем","Якутенко Володимир","Ященко Анастасія","Бохонок Олеся"],
+  "7-Б":["Алєксєюк Ірина","Андрусік Ул'яна","Болясна Аріна","Войтех Богдан","Голімбовська Єлизавета","Гуляєва Марія","Зєнов Геннадій","Кожухар Злата","Колесниченко Артем","Коростельова Анфіса","Кузьмін Дмитро","Левченко Тимур","Литовченко Кіра","Михайлова Ксенія","Ніколаєв Ілля","Ніща Дар'я","Переберін Артем","Сич Кіріл","Сташко Кароліна","Стерпул Олександр","Харченко Гліб","Хомутова Анна","Чернюк Андрій","Шаріпова Анастасія","Штурхаль Марія","Яремчук Єгор","Бохонок Олеся"],
+  "7-В":["Бєгу Євгеній","Білоус Катерина","Бодьо Арина","Величко Данило","Гаврилова Кира","Гаврилова Маргарита","Гєчева Вероніка","Гордієнко Дмитро","Іваньоха Мирослав","Ісхаков Кирило","Кушнір Віталіна","Левченко Олександр","Мацієвич Дмитро","Мельниченко Анастасія","Муравйов Андрій","Ніколайчук Іван","Остапчук Ангеліна","Охват Софія","Пєшкова Поліна","Піроженко Анна","Саванчук Крістіна","Чермних Єгор","Бохонок Олеся"],
+  "7-Г":["Баличев Давід","Білоножкіна Вікторія","Бохонок Олеся","Григор'єв Максим","Єленич Софія","Жемчужникова Дар'я","Карп Христина","Карташов Михайло","Клименко Назар","Ковальов Володимир","Маслій Руслан","Мельников Тимур","Потребенко Меланія","Раєнко Таїсія","Саранін Олександр","Солодухіна Жанна","Сопель Максим","Стоянов Владислав","Чеховський Кирило","Чорний Акім","Шеремет Ернест"],
+  "7-Д":["Балинський Вячеслав","Бохонок Олеся","Бурлак Аміна","Ганошенко Маттіа","Грозивчак Олександр","Дойчева Ангеліна","Касьянова Аріна","Кербенко Артем","Ковальчук Глєб","Лебін Ярослав","Маслаков Артем","Масленніков Іван","Михайловська Катерина","Перепьолка Таїсія","Петрова Аріна","Прокопенко Ярослав","Семенов Семен","Ткаченко Демір"]
+};
+
+const CASES=[
+  // ── ГР 1 ──
+  {
+    id:1,gr:"GR1",gap:"ГР1_Кліматотвірні_чинники",
+    tag:"ЗАВДАННЯ 1 — ГР 1",type:"choice",
+    text:"Який чинник є першопричиною формування клімату на Землі, що безпосередньо визначає розподіл тепла від екватора до полюсів?",
+    hint:"Цей чинник залежить від кута падіння сонячних променів на кулясту поверхню планети.",
+    opts:["Океанічні течії","Кількість сонячної енергії (географічна широта)","Характер підстильної поверхні (рельєф)","Загальна циркуляція повітряних мас"],
+    correct:1,
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Чудово! Кут падіння променів — основа всього.",fact:"<strong>Географічна широта</strong> визначає кількість сонячної енергії. Чим ближче до екватора, тим більший кут падіння променів і тим сильніше прогрівається поверхня Землі."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Не зовсім точно.",fact:"Правильна відповідь: <strong>Кількість сонячної енергії (географічна широта)</strong>. Вона є головним базовим чинником, інші лише перерозподіляють тепло."}}
+  },
+  {
+    id:2,gr:"GR1",gap:"ГР1_Властивості_повітряних_мас",
+    tag:"ЗАВДАННЯ 2 — ГР 1",type:"choice",
+    text:"Які основні фізичні властивості мають континентальні тропічні повітряні маси (кТПМ) у місцях свого формування?",
+    hint:"Тропічні маси формуються під впливом високого тиску навколо 30-х широт, переважно над пустельними регіонами суходолу.",
+    opts:["Холодні, сухі та прозорі","Жаркі, дуже вологі та дощові","Жаркі, сухі та часто запилені","Помірні, прохолодні та туманні"],
+    correct:2,
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Агент знає властивості повітря!",fact:"<strong>Континентальні тропічні повітряні маси</strong> приносять екстремальну спеку та посуху, оскільки формуються над великими пустелями (наприклад, Сахара)."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Згадай клімат Сахари.",fact:"Правильна відповідь: <strong>Жаркі, сухі та запилені</strong>. Континентальні маси над сушею в тропіках не мають звідки насичуватися вологою."}}
+  },
+  {
+    id:3,gr:"GR1",gap:"ГР1_Постійні_вітри",
+    tag:"ЗАВДАННЯ 3 — ГР 1",type:"choice",
+    text:"Які постійні вітри дмуть від тропічних поясів високого тиску в бік екваторіального поясу низького тиску?",
+    hint:"Через обертання Землі ці постійні вітри відхиляються у Північній півкулі праворуч (на північно-східні), а в Південній — ліворуч.",
+    opts:["Мусони","Західні вітри помірних широт","Бризи","Пасати"],
+    correct:3,
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Пасатна циркуляція розгадана!",fact:"<strong>Пасати</strong> — це постійні вітри, які століттями допомагали вітрильним суднам перетинати океани завдяки своїй стабільності."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Мусони та бризи — періодичні.",fact:"Правильна відповідь: <strong>Пасати</strong>. Саме вони замикають велике кільце циркуляції атмосфери між тропіками та екватором."}}
+  },
+  {
+    id:4,gr:"GR1",gap:"ГР1_Циркуляція_та_тиск",
+    tag:"ЗАВДАННЯ 4 — ГР 1",type:"multichoice",
+    text:"Оберіть УСІ правильні твердження щодо закономірностей атмосферного тиску та руху повітря на Землі:",
+    hint:"Згадайте, де повітря прогрівається і піднімається вгору (висхідний рух — низький тиск), а де охолоджується і опускається (спадний рух — високий тиск).",
+    opts:["На екваторі переважає низький тиск через потужні висхідні потоки гарячого повітря","Повітря завжди рухається з області низького тиску до області високого тиску","У полярних широтах формуються пояси стійкого високого атмосферного тиску","Періодичні вітри мусони змінюють свій напрямок двічі на рік (зима/літо)","Бризи — це постійні вітри планетарного масштабу"],
+    correctSet:[0,2,3],
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Усі закономірності тиску визначено вірно!",fact:"Вітер завжди дме з <strong>високого тиску до низького</strong>. На екваторі та в помірних широтах тиск низький (багато опадів), а в тропіках і на полюсах — високий (сухо)."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Зверни увагу на напрямок вітру та періодичність.",fact:"Правильні відповіді: <strong>1, 3 та 4</strong>. Повітря рухається з ВИСОКОГО тиску до низького, а бризи змінюють напрямок двічі на добу, тому вони місцеві, а не планетарні."}}
+  },
+  {
+    id:5,gr:"GR1",gap:"ГР1_Вплив_підстильної_поверхні",
+    tag:"ЗАВДАННЯ 5 — ГР 1",type:"match",
+    text:"З'єднай кліматичний наслідок з відповідною причиною підстильної поверхні або океанічної течії:",
+    hint:"Пам'ятай: теплі течії приносять вологу й тепло, холодні — роблять клімат посушливим. Гори затримують вологу.",
+    pairs:[
+      {label:"Утворення надсухої пустелі Атакама на узбережжі",answer:"Холодна Перуанська течія"},
+      {label:"М'яка й тепла зима на заході Європи",answer:"Тепла Північноатлантична течія"},
+      {label:"Затримання великої кількості опадів на навітряних схилах",answer:"Гірські хребти (рельєф)"},
+      {label:"Стрімкі сезонні коливання температур всередині материка",answer:"Континентальний характер поверхні"}
+    ],
+    chips:["Тепла Північноатлантична течія","Холодна Перуанська течія","Гірські хребти (рельєф)","Континентальний характер поверхні","Пасатна циркуляція","Полярне сяйво"],
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Аналіз впливу поверхні бездоганний!",fact:"<strong>Підстильна поверхня</strong> кардинально змінює клімат: холодні течії блокують опади й створюють прибережні пустелі, а гори змушують повітря підніматися, охолоджуватися й віддавати зливи."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Є помилка в теплових чинниках.",fact:"Правильний зв'язок: Атакама ← Холодна Перуанська течія; Західна Європа ← Тепла Північноатлантична; Схили опадів ← Гірські хребти; Коливання температури ← Континентальність."}}
+  },
+  // ── ГР 2 ──
+  {
+    id:6,gr:"GR2",gap:"ГР2_Кліматична_карта_ізотерми",
+    tag:"ЗАВДАННЯ 6 — ГР 2",type:"choice",
+    text:"Що позначають плавними суцільними лініями (ізотермами) на кліматичних картах світу?",
+    hint:"Назва терміна походить від грецьких слів 'ізос' — рівний, однаковий, та 'терме' — тепло.",
+    opts:["Території з однаковим рівнем атмосферного тиску","Точки на земній поверхні з однаковою температурою повітря","Межі поширення небезпечних ураганів","Райони з абсолютно однаковою кількістю опадів за рік"],
+    correct:1,
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Картографічний інструмент засвоєно!",fact:"На картах зазвичай синіми лініями показують <strong>ізотерми січня</strong>, а червоними — <strong>ізотерми липня</strong>. Це допомагає бачити розподіл температур."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Уважно розбери корінь слова.",fact:"Правильна відповідь: <strong>Точки з однаковою температурою повітря</strong>. Лінії однакового тиску називають ізобарами, а опадів — ізогієтами."}}
+  },
+  {
+    id:7,gr:"GR2",gap:"ГР2_Аналіз_кліматичних_поясів",
+    tag:"ЗАВДАННЯ 7 — ГР 2",type:"choice",
+    text:"Аналізуючи карту, агент виявив область, де влітку панують жарки та сухі тропічні маси, а взимку — прохолодні помірні із дощами. Який це кліматичний пояс?",
+    hint:"Це перехідний кліматичний пояс. Його назва вказує на розташування «під» або поруч із тропіками.",
+    opts:["Субекваторіальний пояс","Тропічний пустельний пояс","Субтропічний пояс","Помірний континентальний пояс"],
+    correct:2,
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Зміна повітряних мас проаналізована!",fact:"У <strong>перехідних поясах</strong> (із префіксом 'суб-') повітряні маси змінюються сезонно, слідуючи за Сонцем: влітку приходить маса з півдня, взимку — з півночі."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Зверни увагу на зимові помірні маси.",fact:"Правильна відповідь: <strong>Субтропічний пояс</strong>. У субекваторіальному влітку панує екваторіальна маса, а в тропічному — тропічна цілий рік."}}
+  },
+  {
+    id:8,gr:"GR2",gap:"ГР2_Практична_робота_показники",
+    tag:"ЗАВДАННЯ 8 — ГР 2",type:"choice",
+    text:"Під час практичної роботи визначено показники: стабільно високі температури цілий рік (+24..+28°C), щоденні зливи, річна сума опадів понад 2000 мм. Який це пояс?",
+    hint:"Тут немає сезонних змін пір року. Сонце двічі на рік перебуває в зеніті, стимулюючи постійний підйом розігрітого вологого повітря.",
+    opts:["Тропічний вологий","Екваторіальний","Субекваторіальний","Субтропічний середземноморський"],
+    correct:1,
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Точне визначення за показниками!",fact:"<strong>Екваторіальний клімат</strong> характеризується лише однією порою року — вічним літом із щоденними пополудневими грозами (зенітальними дощами)."},w:{icon:"❌",st:"ПОМИЛКА",msg:"У тропіках і субтропіках є сухий сезон.",fact:"Правильна відповідь: <strong>Екваторіальний</strong>. Це єдиний пояс на Землі, де гігантська кількість опадів рівномірно розподілена по всіх місяцях року."}}
+  },
+  {
+    id:9,gr:"GR2",gap:"ГР2_Карта_опадів",
+    tag:"ЗАВДАННЯ 9 — ГР 2",type:"choice",
+    text:"Самостійний аналіз карти опадів показав: у центрі Австралії випадає менше 200 мм опадів, а на східному узбережжі — понад 1500 мм. Що блокує вологу зі сходу?",
+    hint:"Погляньте на фізичну карту Австралії вздовж східного узбережжя. Який елемент рельєфу виступає стіною для повітряних мас з океану?",
+    opts:["Великий Вододільний хребет","Низовина Муррею","Центральна низовина","Західноавстралійське плоскогір'я"],
+    correct:0,
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Орографічний бар'єр виявлено!",fact:"<strong>Великий Вододільний хребет</strong> змушує вологі пасати з Тихого океану залишати всю вологу на східних схилах, а всередину материка повітря заходить уже сухим."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Перевір географічне розташування гір.",fact:"Правильна відповідь: <strong>Великий Вододільний хребет</strong>. Він розташований на сході та перехоплює вологу, створюючи «дощову тінь» над центром материка."}}
+  },
+  // ── ГР 3 ──
+  {
+    id:10,gr:"GR3",gap:"ГР3_Глобальні_зміни_клімату",
+    tag:"ЗАВДАННЯ 10 — ГР 3",type:"choice",
+    text:"У ході дослідження точок зору щодо глобальних змін клімату, який чинник більшість сучасних вчених визначає як провідну причину потепління?",
+    hint:"Цей процес пов'язаний із накопиченням у нижніх шарах атмосфери вуглекислого газу, метану та водяної пари через спалювання палива.",
+    opts:["Циклічна зміна активності вулканів світу","Посилення парникового ефекту через антропогенну діяльність","Коливання відстані від Землі до Сонця","Збільшення площі озонових дір над полюсами"],
+    correct:1,
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Аналіз наукових трендів точний!",fact:"Надмірні викиди CO₂ заводами, транспортом і ТЕС діють як 'скло в теплиці' — вони пропускають сонячне світло, але затримують відбите теплове випромінювання."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Озонові діри впливають на УФ-радіацію, а не тепло.",fact:"Правильна відповідь: <strong>Посилення парникового ефекту через антропогенну діяльність</strong>. Це ключова теорія сучасних кліматичних моделей."}}
+  },
+  {
+    id:11,gr:"GR3",gap:"ГР3_Небезпечні_явища",
+    tag:"ЗАВДАННЯ 11 — ГР 3",type:"choice",
+    text:"Яке небезпечне метеорологічне явище найчастіше виникає у тропічних широтах над теплими океанічними водами (+26°C) і загрожує життю людей на узбережжях?",
+    hint:"Це гігантський атмосферний вихор із наднизьким тиском у центрі ('око бурі'), що супроводжується шквальними вітрами понад 30 м/с.",
+    opts:["Суховій","Тропічний циклон (ураган або тайфун)","Пилова буря","Смерч (торнадо) над сушею"],
+    correct:1,
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Небезпечне явище класифіковано!",fact:"<strong>Тропічні циклони</strong> (тайфуни в Азії, урагани в Америці) піднімають величезні океанічні хвилі та виливають місячні норми опадів за лічені години."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Суховії та пилові бурі виникають на суші.",fact:"Правильна відповідь: <strong>Тропічний циклон (ураган або тайфун)</strong>. Його енергія підживлюється випаровуванням теплої води океану."}}
+  },
+  {
+    id:12,gr:"GR3",gap:"ГР3_Закономірності_температур",
+    tag:"ЗАВДАННЯ 12 — ГР 3",type:"sort",
+    text:"Розмістіть кліматичні зони (типи клімату) у порядку ЗМЕНШЕННЯ обсягу сонячної радіації, яку вони отримують за рік (від екватора до полюса):",
+    hint:"Згадай фундаментальний географічний закон зональності — кількість тепла закономірно зменшується зі зростанням географічної широти.",
+    items:["Екваторіальний клімат","Тропічний пустельний клімат","Субтропічний середземноморський клімат","Помірний континентальний клімат","Субарктичний клімат","Арктичний клімат"],
+    correctOrder:[0,1,2,3,4,5],
+    fb:{c:{icon:"🎯",st:"ПРАВИЛЬНО",msg:"Закон зональності підтверджено дослідженням!",fact:"<strong>Порядок спадання тепла:</strong> Екватор (0°) → Тропіки (30°) → Субтропіки (40°) → Помірні (50°) → Субполярні (65°) → Полярні (80°)."},w:{icon:"❌",st:"ПОМИЛКА",msg:"Порушено закон широтної зональності.",fact:"Правильний порядок від максимуму до мінімуму енергії: <strong>Екваторіальний → Тропічний → Субтропічний → Помірний → Субарктичний → Арктичний</strong>."}}
+  }
+];
+
+let S={
+  name:'',cls:'',cur:0,
+  scores:{GR1:[],GR2:[],GR3:[]},
+  selfEval:'',
+  deviceToken:'',
+  multiSelected:new Set(),
+  matchState:{},
+  matchSelected:null,
+  sortOrder:[],
+};
+
+(function init(){
+  if(!localStorage.getItem('geo_dev_token'))
+    localStorage.setItem('geo_dev_token','dev_'+Math.random().toString(36).substr(2,9));
+  S.deviceToken=localStorage.getItem('geo_dev_token');
+  if(localStorage.getItem('geo_topic2_submitted')==='true') showSc('sc-lock');
+})();
+
+function showSc(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function loadNames(){
+  const c=document.getElementById('sel-class').value;
+  const s=document.getElementById('sel-name');
+  s.innerHTML='<option value="">— Знайди себе —</option>';
+  if(c&&DB[c]) DB[c].forEach(n=>{const o=document.createElement('option');o.value=o.text=n;s.appendChild(o)});
+}
+function startGame(){
+  const c=document.getElementById('sel-class').value;
+  const n=document.getElementById('sel-name').value;
+  if(!c||!n){alert('⚠ Оберіть клас і знайдіть своє прізвище!');return;}
+  S.cls=c;S.name=n;
+  document.getElementById('hdr-status').textContent=c;
+  showSc('sc-brief');
+}
+function startMission(){S.cur=0;renderQ();showSc('sc-game');}
+
+function renderQ(){
+  const q=CASES[S.cur];
+  document.getElementById('case-num').textContent=S.cur+1;
+  document.getElementById('prog-fill').style.width=(S.cur/12*100)+'%';
+  const scored=S.scores.GR1.filter(v=>v).length+S.scores.GR2.filter(v=>v).length+S.scores.GR3.filter(v=>v).length;
+  document.getElementById('hud-score').textContent=scored+' ОЧОК';
+  const grEl=document.getElementById('hud-gr');
+  grEl.textContent=q.gr.replace('GR','ГР ');
+  grEl.className='hud-gr '+(q.gr==='GR1'?'gr1':q.gr==='GR2'?'gr2':'gr3');
+
+  const area=document.getElementById('q-area');
+  if(q.type==='choice') area.innerHTML=renderChoice(q);
+  else if(q.type==='multichoice') area.innerHTML=renderMulti(q);
+  else if(q.type==='match') area.innerHTML=renderMatch(q);
+  else if(q.type==='sort') area.innerHTML=renderSort(q);
+  
+  S.multiSelected=new Set();
+  S.matchState={};S.matchSelected=null;
+  S.sortOrder=[];
+}
+
+function renderChoice(q){
+  const optsHtml=q.opts.map((o,i)=>`<button class="opt" onclick="pickChoice(${i})">${o}</button>`).join('');
+  return `<div class="q-card">
+    <div class="q-tag">${q.tag}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-hint">${q.hint}</div>
+  </div>
+  <div class="opts-grid">${optsHtml}</div>`;
+}
+function pickChoice(i){
+  const q=CASES[S.cur];
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  const btns=document.querySelectorAll('.opt');
+  const correct=(i===q.correct);
+  btns[i].classList.add(correct?'correct':'wrong');
+  if(!correct) btns[q.correct].classList.add('reveal');
+  recordAndFeedback(correct,q);
+}
+
+function renderMulti(q){
+  const optsHtml=q.opts.map((o,i)=>`<button class="opt" onclick="toggleMulti(this,${i})">${o}</button>`).join('');
+  return `<div class="q-card">
+    <div class="q-tag">${q.tag}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-hint">${q.hint}</div>
+  </div>
+  <div class="multi-hint">Обери всі правильні варіанти, потім натисни «Підтвердити»</div>
+  <div class="opts-grid">${optsHtml}</div>
+  <button class="btn-confirm" onclick="confirmMulti()">ПІДТВЕРДИТИ ВИБІР ✓</button>`;
+}
+function toggleMulti(btn,i){
+  if(S.multiSelected.has(i)){S.multiSelected.delete(i);btn.classList.remove('selected');}
+  else{S.multiSelected.add(i);btn.classList.add('selected');}
+}
+function confirmMulti(){
+  const q=CASES[S.cur];
+  const sel=[...S.multiSelected].sort();
+  const cor=[...q.correctSet].sort();
+  const correct=JSON.stringify(sel)===JSON.stringify(cor);
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  document.querySelector('.btn-confirm').disabled=true;
+  document.querySelectorAll('.opt').forEach((b,i)=>{
+    if(q.correctSet.includes(i)) b.classList.add('reveal');
+    else if(S.multiSelected.has(i)&&!q.correctSet.includes(i)) b.classList.add('wrong');
+  });
+  recordAndFeedback(correct,q);
+}
+
+function renderMatch(q){
+  const slotsHtml=q.pairs.map((p,i)=>`
+    <div class="drag-row">
+      <div class="drag-label">${p.label}</div>
+      <div class="drag-arrow">→</div>
+      <div class="drag-slot" id="slot-${i}" onclick="placeChip(${i})">${'?'}</div>
+    </div>`).join('');
+  const chipsHtml=q.chips.map((c,i)=>`<div class="chip" id="chip-${i}" onclick="selectChip(${i},'${c.replace(/'/g,"\\'")}')"> ${c}</div>`).join('');
+  return `<div class="q-card">
+    <div class="q-tag">${q.tag}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-hint">${q.hint}</div>
+  </div>
+  <div class="drag-area">${slotsHtml}</div>
+  <div style="font-size:12px;color:var(--amber);font-family:var(--font-mono);margin-bottom:8px">① Натисни картку → ② Натисни клітинку</div>
+  <div class="chips-pool">${chipsHtml}</div>
+  <div style="margin-top:10px"></div>
+  <button class="btn-confirm" onclick="confirmMatch()">ПІДТВЕРДИТИ ✓</button>`;
+}
+function selectChip(i,val){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('chip-selected'));
+  S.matchSelected={i,val};
+  document.getElementById('chip-'+i).classList.add('chip-selected');
+}
+function placeChip(slotIdx){
+  if(!S.matchSelected) return;
+  const {i,val}=S.matchSelected;
+  Object.keys(S.matchState).forEach(k=>{if(S.matchState[k]===val) delete S.matchState[k];});
+  S.matchState[slotIdx]=val;
+  Object.keys(S.matchState).forEach(k=>{
+    const sl=document.getElementById('slot-'+k);
+    if(sl){sl.textContent=S.matchState[k];sl.classList.add('filled');}
+  });
+  for(let k=0;k<CASES[S.cur].pairs.length;k++){
+    if(!S.matchState[k]){const sl=document.getElementById('slot-'+k);sl.textContent='?';sl.classList.remove('filled');}
+  }
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('chip-selected','chip-used'));
+  Object.values(S.matchState).forEach(v=>{
+    CASES[S.cur].chips.forEach((c,ci)=>{
+      if(c===v) document.getElementById('chip-'+ci).classList.add('chip-used');
+    });
+  });
+  S.matchSelected=null;
+}
+function confirmMatch(){
+  const q=CASES[S.cur];
+  let correct=true;
+  q.pairs.forEach((p,i)=>{if(S.matchState[i]!==p.answer) correct=false;});
+  q.pairs.forEach((p,i)=>{
+    const sl=document.getElementById('slot-'+i);
+    if(S.matchState[i]===p.answer) sl.classList.add('correct-slot');
+    else{sl.classList.add('wrong-slot');sl.textContent=(S.matchState[i]||'—')+' ✗';}
+  });
+  document.querySelector('.btn-confirm').disabled=true;
+  document.querySelectorAll('.chip').forEach(c=>{c.style.pointerEvents='none';});
+  recordAndFeedback(correct,q);
+}
+
+function renderSort(q){
+  const itemsHtml=q.items.map((item,i)=>`
+    <div class="sort-item" id="si-${i}" onclick="pickSort(${i})">
+      <span>${item}</span>
+      <span class="sort-rank" id="sr-${i}"></span>
+    </div>`).join('');
+  return `<div class="q-card">
+    <div class="q-tag">${q.tag}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-hint">${q.hint}</div>
+  </div>
+  <div class="sort-instruction">Натискай по одному у потрібному порядку (1→6)</div>
+  <div class="sort-list">${itemsHtml}</div>
+  <button class="btn-confirm" onclick="confirmSort()">ПІДТВЕРДИТИ ✓</button>`;
+}
+function pickSort(i){
+  if(S.sortOrder.includes(i)) return;
+  S.sortOrder.push(i);
+  const rank=S.sortOrder.length;
+  document.getElementById('si-'+i).classList.add('sort-selected');
+  const sr=document.getElementById('sr-'+i);
+  sr.textContent='#'+rank;sr.classList.add('filled');
+}
+function confirmSort(){
+  const q=CASES[S.cur];
+  const correct=JSON.stringify(S.sortOrder)===JSON.stringify(q.correctOrder);
+  q.items.forEach((_,i)=>{
+    const el=document.getElementById('si-'+i);
+    const pos=S.sortOrder.indexOf(i);
+    const expectedPos=q.correctOrder.indexOf(i);
+    if(pos===expectedPos) el.classList.add('sort-correct');
+    else el.classList.add('sort-wrong');
+  });
+  document.querySelector('.btn-confirm').disabled=true;
+  document.querySelectorAll('.sort-item').forEach(s=>{s.style.pointerEvents='none';});
+  recordAndFeedback(correct,q);
+}
+
+function recordAndFeedback(correct,q){
+  S.scores[q.gr].push(correct?1:0);
+  if(correct) spawnParticles();
+  const fb=correct?q.fb.c:q.fb.w;
+  const overlay=document.getElementById('fb-overlay');
+  document.getElementById('fb-icon').textContent=fb.icon;
+  document.getElementById('fb-status').textContent=fb.st;
+  document.getElementById('fb-status').style.color=correct?'var(--green)':'var(--red)';
+  document.getElementById('fb-msg').textContent=fb.msg;
+  document.getElementById('fb-fact').innerHTML=fb.fact;
+  document.getElementById('fb-btn').onclick=()=>{
+    overlay.style.display='none';
+    S.cur++;
+    if(S.cur<12) renderQ();
+    else showSc('sc-eval');
+  };
+  overlay.style.display='flex';
+}
+
+let evalSel='';
+function selEval(el,v){
+  document.querySelectorAll('.eval-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');evalSel=v;
+}
+function submitData(){
+  if(!evalSel){alert('Будь ласка, оціни свій рівень.');return;}
+  
+  const gr1pct=Math.round(avg(S.scores.GR1)*100);
+  const gr2pct=Math.round(avg(S.scores.GR2)*100);
+  const gr3pct=Math.round(avg(S.scores.GR3)*100);
+  const totalPct=Math.round((gr1pct+gr2pct+gr3pct)/3);
+  
+  const gapMap={
+    GR1:[
+      {s:S.scores.GR1[0],g:"ГР1_Кліматотвірні_чинники"},
+      {s:S.scores.GR1[1],g:"ГР1_Властивості_повітряних_мас"},
+      {s:S.scores.GR1[2],g:"ГР1_Постійні_вітри"},
+      {s:S.scores.GR1[3],g:"ГР1_Циркуляція_та_тиск"},
+      {s:S.scores.GR1[4],g:"ГР1_Вплив_підстильної_поверхні"}
+    ],
+    GR2:[
+      {s:S.scores.GR2[0],g:"ГР2_Кліматична_карта_ізотерми"},
+      {s:S.scores.GR2[1],g:"ГР2_Аналіз_кліматичних_поясів"},
+      {s:S.scores.GR2[2],g:"ГР2_Практична_робота_показники"},
+      {s:S.scores.GR2[3],g:"ГР2_Карта_опадів"}
+    ],
+    GR3:[
+      {s:S.scores.GR3[0],g:"ГР3_Глобальні_зміни_клімату"},
+      {s:S.scores.GR3[1],g:"ГР3_Небезпечні_явища"},
+      {s:S.scores.GR3[2],g:"ГР3_Закономірності_температур"}
+    ]
+  };
+  const gaps=[];
+  [...gapMap.GR1,...gapMap.GR2,...gapMap.GR3].forEach(e=>{if(!e.s) gaps.push(e.g);});
+  
+  const payload={
+    studentName:S.name,studentClass:S.cls,
+    totalScore:totalPct,
+    scoreGR1:gr1pct,scoreGR2:gr2pct,scoreGR3:gr3pct,
+    gaps,selfEvaluation:evalSel,deviceToken:S.deviceToken
+  };
+  
+  showSc('sc-result');
+  buildResult(payload,gr1pct,gr2pct,gr3pct,totalPct,gaps);
+  
+  document.getElementById('loader').style.display='flex';
+  fetch(SCRIPT_URL,{method:'POST',mode:'cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
+    .then(r=>r.json())
+    .then(d=>{
+      document.getElementById('loader').style.display='none';
+      const n=document.getElementById('sent-ok');
+      
+      if (d.result === 'already_exists') {
+        n.style.borderColor = 'var(--red)';
+        n.innerHTML = '<div style="color:var(--red); text-align:center; font-weight:600;">⚠ ДОСТУП ОБМЕЖЕНО<br><span style="font-size:13px; color:#a0aec0; font-weight:400;">Твої результати для цієї теми вже зафіксовані в базі.</span></div>';
+        n.style.display = 'block';
+      } else {
+        n.style.display = 'block';
+        localStorage.setItem('geo_topic2_submitted','true');
+      }
+    })
+    .catch(()=>{
+      document.getElementById('loader').style.display='none';
+      document.getElementById('sent-ok').style.display='block';
+    });
+}
+function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;}
+
+function buildResult(p,gr1,gr2,gr3,total,gaps){
+  const titles={
+    high:'КЛІМАТИЧНИЙ АНАЛІЗ ЗАВЕРШЕНО',
+    mid:'СТАЖУВАННЯ АГЕНТА ТРИВАЄ',
+    low:'СПРАВА НА ДОВИВЧЕННІ'
+  };
+  const t=total>=75?titles.high:total>=50?titles.mid:titles.low;
+  document.getElementById('res-title').textContent=t;
+  document.getElementById('res-name').textContent=p.studentName+' • '+p.studentClass;
+  
+  const clr=(v)=>v>=75?'var(--green)':v>=50?'var(--amber)':'var(--red)';
+  document.getElementById('s-gr1').textContent=gr1+'%';document.getElementById('s-gr1').style.color=clr(gr1);
+  document.getElementById('s-gr2').textContent=gr2+'%';document.getElementById('s-gr2').style.color=clr(gr2);
+  document.getElementById('s-gr3').textContent=gr3+'%';document.getElementById('s-gr3').style.color=clr(gr3);
+  
+  if(gaps.length){
+    const gapLabels={
+      "ГР1_Кліматотвірні_чинники":"Кліматотвірні чинники та сонячна енергія",
+      "ГР1_Властивості_повітряних_мас":"Повітряні маси та їхні властивості",
+      "ГР1_Постійні_вітри":"Постійні та періодичні вітри планети",
+      "ГР1_Циркуляція_та_тиск":"Загальна циркуляція повітря та пояси тиску",
+      "ГР1_Вплив_підстильної_поверхні":"Вплив підстильної поверхні та океанічних течій",
+      "ГР2_Кліматична_карта_ізотерми":"Робота з кліматичною картою світу",
+      "ГР2_Аналіз_кліматичних_поясів":"Аналіз основних та перехідних кліматичних поясів",
+      "ГР2_Практична_робота_показники":"Закономірності розподілу кліматичних показників",
+      "ГР2_Карта_опадів":"Географічний аналіз розподілу атмосферних опадів",
+      "ГР3_Глобальні_зміни_клімату":"Причини та наслідки глобальних змін клімату",
+      "ГР3_Небезпечні_явища":"Небезпечні метеорологічні явища та правила поведінки",
+      "ГР3_Закономірності_температур":"Закономірності зміни температури повітря"
+    };
+    const items=gaps.map(g=>`<div class="gap-item">⚠ ${gapLabels[g]||g}</div>`).join('');
+    document.getElementById('gaps-section').innerHTML=`<div class="gaps-box"><div class="gaps-title">ТЕМИ ДЛЯ ПОВТОРЕННЯ</div>${items}</div>`;
+  }
+  
+  const subs={high:"Відмінний результат! Ти — провідний кліматолог Географічного Відомства.",mid:"Гарна робота! Повтори відмічені прогалини, зверни увагу на карти і результат покращиться.",low:"Потрібно відкрити атлас і повторити закономірності зміни кліматичних показників. Спробуй ще!"};
+  document.getElementById('res-sub').textContent=total>=75?subs.high:total>=50?subs.mid:subs.low;
+  
+  setTimeout(()=>{
+    const circ=326;
+    document.getElementById('ring-fill').style.strokeDashoffset=circ-(circ*total/100);
+    document.getElementById('ring-pct').textContent=total+'%';
+    document.getElementById('ring-fill').style.stroke=clr(total);
+  },200);
+}
+
+function spawnParticles(){
+  const colors=['var(--cyan)','var(--green)','var(--amber)','var(--purple)'];
+  for(let i=0;i<16;i++){
+    const p=document.createElement('div');p.className='particle';
+    const sz=4+Math.random()*6,ang=Math.random()*Math.PI*2,dist=70+Math.random()*130;
+    p.style.cssText=`width:${sz}px;height:${sz}px;background:${colors[Math.floor(Math.random()*colors.length)]};left:${35+Math.random()*30}%;top:${25+Math.random()*50}%;--dx:${Math.cos(ang)*dist}px;--dy:${Math.sin(ang)*dist}px`;
+    document.body.appendChild(p);setTimeout(()=>p.remove(),800);
+  }
+}
+</script>
+</body>
+</html>
